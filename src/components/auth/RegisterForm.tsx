@@ -71,32 +71,32 @@ export default function RegisterForm() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Social Auth */}
-      <div className="flex gap-4 w-full">
-        <button
+      <div className="grid grid-cols-2 gap-3 w-full">
+        <Button
           type="button"
+          variant="outline"
+          className="flex items-center justify-center gap-2 h-12"
           onClick={() => signIn("google", { callbackUrl: "/student/dashboard" })}
-          className="flex-1 flex items-center justify-center gap-2 h-12 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         >
-          <img
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsdKdq3R3oTBVqTqcZK8IedNZkFmNsGhHYlJ0hBlbNEzeNxE7Uolvlb0SxD8AF16HOvaFxWw_pL4ZP8TMN6hzY8EF7eUZMN8XnOYNGYYgewhJVP1GbEd5BGcrfrVLqEPwZ6dF7d6YnNjYpJgCjxflcFC87lIm6Cb-ume_XQLecMYW7KvUg1E8kMTwlQzq51zFoNQ__PzFQur14GMkGNXTmzIy1gGXmXZsKC3LZcFO580UneWSKWi6ejzp3ZVUTMAUau0-7LDZFXM4"
-            alt="Google"
-            className="w-5 h-5"
-          />
-          <span className="text-sm font-bold text-gray-900 dark:text-white">Google</span>
-        </button>
-        <button
+          <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"></path>
+          </svg>
+          <span className="hidden sm:inline">Google</span>
+        </Button>
+        <Button
           type="button"
+          variant="outline"
+          className="flex items-center justify-center gap-2 h-12"
           onClick={() => signIn("microsoft-entra-id", { callbackUrl: "/student/dashboard" })}
-          className="flex-1 flex items-center justify-center gap-2 h-12 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         >
-          <img
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWY7Q-isjG8Tn1v3iyE7Lqwbe4-lf5InwIIf8fDoYRdJF5S-29t4iKAbiJ2KldDy8iC9L9c92K9AbTsLnQkYk9OaCNFVtr27-zAaoX2t1yHCBUITsT0wi6l6DUl6-ZLku-e_NislQwXe3oEN5cKeBFcWb4DtCD3Qwd5MUqXqH4RvOOW7qKtm10pwKJ_jDXmEkjtyDYG4lykPfH7hmDc68fMOOnRsHRx0DzzAyrRG-v6FxKGNC8lvW8bJswZYk2klO2rFMLjs8hL5g"
-            alt="Microsoft"
-            className="w-5 h-5"
-          />
-          <span className="text-sm font-bold text-gray-900 dark:text-white">Microsoft</span>
-        </button>
+          <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 23 23">
+            <path d="M1 1h10v10H1z" fill="#f35325"></path>
+            <path d="M12 1h10v10H12z" fill="#81bc06"></path>
+            <path d="M1 12h10v10H1z" fill="#05a6f0"></path>
+            <path d="M12 12h10v10H12z" fill="#ffba08"></path>
+          </svg>
+          <span className="hidden sm:inline">Microsoft</span>
+        </Button>
       </div>
 
       {/* Divider */}
