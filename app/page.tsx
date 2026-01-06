@@ -545,7 +545,7 @@ export default function Home() {
                 href="mailto:admissions@gvs.edu"
                 className="underline hover:text-white"
               >
-                admissions@gvs.edu
+               kinyuaharvey@gmail.com
               </a>
             </p>
           </div>
