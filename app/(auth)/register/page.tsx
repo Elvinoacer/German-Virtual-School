@@ -14,14 +14,17 @@ export default function RegisterPage() {
 
       {/* Navigation Header */}
       <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-gray-200 dark:border-gray-800 bg-white dark:bg-[#101622] px-4 lg:px-10 py-4 sticky top-0 z-50">
-        <div className="flex items-center gap-3 text-gray-900 dark:text-white">
-          <div className="size-8 flex items-center justify-center text-primary">
-            <span className="material-symbols-outlined !text-[32px]">school</span>
+        <Link href="/" className="flex items-center gap-3">
+          <img src="/gvs-logo.png" alt="GVS Logo" className="h-10 w-auto dark:brightness-0 dark:invert" />
+          <div className="flex flex-col">
+            <h2 className="text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">
+              German Virtual School
+            </h2>
+            <span className="hidden sm:block text-[10px] text-gray-500 dark:text-gray-400 font-sans uppercase tracking-widest">
+              Excellence in German Education
+            </span>
           </div>
-          <h2 className="text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">
-            German Virtual School
-          </h2>
-        </div>
+        </Link>
         <div className="flex items-center gap-4">
           <span className="hidden sm:inline text-sm font-medium text-gray-500 dark:text-gray-400">
             Already have an account?

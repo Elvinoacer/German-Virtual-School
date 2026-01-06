@@ -29,14 +29,17 @@ export default function LoginPage() {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="absolute inset-0 flex flex-col justify-between p-16 z-10"
         >
-          <div className="flex items-center gap-3 text-white">
-            <div className="size-8 bg-white rounded-lg flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined">school</span>
+          <Link href="/" className="flex items-center gap-3 text-white">
+            <img src="/gvs-logo.png" alt="GVS Logo" className="h-10 w-auto brightness-0 invert" />
+            <div className="flex flex-col">
+              <span className="text-xl font-bold tracking-tight font-display">
+                German Virtual School
+              </span>
+              <span className="text-[10px] opacity-80 uppercase tracking-widest font-sans">
+                Excellence in German Education
+              </span>
             </div>
-            <span className="text-xl font-bold tracking-tight font-display">
-              German Virtual School
-            </span>
-          </div>
+          </Link>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -60,9 +63,9 @@ export default function LoginPage() {
         {/* Top Navigation (Mobile Logo + Language Toggle) */}
         <div className="flex items-center justify-between p-4 lg:p-6 lg:justify-end">
           {/* Mobile Logo */}
-          <Link href="/" className="flex items-center gap-2 lg:hidden text-primary dark:text-white">
-            <span className="material-symbols-outlined text-3xl">school</span>
-            <span className="font-bold text-lg font-display">GVS</span>
+          <Link href="/" className="flex items-center gap-2 lg:hidden">
+            <img src="/gvs-logo.png" alt="GVS Logo" className="h-8 w-auto dark:brightness-0 dark:invert" />
+            <span className="font-bold text-lg font-display text-primary dark:text-white">GVS</span>
           </Link>
           
           <div className="flex items-center gap-4">
