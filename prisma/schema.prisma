@@ -1,0 +1,684 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum UserRole {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+enum CourseLevel {
+  A1
+  A2
+  B1
+  B2
+  C1
+  C2
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  DROPPED
+}
+
+enum ResourceType {
+  PDF
+  VIDEO
+  DOCUMENT
+  LINK
+  OTHER
+}
+
+enum ClassStatus {
+  SCHEDULED
+  LIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  EXCUSED
+  LATE
+}
+
+enum SubmissionStatus {
+  PENDING
+  SUBMITTED
+  LATE
+  GRADED
+  RETURNED
+}
+
+enum PaymentCycle {
+  MONTHLY
+  QUARTERLY
+  BIANNUAL
+  ANNUAL
+  ONE_TIME
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  PARTIAL
+  OVERDUE
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CARD
+  BANK_TRANSFER
+  PAYPAL
+  STRIPE
+  MOBILE_MONEY
+  MPESA
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  CLASS_REMINDER
+  ASSIGNMENT_NEW
+  ASSIGNMENT_GRADED
+  PAYMENT_DUE
+  FORUM_REPLY
+}
+
+enum ThreadAudience {
+  PUBLIC
+  COURSE_ONLY
+  TEACHERS_ONLY
+}
+
+// ============================================
+// MODELS
+// ============================================
+
+// --------------------------------------------
+// User Management
+// --------------------------------------------
+
+model Evaluation {
+  id                    String   @id @default(uuid())
+  studentId             String
+  courseId              String
+  teacherId             String
+  
+  // Quantitative Metrics (0-100 or 1-10 scale)
+  attendanceScore       Float?    
+  participationScore    Float?    
+  assignmentScore       Float?    
+  languageProficiency   Float?   
+
+  grade                 Float?    // Overall Grade
+  trend                 String?   // up, down, flat
+
+  // Qualitative Feedback
+  overallComment        String?  @db.Text
+  improvements          String?  @db.Text 
+  
+  category              String?   // e.g. "Mid-Term", "Final"
+  academicTermId        String?
+  academicTerm          AcademicTerm? @relation(fields: [academicTermId], references: [id])
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relations
+  student User   @relation("StudentEvaluations", fields: [studentId], references: [id])
+  teacher User   @relation("TeacherEvaluations", fields: [teacherId], references: [id])
+  course  Course @relation(fields: [courseId], references: [id])
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  emailVerified DateTime?
+  passwordHash  String?
+  name          String?
+  firstName     String
+  lastName      String
+  role          UserRole
+  image         String?
+  avatarUrl     String?
+  isVerified    Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  fcmTokens     String[]
+
+  // NextAuth Relations
+  accounts      Account[]
+  sessions      Session[]
+
+  // Relations
+  studentProfile StudentProfile?
+  teacherProfile TeacherProfile?
+  
+  // Teacher Relations
+  createdCourses    Course[]        @relation("TeacherCourses")
+  taughtSessions    ClassSession[]  @relation("TeacherSessions")
+  gradedSubmissions Submission[]    @relation("TeacherGrading")
+  createdEvaluations Evaluation[]   @relation("TeacherEvaluations")
+  
+  // Student Relations
+  enrollments       Enrollment[]
+  attendanceRecords AttendanceRecord[]
+  submissions       Submission[]
+  invoices          Invoice[]
+  receivedEvaluations Evaluation[]  @relation("StudentEvaluations")
+  termRegistrations   TermRegistration[]
+  
+  // Communication
+  forumThreads      ForumThread[]
+  forumPosts        ForumPost[]
+  notifications     Notification[]
+  sentMessages      Message[]       @relation("SentMessages")
+  receivedMessages  Message[]       @relation("ReceivedMessages")
+  
+  // Notes
+  receivedNotes     TeacherNote[]   @relation("StudentNotes")
+  createdNotes      TeacherNote[]   @relation("CreatedNotes")
+
+  // Admin Relations
+  generatedReports  SystemReport[]
+}
+
+model StudentProfile {
+  id               String    @id @default(uuid())
+  userId           String    @unique
+  dateOfBirth      DateTime?
+  phoneNumber      String?
+  address          String?
+  emergencyContact String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model TeacherProfile {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  bio            String?
+  specialization String?
+  qualifications String[] // JSON array of strings
+  hourlyRate     Decimal? @db.Decimal(10, 2)
+  phoneNumber    String?
+  address        String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// --------------------------------------------
+// Teacher Notes
+// --------------------------------------------
+
+model TeacherNote {
+  id        String   @id @default(uuid())
+  studentId String
+  teacherId String
+  content   String
+  category  String   @default("General") // e.g. Academic, Behavior
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student   User     @relation("StudentNotes", fields: [studentId], references: [id])
+  teacher   User     @relation("CreatedNotes", fields: [teacherId], references: [id])
+}
+
+// --------------------------------------------
+// Course Domain
+// --------------------------------------------
+
+model Course {
+  id            String       @id @default(uuid())
+  teacherId     String
+  title         String
+  slug          String       @unique
+  description   String
+  level         CourseLevel
+  language      String       @default("German")
+  thumbnailUrl  String?
+  price         Decimal      @db.Decimal(10, 2)
+  durationWeeks Int
+  status        CourseStatus @default(DRAFT)
+  outcomes      String[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  // Relations
+  teacher       User           @relation("TeacherCourses", fields: [teacherId], references: [id])
+  modules       Module[]
+  enrollments   Enrollment[]
+  classSessions ClassSession[]
+  assignments   Assignment[]
+  feePlans      FeePlan[]
+  forumThreads  ForumThread[]
+  evaluations   Evaluation[]
+}
+
+model Module {
+  id          String   @id @default(uuid())
+  courseId    String
+  title       String
+  description String?
+  orderIndex  Int
+  createdAt   DateTime @default(now())
+
+  // Relations
+  course    Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  resources Resource[]
+  progress  ModuleProgress[]
+}
+
+model Resource {
+  id             String       @id @default(uuid())
+  moduleId       String
+  title          String
+  description    String?
+  type           ResourceType
+  url            String
+  fileSize       Int? // In bytes
+  isDownloadable Boolean      @default(true)
+  version        Int          @default(1)
+  viewCount      Int          @default(0)
+  downloadCount  Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt @default(now())
+
+  // Relations
+  module   Module             @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progress ResourceProgress[]
+}
+
+// --------------------------------------------
+// Enrollment & Progress
+// --------------------------------------------
+
+model Enrollment {
+  id                 String           @id @default(uuid())
+  studentId          String
+  courseId           String
+  status             EnrollmentStatus @default(ACTIVE)
+  enrolledAt         DateTime         @default(now())
+  completedAt        DateTime?
+  progressPercentage Float            @default(0)
+  grade              String?
+
+  // Relations
+  student          User               @relation(fields: [studentId], references: [id])
+  course           Course             @relation(fields: [courseId], references: [id])
+  moduleProgress   ModuleProgress[]
+  resourceProgress ResourceProgress[]
+  invoices         Invoice[]
+
+  @@unique([studentId, courseId])
+}
+
+model ResourceProgress {
+  id           String    @id @default(uuid())
+  enrollmentId String
+  resourceId   String
+  isCompleted  Boolean   @default(false)
+  completedAt  DateTime?
+  lastPosition Float?    @default(0) // For video timestamp in seconds
+
+  // Relations
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  resource   Resource   @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([enrollmentId, resourceId])
+}
+
+model ModuleProgress {
+  id           String    @id @default(uuid())
+  enrollmentId String
+  moduleId     String
+  isCompleted  Boolean   @default(false)
+  completedAt  DateTime?
+
+  // Relations
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  module     Module     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([enrollmentId, moduleId])
+}
+
+// --------------------------------------------
+// Classroom & Attendance
+// --------------------------------------------
+
+model ClassSession {
+  id          String      @id @default(uuid())
+  courseId    String
+  teacherId   String
+  title       String
+  description String?
+  startTime   DateTime
+  endTime     DateTime
+  meetingLink String?
+  recordingUrl String?
+  status      ClassStatus @default(SCHEDULED)
+  objectives  String[]
+  homework    String?
+
+  // Relations
+  course     Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  teacher    User               @relation("TeacherSessions", fields: [teacherId], references: [id])
+  attendance AttendanceRecord[]
+}
+
+model AttendanceRecord {
+  id             String           @id @default(uuid())
+  classSessionId String
+  studentId      String
+  status         AttendanceStatus
+  checkInTime    DateTime?
+  checkOutTime   DateTime?
+  durationMinutes Int?            @default(0)
+  notes          String?
+
+  // Relations
+  classSession ClassSession    @relation(fields: [classSessionId], references: [id], onDelete: Cascade)
+  student      User            @relation(fields: [studentId], references: [id])
+  logs         AttendanceLog[]
+
+  @@unique([classSessionId, studentId])
+}
+
+model AttendanceLog {
+  id                 String   @id @default(uuid())
+  attendanceRecordId String
+  type               String   // JOIN, LEAVE
+  timestamp          DateTime @default(now())
+
+  attendanceRecord AttendanceRecord @relation(fields: [attendanceRecordId], references: [id], onDelete: Cascade)
+}
+
+// --------------------------------------------
+// Assignments & Grading
+// --------------------------------------------
+
+model Assignment {
+  id          String   @id @default(uuid())
+  courseId    String
+  title       String
+  description String
+  dueDate     DateTime
+  maxPoints   Int
+  rubric      Json? // Structured grading criteria
+  attachmentUrls String[] // Resources for the assignment
+  createdAt   DateTime @default(now())
+
+  // Relations
+  course      Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  submissions Submission[]
+}
+
+model Submission {
+  id             String           @id @default(uuid())
+  assignmentId   String
+  studentId      String
+  content        String? // Text content or description
+  attachmentUrls String[] // JSON array of URLs
+  submittedAt    DateTime         @default(now())
+  status         SubmissionStatus @default(PENDING)
+  grade          Float?
+  feedback       String?
+  gradedById     String?
+  gradedAt       DateTime?
+
+  // Relations
+  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  student    User       @relation(fields: [studentId], references: [id])
+  gradedBy   User?      @relation("TeacherGrading", fields: [gradedById], references: [id])
+
+  @@unique([assignmentId, studentId])
+}
+
+// --------------------------------------------
+// Finance
+// --------------------------------------------
+
+model FeePlan {
+  id           String       @id @default(uuid())
+  courseId     String
+  amount       Decimal      @db.Decimal(10, 2)
+  billingCycle PaymentCycle
+  installments Int          @default(1)
+
+  // Relations
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+model Invoice {
+  id           String        @id @default(uuid())
+  studentId    String
+  enrollmentId String?
+  termId       String?
+  amount       Decimal       @db.Decimal(10, 2)
+  description  String        @default("Course Fee")
+  dueDate      DateTime
+  status       PaymentStatus @default(PENDING)
+  paidAmount   Decimal       @default(0) @db.Decimal(10, 2)
+  createdAt    DateTime      @default(now())
+
+  // Relations
+  student    User          @relation(fields: [studentId], references: [id])
+  enrollment Enrollment?   @relation(fields: [enrollmentId], references: [id])
+  term       AcademicTerm? @relation(fields: [termId], references: [id])
+  payments   Payment[]
+}
+
+model Payment {
+  id                   String        @id @default(uuid())
+  invoiceId            String
+  amount               Decimal       @db.Decimal(10, 2)
+  method               PaymentMethod
+  transactionReference String        @unique
+  checkoutId           String?       // Intasend checkout ID
+  status               PaymentStatus @default(PENDING)
+  metadata             Json?
+  processedAt          DateTime      @default(now())
+
+  // Relations
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
+}
+
+
+
+// --------------------------------------------
+// Communication
+// --------------------------------------------
+
+model ForumThread {
+  id          String         @id @default(uuid())
+  courseId    String?
+  authorId    String
+  title       String
+  content     String
+  audience    ThreadAudience @default(PUBLIC)
+  isPinned    Boolean        @default(false)
+  isLocked    Boolean        @default(false)
+  isAnonymous Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+
+  // Relations
+  course Course?     @relation(fields: [courseId], references: [id])
+  author User        @relation(fields: [authorId], references: [id])
+  posts  ForumPost[]
+}
+
+model ForumPost {
+  id        String   @id @default(uuid())
+  threadId  String
+  authorId  String
+  content   String
+  parentId  String?
+  isAnonymous Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  // Relations
+  thread   ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  author   User        @relation(fields: [authorId], references: [id])
+  parent   ForumPost?  @relation("ThreadReplies", fields: [parentId], references: [id])
+  children ForumPost[] @relation("ThreadReplies")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  data      Json? // Metadata for linking
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id         String   @id @default(uuid())
+  senderId   String
+  receiverId String
+  content    String
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  // Relations
+  sender   User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+}
+
+// --------------------------------------------
+// NextAuth Models
+// --------------------------------------------
+
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// --------------------------------------------
+// System & Admin Settings
+// --------------------------------------------
+
+model AcademicTerm {
+  id          String   @id @default(uuid())
+  name        String   // e.g., "Term 1 2026", "Spring Semester"
+  startDate   DateTime
+  endDate     DateTime
+  isCurrent   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  evaluations Evaluation[] // Evaluations can be linked to terms
+  invoices    Invoice[]
+  registrations TermRegistration[]
+}
+
+model TermRegistration {
+  id        String   @id @default(uuid())
+  studentId String
+  termId    String
+  createdAt DateTime @default(now())
+
+  student User         @relation(fields: [studentId], references: [id])
+  term    AcademicTerm @relation(fields: [termId], references: [id])
+
+  @@unique([studentId, termId])
+}
+
+model GlobalBillingSettings {
+  id              String       @id @default("global-settings")
+  defaultFee      Decimal      @db.Decimal(10, 2)
+  currency        String       @default("KES")
+  billingCycle    PaymentCycle @default(ONE_TIME)
+  lateFeeAction   String?      // e.g., "ROLL_TO_NEXT", "ADD_PENALTY"
+  taxRate         Float        @default(0)
+  updatedAt       DateTime     @updatedAt
+}
+model SystemSettings {
+  id                  String   @id @default("system-settings")
+  systemName          String   @default("German Virtual School")
+  supportEmail        String   @default("support@gvs.edu.de")
+  maxStudentsPerClass Int      @default(25)
+  defaultCurrency     String   @default("KES")
+  
+  // JSON fields for flexible configuration
+  notifications       Json?    // e.g. { emailNotifications: true, ... }
+  integrations        Json?    // e.g. { jitsiDomain: "...", ... }
+  
+  updatedAt           DateTime @updatedAt
+}
+model SystemReport {
+  id          String   @id @default(uuid())
+  name        String
+  type        String   // e.g., "ACADEMIC", "FINANCIAL", "ATTENDANCE"
+  format      String   // e.g., "PDF", "XLSX"
+  status      String   @default("READY") // READY, PROCESSING, FAILED
+  url         String?  // Link to the generated file
+  generatedById String
+  generatedAt DateTime @default(now())
+
+  // Relations
+  generatedBy User @relation(fields: [generatedById], references: [id])
+}
+
