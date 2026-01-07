@@ -90,6 +90,17 @@ export async function GET(
       }
     }
 
+    // Security: If not enrolled, strip resource URLs to prevent unauthorized access to materials
+    if (!formattedCourse.isEnrolled) {
+      formattedCourse.modules = formattedCourse.modules.map((module: any) => ({
+        ...module,
+        resources: module.resources.map((resource: any) => ({
+          ...resource,
+          url: "", // Strip sensitive URL
+        })),
+      }));
+    }
+
     return successResponse(formattedCourse);
   } catch (error) {
     console.error('Get course error:', error);

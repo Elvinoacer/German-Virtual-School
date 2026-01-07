@@ -208,6 +208,7 @@ model User {
 
   // Admin Relations
   generatedReports  SystemReport[]
+  testimonials      Testimonial[]
 }
 
 model StudentProfile {
@@ -680,5 +681,18 @@ model SystemReport {
 
   // Relations
   generatedBy User @relation(fields: [generatedById], references: [id])
+}
+
+model Testimonial {
+  id          String   @id @default(uuid())
+  studentId   String
+  content     String   @db.Text
+  rating      Int      // 1-5
+  isFeatured  Boolean  @default(false)
+  isApproved  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  student     User     @relation(fields: [studentId], references: [id])
 }
 

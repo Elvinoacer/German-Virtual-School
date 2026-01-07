@@ -111,8 +111,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           id: profile.sub,
           email: profile.email,
           name: profile.name,
-          firstName: profile.given_name,
-          lastName: profile.family_name,
+          firstName: profile.given_name || profile.name?.split(" ")[0] || "Unknown",
+          lastName: profile.family_name || profile.name?.split(" ").slice(1).join(" ") || ".",  // Fallback to dot or empty string if allowed, likely we need something not empty if possible, but empty string is fine for string type
           image: profile.picture,
           role: "STUDENT" as UserRole, // Default role for OAuth
           isVerified: false, // Default verification status
@@ -134,8 +134,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           id: profile.sub,
           email: profile.email,
           name: profile.name,
-          firstName: profile.given_name, // Microsoft might send these differently
-          lastName: profile.family_name,
+          firstName: profile.given_name || profile.name?.split(" ")[0] || "Unknown",
+          lastName: profile.family_name || profile.name?.split(" ").slice(1).join(" ") || ".",
           image: null,
           role: "STUDENT" as UserRole,
           isVerified: false,
@@ -155,6 +155,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.firstName = (user as any).firstName;
         token.lastName = (user as any).lastName;
         token.isVerified = (user as any).isVerified;
+      }
+
+      // Fetch fresh data from DB on every session check to ensure real-time updates
+      // This allows role changes and verification status to be reflected immediately
+      if (token.sub) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.sub },
+            select: { 
+              role: true, 
+              isVerified: true, 
+              firstName: true, 
+              lastName: true 
+            },
+          });
+
+          if (dbUser) {
+            token.role = dbUser.role;
+            token.isVerified = dbUser.isVerified;
+            token.firstName = dbUser.firstName;
+            token.lastName = dbUser.lastName;
+          }
+        } catch (error) {
+          console.error("Error refreshing user data in JWT:", error);
+        }
       }
       
       // Update session if data changed (e.g. verification status update)

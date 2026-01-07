@@ -10,15 +10,24 @@ export default auth((req) => {
   const isAuthRoute =
     nextUrl.pathname.startsWith("/login") ||
     nextUrl.pathname.startsWith("/register") ||
-    nextUrl.pathname.startsWith("/forgot-password");
+    nextUrl.pathname.startsWith("/forgot-password") ||
+    nextUrl.pathname.startsWith("/reset-password");
   const isPublicRoute =
-    nextUrl.pathname === "/" || nextUrl.pathname.startsWith("/public");
+    nextUrl.pathname === "/" ||
+    nextUrl.pathname.startsWith("/public") ||
+    nextUrl.pathname.startsWith("/about") ||
+    nextUrl.pathname.startsWith("/privacy") ||
+    nextUrl.pathname.startsWith("/terms") ||
+    nextUrl.pathname.startsWith("/courses");
 
   // Route protection logic
   const isStudentRoute = nextUrl.pathname.startsWith("/student");
   const isTeacherRoute = nextUrl.pathname.startsWith("/teacher");
   const isAdminRoute = nextUrl.pathname.startsWith("/admin");
   const isClassroomRoute = nextUrl.pathname.startsWith("/classroom");
+  const isPublicApiRoute =
+    (nextUrl.pathname.startsWith("/api/courses") && req.method === "GET") ||
+    (nextUrl.pathname.startsWith("/api/testimonials") && req.method === "GET");
 
   if (isApiAuthRoute) {
     return;
@@ -38,7 +47,7 @@ export default auth((req) => {
     return;
   }
 
-  if (!isLoggedIn && !isPublicRoute) {
+  if (!isLoggedIn && !isPublicRoute && !isPublicApiRoute) {
     let callbackUrl = nextUrl.pathname;
     if (nextUrl.search) {
       callbackUrl += nextUrl.search;

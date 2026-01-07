@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -26,6 +27,26 @@ export default function Home() {
 
     document.addEventListener("click", handleScroll);
     return () => document.removeEventListener("click", handleScroll);
+  }, []);
+
+  const [testimonials, setTestimonials] = useState<any[]>([]);
+  const [isLoadingTestimonials, setIsLoadingTestimonials] = useState(true);
+
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const { data } = await axios.get("/api/testimonials?public=true");
+        if (data.success) {
+          setTestimonials(data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch testimonials", error);
+      } finally {
+        setIsLoadingTestimonials(false);
+      }
+    };
+
+    fetchTestimonials();
   }, []);
 
   return (
@@ -163,7 +184,7 @@ export default function Home() {
                   50+
                 </p>
                 <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 uppercase tracking-wider font-sans">
-                  Native Instructors
+                  Qualified Instructors
                 </p>
               </div>
               <div className="text-center">
@@ -406,113 +427,103 @@ export default function Home() {
         </section>
 
         {/* Testimonials */}
-        <section
-          id="testimonials"
-          className="py-20 lg:py-28 bg-white dark:bg-slate-900"
-        >
-          <div className="max-w-7xl mx-auto px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-6">
-                Student Success Stories
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="bg-slate-50 dark:bg-slate-800 p-8 border border-slate-200 dark:border-slate-700">
-                <div className="mb-6">
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <span
-                        key={i}
-                        className="material-symbols-outlined text-yellow-500 text-xl"
-                      >
-                        star
-                      </span>
-                    ))}
-                  </div>
-                  <p className="text-slate-700 dark:text-slate-300 italic leading-relaxed mb-4">
-                    "The structured approach and native instructors helped me
-                    achieve B2 certification in just 18 months. The quality
-                    rivals traditional institutions."
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
-                  <div>
-                    <p className="font-semibold text-slate-900 dark:text-white font-sans">
-                      Sarah Chen
-                    </p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                      Software Engineer, Singapore
-                    </p>
-                  </div>
-                </div>
+        {(!isLoadingTestimonials && testimonials.length > 0) || isLoadingTestimonials ? (
+          <section
+            id="testimonials"
+            className="py-20 lg:py-32 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800"
+          >
+            <div className="max-w-7xl mx-auto px-6 lg:px-8">
+              <div className="text-center mb-16 md:mb-24">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                >
+                  <h2 className="text-3xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-6">
+                    Student Success Stories
+                  </h2>
+                  <div className="w-20 h-1.5 bg-primary mx-auto rounded-full"></div>
+                </motion.div>
               </div>
 
-              <div className="bg-slate-50 dark:bg-slate-800 p-8 border border-slate-200 dark:border-slate-700">
-                <div className="mb-6">
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <span
-                        key={i}
-                        className="material-symbols-outlined text-yellow-500 text-xl"
-                      >
-                        star
-                      </span>
-                    ))}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+                {isLoadingTestimonials ? (
+                  <div className="col-span-3 text-center py-24 text-slate-500">
+                    <div className="flex flex-col items-center gap-6">
+                      <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                      <p className="text-lg font-medium animate-pulse">
+                        Fetching our latest success stories...
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-slate-700 dark:text-slate-300 italic leading-relaxed mb-4">
-                    "As a working professional, the flexible schedule and
-                    comprehensive materials made learning German feasible. I'm
-                    now working in Berlin."
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
-                  <div>
-                    <p className="font-semibold text-slate-900 dark:text-white font-sans">
-                      Michael Odhiambo
-                    </p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                      Business Analyst, Kenya
-                    </p>
-                  </div>
-                </div>
-              </div>
+                ) : (
+                  testimonials.map((testimonial, i) => (
+                    <motion.div
+                      key={testimonial.id || i}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.1 }}
+                      className="group bg-slate-50 dark:bg-slate-800/50 p-8 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 relative"
+                    >
+                      <div className="absolute top-6 right-8 text-6xl text-primary/10 font-serif leading-none">
+                        &rdquo;
+                      </div>
+                      
+                      <div className="mb-8">
+                        <div className="flex gap-1 mb-6">
+                          {[...Array(5)].map((_, i) => (
+                            <span
+                              key={i}
+                              className={`material-symbols-outlined text-xl ${
+                                i < testimonial.rating
+                                  ? "text-yellow-400"
+                                  : "text-slate-300 dark:text-slate-600"
+                              }`}
+                              style={{ fontVariationSettings: "'FILL' 1" }}
+                            >
+                              star
+                            </span>
+                          ))}
+                        </div>
+                        <p className="text-slate-700 dark:text-slate-300 italic text-lg leading-relaxed relative z-10">
+                          {testimonial.content}
+                        </p>
+                      </div>
 
-              <div className="bg-slate-50 dark:bg-slate-800 p-8 border border-slate-200 dark:border-slate-700">
-                <div className="mb-6">
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <span
-                        key={i}
-                        className="material-symbols-outlined text-yellow-500 text-xl"
-                      >
-                        star
-                      </span>
-                    ))}
-                  </div>
-                  <p className="text-slate-700 dark:text-slate-300 italic leading-relaxed mb-4">
-                    "The personalized feedback and small class sizes created an
-                    intimate learning environment. Highly recommend for serious
-                    learners."
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
-                  <div>
-                    <p className="font-semibold text-slate-900 dark:text-white font-sans">
-                      Priya Sharma
-                    </p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                      Medical Student, India
-                    </p>
-                  </div>
-                </div>
+                      <div className="flex items-center gap-4 mt-auto pt-6 border-t border-slate-200/50 dark:border-slate-700/50">
+                        <div className="w-14 h-14 bg-white dark:bg-slate-700 rounded-full overflow-hidden border-2 border-primary/20 shadow-sm relative shrink-0">
+                          {testimonial.student?.avatarUrl ? (
+                            <img
+                              src={testimonial.student.avatarUrl}
+                              alt="Student"
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-primary font-bold text-xl uppercase">
+                              {testimonial.student?.firstName?.[0]}
+                              {testimonial.student?.lastName?.[0]}
+                            </div>
+                          )}
+                        </div>
+                        <div className="overflow-hidden">
+                          <p className="font-bold text-slate-900 dark:text-white font-sans text-base truncate">
+                            {testimonial.student?.firstName}{" "}
+                            {testimonial.student?.lastName}
+                          </p>
+                          <p className="text-sm text-primary font-medium truncate">
+                            {testimonial.student?.studentProfile?.address ||
+                              "Verified Graduate"}
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))
+                )}
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        ) : null}
 
         {/* Call to Action */}
         <section className="py-20 lg:py-28 bg-primary text-white">

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { randomBytes } from "crypto";
+import { sendEmailNotification } from "@/lib/notifications/channels/email";
 
 export async function POST(req: Request) {
   try {
@@ -35,8 +36,31 @@ export async function POST(req: Request) {
       },
     });
 
-    // TODO: Send email
-    console.log(`[ForgotPassword] Reset link for ${email}: /reset-password?token=${token}`);
+    // Send email
+    const resetLink = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}`;
+    
+    await sendEmailNotification({
+      email: {
+        to: email,
+        subject: "Reset Your Password - German Virtual School",
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1>Reset Your Password</h1>
+            <p>You requested a password reset for your German Virtual School account.</p>
+            <p>Click the link below to set a new password. This link is valid for 1 hour.</p>
+            <a href="${resetLink}" style="display: inline-block; background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 16px 0;">Reset Password</a>
+            <p style="color: #666; font-size: 14px;">If you didn't request this, you can safely ignore this email.</p>
+          </div>
+        `,
+        text: `Reset your password by visiting this link: ${resetLink}`,
+      },
+      title: "Reset Your Password",
+      message: `Reset link: ${resetLink}`,
+      type: "INFO",
+      userId: user.id
+    });
+
+    console.log(`[ForgotPassword] Reset link sent to ${email}`);
 
     return NextResponse.json({ success: true });
   } catch (error) {

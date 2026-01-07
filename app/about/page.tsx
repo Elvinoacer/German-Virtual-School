@@ -81,7 +81,7 @@ export default function AboutPage() {
                 {/* Micro-stat overlay */}
                 <div className="absolute -bottom-6 -left-6 bg-primary p-8 text-white shadow-xl hidden md:block">
                   <p className="text-4xl font-bold mb-1 font-sans">100%</p>
-                  <p className="text-sm uppercase tracking-widest font-sans opacity-80">Native Instructors</p>
+                  <p className="text-sm uppercase tracking-widest font-sans opacity-80">Qualified Instructors</p>
                 </div>
               </div>
             </div>
