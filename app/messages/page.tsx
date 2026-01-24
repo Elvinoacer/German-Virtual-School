@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { initSocket, disconnectSocket, SOCKET_EVENTS } from "@/lib/socket";
@@ -36,7 +36,7 @@ interface Conversation {
   unreadCount: number;
 }
 
-export default function MessagesPage() {
+function MessagesContent() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -68,7 +68,7 @@ export default function MessagesPage() {
       setInitialUserIdHandled(true);
     }
   }, [searchParams, isLoadingConversations, initialUserIdHandled]);
-
+  
   // Initial Fetch & Socket Setup
   useEffect(() => {
     if (!user?.id) return;
@@ -113,6 +113,8 @@ export default function MessagesPage() {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+  
+// ... rest of component methods ...
 
   const fetchContacts = async (search = '', page = 1, append = false) => {
       if (append) {
@@ -788,5 +790,13 @@ export default function MessagesPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<div className="flex h-screen items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div></div>}>
+      <MessagesContent />
+    </Suspense>
   );
 }
