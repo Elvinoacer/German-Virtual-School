@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import axiosInstance from "@/lib/axios";
 import { format } from "date-fns";
+import { toast } from "sonner";
+import VerifyStudentModal from "@/components/admin/students/VerifyStudentModal";
 
 interface Student {
   id: string;
@@ -39,15 +41,16 @@ interface AdminStudentsData {
   totalPages: number;
 }
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-
 export default function AdminStudentsPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
   const queryClient = useQueryClient();
+
+  // Modal State
+  const [verifyModalOpen, setVerifyModalOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   // Debounce search input
   useEffect(() => {
@@ -81,11 +84,24 @@ export default function AdminStudentsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-students'] });
       toast.success("Student verified successfully");
+      setVerifyModalOpen(false);
+      setSelectedStudent(null);
     },
     onError: () => {
       toast.error("Failed to verify student");
     }
   });
+
+  const handleVerifyClick = (student: Student) => {
+    setSelectedStudent(student);
+    setVerifyModalOpen(true);
+  };
+
+  const confirmVerify = () => {
+    if (selectedStudent) {
+      verifyMutation.mutate(selectedStudent.id);
+    }
+  };
 
   if (isError) {
     return (
@@ -111,6 +127,14 @@ export default function AdminStudentsPage() {
 
   return (
     <div className={`p-4 md:p-6 lg:p-8 flex flex-col gap-6 md:gap-8 max-w-[1600px] mx-auto w-full transition-opacity duration-300 ${(isLoading && !data) ? 'opacity-50' : 'opacity-100'}`}>
+      <VerifyStudentModal
+        isOpen={verifyModalOpen}
+        onClose={() => setVerifyModalOpen(false)}
+        onConfirm={confirmVerify}
+        student={selectedStudent}
+        isProcessing={verifyMutation.isPending}
+      />
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -237,16 +261,11 @@ export default function AdminStudentsPage() {
                     <div className="flex items-center justify-end gap-3">
                       {!student.isVerified && (
                         <button
-                          onClick={() => {
-                            if (confirm(`Verify ${student.firstName} ${student.lastName}?`)) {
-                              verifyMutation.mutate(student.id);
-                            }
-                          }}
-                          disabled={verifyMutation.isPending}
+                          onClick={() => handleVerifyClick(student)}
                           className="px-3 py-1 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-lg text-xs font-bold hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors flex items-center gap-1"
                         >
                           <span className="material-symbols-outlined text-xs">check_circle</span>
-                          {verifyMutation.isPending && verifyMutation.variables === student.id ? 'Verifying...' : 'Verify'}
+                          Verify
                         </button>
                       )}
                       <Link
