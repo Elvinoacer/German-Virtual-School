@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { initSocket, disconnectSocket, SOCKET_EVENTS } from "@/lib/socket";
 
@@ -37,6 +38,7 @@ interface Conversation {
 
 export default function MessagesPage() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -52,9 +54,20 @@ export default function MessagesPage() {
   const [isLoadingContacts, setIsLoadingContacts] = useState(false);
   const [isLoadingMoreStudents, setIsLoadingMoreStudents] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'all' | 'unread'>('all');
+  const [initialUserIdHandled, setInitialUserIdHandled] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<any>(null);
+
+  // Handle URL query param for direct navigation from notifications
+  useEffect(() => {
+    const userIdFromUrl = searchParams.get('userId');
+    if (userIdFromUrl && !initialUserIdHandled && !isLoadingConversations) {
+      setSelectedUserId(userIdFromUrl);
+      fetchMessages(userIdFromUrl);
+      setInitialUserIdHandled(true);
+    }
+  }, [searchParams, isLoadingConversations, initialUserIdHandled]);
 
   // Initial Fetch & Socket Setup
   useEffect(() => {

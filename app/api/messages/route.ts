@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
                     email: { to: receiver.email },
                     push: { tokens: receiver.fcmTokens },
                     metadata: {
-                        link: `/messages/${userId}`,
+                        link: `/messages?userId=${userId}`,
                         messageId: message.id
                     }
                 });
