@@ -201,6 +201,7 @@ model User {
   forumThreads      ForumThread[]
   forumPosts        ForumPost[]
   notifications     Notification[]
+  broadcasts        Broadcast[]
   sentMessages      Message[]       @relation("SentMessages")
   receivedMessages  Message[]       @relation("ReceivedMessages")
   
@@ -594,8 +595,22 @@ model Notification {
   isRead    Boolean          @default(false)
   createdAt DateTime         @default(now())
 
-  // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Broadcast {
+  id             String   @id @default(uuid())
+  title          String
+  message        String
+  target         String   // ALL_USERS, ALL_STUDENTS, etc.
+  courseId       String?
+  type           String   // INFO, WARNING, etc.
+  senderId       String
+  recipientCount Int
+  createdAt      DateTime @default(now())
+
+  // Relations
+  sender User @relation(fields: [senderId], references: [id])
 }
 
 model Message {

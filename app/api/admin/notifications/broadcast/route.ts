@@ -51,6 +51,19 @@ export async function POST(request: NextRequest) {
 
     console.log(`[Broadcast] Sending to ${users.length} users`);
 
+    // Save Broadcast History
+    await prisma.broadcast.create({
+      data: {
+        title,
+        message,
+        target,
+        courseId,
+        type: type || "INFO",
+        senderId: payload.userId,
+        recipientCount: users.length
+      }
+    });
+
     // We process in batches/background in a real queue, but here we parallelize
     // For very large numbers, this might time out Vercel functions (10s limit on hobby).
     // Ideally, use a queue. For now, we assume manageable user base.
