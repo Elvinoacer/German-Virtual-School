@@ -46,8 +46,18 @@ export default function NotificationsPage() {
     if (!notification.isRead) {
       markAsRead.mutate(notification.id);
     }
+    
     if (notification.data?.link) {
-      router.push(notification.data.link);
+      let link = notification.data.link;
+      
+      // Fix legacy message links: /messages/123 -> /messages?userId=123
+      // Check if it matches /messages/ followed by something that isn't a query param
+      const messageMatch = link.match(/^\/messages\/([^?]+)$/);
+      if (messageMatch) {
+        link = `/messages?userId=${messageMatch[1]}`;
+      }
+      
+      router.push(link);
     }
   };
 
