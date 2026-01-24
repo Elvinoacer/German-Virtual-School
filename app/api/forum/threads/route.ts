@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { authenticate } from '@/lib/auth-middleware';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errors } from '@/lib/api-response';
-import { ThreadAudience, NotificationType } from '@/generated/prisma/enums';
+import { ThreadAudience, NotificationType } from '@/generated/prisma/client';
 import { notify } from '@/lib/notifications/orchestrator';
 
 export async function POST(request: NextRequest) {
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
                  notify({
                     userId: enrollment.studentId,
                     title: `New Forum Post: ${title}`,
-                    message: `A new discussion has proved in your course.`,
+                    message: `A new discussion has been posted in your course.`,
                     type: NotificationType.FORUM_REPLY,
                     email: { to: enrollment.student.email },
                     push: { tokens: enrollment.student.fcmTokens },

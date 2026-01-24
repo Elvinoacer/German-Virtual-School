@@ -1,16 +1,55 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
-import { requestNotificationPermission } from "@/lib/firebase-client";
+import { useEffect, useState, useRef } from "react";
+import { useSession } from "next-auth/react";
+import { requestNotificationPermission, setupForegroundHandler } from "@/lib/firebase-client";
 import axiosInstance from "@/lib/axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function NotificationRegistrar() {
   const [showModal, setShowModal] = useState(false);
   const [permissionStatus, setPermissionStatus] = useState<NotificationPermission>("default");
   const [isRegistering, setIsRegistering] = useState(false);
+  const foregroundHandlerRef = useRef<(() => void) | null>(null);
+
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
+  // Setup foreground message handler
+  useEffect(() => {
+    if (typeof window === "undefined" || !session?.user) return;
+    
+    // Only setup if permission is granted
+    if (Notification.permission !== "granted") return;
+    
+    // Setup foreground handler for in-app notifications
+    const cleanup = setupForegroundHandler((payload) => {
+      // Show toast notification
+      toast(payload.title, {
+        description: payload.body,
+        action: payload.data?.url ? {
+          label: "View",
+          onClick: () => {
+            window.location.href = payload.data!.url;
+          },
+        } : undefined,
+      });
+      
+      // Invalidate notifications query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    });
+    
+    foregroundHandlerRef.current = cleanup;
+    
+    return () => {
+      if (foregroundHandlerRef.current) {
+        foregroundHandlerRef.current();
+      }
+    };
+  }, [session, queryClient]);
 
   useEffect(() => {
     // Check permission on mount
@@ -20,14 +59,18 @@ export default function NotificationRegistrar() {
 
       const hasDismissed = sessionStorage.getItem("notification_modal_dismissed");
 
-      if (status === "granted") {
+      if (status === "granted" && session?.user) {
         registerToken();
       } else if (!hasDismissed && (status === "default" || status === "denied")) {
-        // Delay slightly for smooth entrance after layout load
-        setTimeout(() => setShowModal(true), 1500);
+        // Only prompt if we are logged in? Or prompt anyway but only register when logged in?
+        // Usually we only want to prompt logged in users for push notifs in this app context.
+        if (session?.user) {
+           // Delay slightly for smooth entrance after layout load
+           setTimeout(() => setShowModal(true), 1500);
+        }
       }
     }
-  }, []);
+  }, [session]);
 
   const registerToken = async () => {
     try {

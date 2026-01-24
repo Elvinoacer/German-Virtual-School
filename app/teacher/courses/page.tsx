@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { CourseLevel, CourseStatus } from "@/generated/prisma/client";
+import { CourseLevel, CourseStatus } from '@/generated/prisma/client';
 import { useSession } from "next-auth/react";
 
 interface Course {

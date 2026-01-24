@@ -8,6 +8,7 @@ export function useCourses(params?: {
   limit?: number;
   search?: string;
   level?: string;
+  teacherId?: string;
 }) {
   return useQuery({
     queryKey: ['courses', params],
@@ -17,6 +18,7 @@ export function useCourses(params?: {
       if (params?.limit) searchParams.append('limit', params.limit.toString());
       if (params?.search) searchParams.append('search', params.search);
       if (params?.level) searchParams.append('level', params.level);
+      if (params?.teacherId) searchParams.append('teacherId', params.teacherId);
       
       const { data } = await axios.get(`/api/courses?${searchParams.toString()}`);
       return data.data;

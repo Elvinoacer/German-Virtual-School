@@ -173,7 +173,7 @@ export default function AdminTeachersPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <Link
-                      href={`/teacher/dashboard`}
+                      href={`/admin/teachers/${teacher.id}`}
                       className="inline-flex items-center gap-1 text-primary hover:underline text-sm font-medium"
                     >
                       View Details

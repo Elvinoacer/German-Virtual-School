@@ -22,85 +22,8 @@ export async function GET(request: NextRequest) {
     const todayStart = startOfDay(now);
     const todayEnd = endOfDay(now);
 
-    // Get teacher's course IDs first
-    const teacherCourses = await prisma.course.findMany({
-      where: { teacherId },
-      select: { id: true }
-    });
-    const courseIds = teacherCourses.map(c => c.id);
-
-    // Parallel fetch all data
-    const [
-      enrollmentsData,
-      activeCourses,
-      pendingSubmissions,
-      urgentSubmissions,
-      currentMonthInvoices,
-      lastMonthInvoices,
-      todaySchedule,
-      last7DaysAttendance,
-      courseDetails
-    ] = await Promise.all([
-      // Distinct students count
-      prisma.enrollment.groupBy({
-        by: ['studentId'],
-        where: {
-          courseId: { in: courseIds },
-          status: 'ACTIVE'
-        }
-      }),
-      // Active courses count
-      prisma.course.count({
-        where: {
-          teacherId,
-          status: 'PUBLISHED'
-        }
-      }),
-      // Pending submissions count
-      prisma.submission.count({
-        where: {
-          assignment: {
-            courseId: { in: courseIds }
-          },
-          status: 'SUBMITTED'
-        }
-      }),
-      // Urgent submissions (due soon or overdue)
-      prisma.submission.count({
-        where: {
-          assignment: {
-            courseId: { in: courseIds },
-            dueDate: { lte: new Date(now.getTime() + 48 * 60 * 60 * 1000) } // Due within 48 hours
-          },
-          status: 'SUBMITTED'
-        }
-      }),
-      // Current month revenue (teacher's courses)
-      prisma.invoice.findMany({
-        where: {
-          enrollment: {
-            courseId: { in: courseIds }
-          },
-          createdAt: {
-            gte: currentMonthStart,
-            lte: currentMonthEnd
-          }
-        },
-        select: { amount: true }
-      }),
-      // Last month revenue
-      prisma.invoice.findMany({
-        where: {
-          enrollment: {
-            courseId: { in: courseIds }
-          },
-          createdAt: {
-            gte: lastMonthStart,
-            lte: lastMonthEnd
-          }
-        },
-        select: { amount: true }
-      }),
+    // Group 1: Critical Activity & Schedule
+    const [todaySchedule, activeCoursesCount, pendingSubmissions, urgentSubmissions] = await Promise.all([
       // Today's Schedule
       prisma.classSession.findMany({
         where: {
@@ -117,7 +40,75 @@ export async function GET(request: NextRequest) {
         },
         orderBy: { startTime: 'asc' }
       }),
-      // Last 7 days attendance for engagement
+      // Active courses count
+      prisma.course.count({
+        where: {
+          teacherId,
+          status: 'PUBLISHED'
+        }
+      }),
+      // Pending submissions count
+      prisma.submission.count({
+        where: {
+          assignment: {
+            course: { teacherId }
+          },
+          status: 'SUBMITTED'
+        }
+      }),
+      // Urgent submissions
+      prisma.submission.count({
+        where: {
+          assignment: {
+            course: { teacherId },
+            dueDate: { lte: new Date(now.getTime() + 48 * 60 * 60 * 1000) }
+          },
+          status: 'SUBMITTED'
+        }
+      })
+    ]);
+
+    // Group 2: Financials & Student Stats (Filtered by Teacher Relation directly)
+    const [enrollmentsData, currentMonthInvoices, lastMonthInvoices] = await Promise.all([
+      // Distinct students count
+      prisma.enrollment.groupBy({
+        by: ['studentId'],
+        where: {
+          course: { teacherId },
+          status: 'ACTIVE'
+        }
+      }),
+      // Current month revenue
+      prisma.invoice.findMany({
+        where: {
+          enrollment: {
+            course: { teacherId }
+          },
+          createdAt: {
+            gte: currentMonthStart,
+            lte: currentMonthEnd
+          }
+        },
+        select: { amount: true }
+      }),
+      // Last month revenue
+      prisma.invoice.findMany({
+        where: {
+          enrollment: {
+            course: { teacherId }
+          },
+          createdAt: {
+            gte: lastMonthStart,
+            lte: lastMonthEnd
+          }
+        },
+        select: { amount: true }
+      })
+    ]);
+
+    // Group 3: Complex Data (Tables / Charts)
+    const [last7DaysAttendance, courseDetails, gradingQueue] = await Promise.all([
+      // Last 7 days attendance
       prisma.attendanceRecord.findMany({
         where: {
           classSession: {
@@ -150,6 +141,28 @@ export async function GET(request: NextRequest) {
           }
         },
         take: 5
+      }),
+      // Grading queue
+      prisma.assignment.findMany({
+        where: {
+          course: { teacherId },
+          submissions: {
+            some: {
+              status: 'SUBMITTED'
+            }
+          }
+        },
+        include: {
+          submissions: {
+            where: { status: 'SUBMITTED' },
+            select: { id: true }
+          },
+          course: {
+            select: { title: true }
+          }
+        },
+        take: 5,
+        orderBy: { dueDate: 'asc' }
       })
     ]);
 
@@ -161,29 +174,6 @@ export async function GET(request: NextRequest) {
     const revenueTrend = lastRevenue > 0
       ? Math.round(((currentRevenue - lastRevenue) / lastRevenue) * 100)
       : 0;
-
-    // Get grading queue (top assignments needing grading)
-    const gradingQueue = await prisma.assignment.findMany({
-      where: {
-        courseId: { in: courseIds },
-        submissions: {
-          some: {
-            status: 'SUBMITTED'
-          }
-        }
-      },
-      include: {
-        submissions: {
-          where: { status: 'SUBMITTED' },
-          select: { id: true }
-        },
-        course: {
-          select: { title: true }
-        }
-      },
-      take: 5,
-      orderBy: { dueDate: 'asc' }
-    });
 
     // Calculate engagement data (last 7 days)
     const engagementByDay = Array.from({ length: 7 }, (_, i) => {
@@ -233,7 +223,7 @@ export async function GET(request: NextRequest) {
       stats: {
         totalStudents,
         studentsTrend: 5, // Placeholder for now
-        activeCourses,
+        activeCourses: activeCoursesCount,
         toGradeCount: pendingSubmissions,
         urgentCount: urgentSubmissions,
         monthlyRevenue: currentRevenue,

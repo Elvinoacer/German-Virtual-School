@@ -59,35 +59,65 @@ export default function LiveSessionPage() {
 
   useEffect(() => {
     if (session && sessionData?.user && !jitsiApi && jitsiContainerRef.current) {
-      // Load Jitsi script
+      // Load Jitsi script from configured domain
+      const jitsiDomain = process.env.NEXT_PUBLIC_JITSI_DOMAIN || "meet.jit.si";
       const script = document.createElement("script");
-      script.src = "https://meet.jit.si/external_api.js";
+      script.src = `https://${jitsiDomain}/external_api.js`;
       script.async = true;
       script.onload = () => {
-        const domain = "meet.jit.si";
         const options = {
           roomName: `gvsv2-${session.course.title.replace(/\s+/g, '-')}-${session.id}`,
           width: "100%",
           height: "100%",
           parentNode: jitsiContainerRef.current,
+          lang: 'de', // German language for German Virtual School
           userInfo: {
             displayName: `${sessionData.user.firstName} ${sessionData.user.lastName}`,
             email: sessionData.user.email,
           },
           configOverwrite: {
+            // Privacy & Start Settings
             startWithAudioMuted: true,
+            startWithVideoMuted: true, // Respect student privacy
+            prejoinPageEnabled: false,
+            
+            // Performance Optimizations (per jitsi-integration.md)
+            channelLastN: 5, // Limit video feeds for better performance
+            enableLayerSuspension: true, // Save CPU/bandwidth on unused layers
+            resolution: 480, // Balanced quality/performance for classrooms
+            
+            // Classroom Control
             disableModeratorIndicator: false,
             enableEmailInStats: false,
-            prejoinPageEnabled: false,
+            p2p: {
+              enabled: false, // Disable P2P for better teacher control
+            },
+            
+            // Disable invite functions for controlled access
+            disableInviteFunctions: true,
           },
           interfaceConfigOverwrite: {
-            TILE_VIEW_MAX_COLUMNS: 8,
+            // White-label branding
+            APP_NAME: 'GVS Classroom',
+            SHOW_JITSI_WATERMARK: false,
+            SHOW_POWERED_BY: false,
+            DEFAULT_REMOTE_DISPLAY_NAME: 'Teilnehmer', // "Participant" in German
+            
+            // Tile view optimization
+            TILE_VIEW_MAX_COLUMNS: 5,
+            
+            // Toolbar customization - keep essential buttons for education
+            TOOLBAR_BUTTONS: [
+              'microphone', 'camera', 'desktop', 'fullscreen',
+              'fodeviceselection', 'hangup', 'chat', 'raisehand',
+              'videoquality', 'tileview', 'participants-pane',
+            ],
           },
         };
-        const api = new (window as any).JitsiMeetExternalAPI(domain, options);
+        const api = new (window as any).JitsiMeetExternalAPI(jitsiDomain, options);
         setJitsiApi(api);
 
-        // Add Event Listeners
+        // Event: Local user joins conference
         api.addEventListener('videoConferenceJoined', async () => {
           try {
             await axios.post(`/api/sessions/${sessionId}/check-in`);
@@ -96,6 +126,7 @@ export default function LiveSessionPage() {
           }
         });
 
+        // Event: Local user leaves conference
         api.addEventListener('videoConferenceLeft', async () => {
           try {
             await axios.post(`/api/sessions/${sessionId}/check-out`);
@@ -104,6 +135,16 @@ export default function LiveSessionPage() {
           }
         });
 
+        // Event: Session ready to close (backup for videoConferenceLeft)
+        api.addEventListener('readyToClose', async () => {
+          try {
+            await axios.post(`/api/sessions/${sessionId}/check-out`);
+          } catch (err) {
+            console.error('Failed to log check-out on readyToClose:', err);
+          }
+        });
+
+        // Event: Recording link available
         api.addEventListener('recordingLinkAvailable', async (event: any) => {
           try {
             await axios.patch(`/api/sessions/${sessionId}`, {
@@ -112,6 +153,23 @@ export default function LiveSessionPage() {
             toast.success("Meeting recording saved successfully!");
           } catch (err) {
             console.error('Failed to save recording link:', err);
+          }
+        });
+
+        // Event: Dominant speaker changed (engagement tracking)
+        api.addEventListener('dominantSpeakerChanged', async (event: any) => {
+          // Track engagement - useful for teacher evaluations
+          // This logs when the current user becomes the dominant speaker
+          if (event.id === sessionData.user.id) {
+            try {
+              await axios.post(`/api/sessions/${sessionId}/engagement`, {
+                type: 'DOMINANT_SPEAKER',
+                timestamp: new Date().toISOString(),
+              });
+            } catch (err) {
+              // Silent fail - engagement tracking is supplementary
+              console.debug('Engagement tracking:', err);
+            }
           }
         });
         

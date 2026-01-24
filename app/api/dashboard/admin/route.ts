@@ -112,6 +112,16 @@ export async function GET(request: NextRequest) {
       prisma.systemSettings.findFirst()
     ]);
 
+    // Measure DB latency
+    const start = performance.now();
+    await prisma.$executeRaw`SELECT 1`;
+    const latency = Math.round(performance.now() - start);
+
+    // Determine System Status
+    let systemStatus = 'operational';
+    if (latency > 500) systemStatus = 'degraded';
+    if (latency > 2000) systemStatus = 'maintenance';
+
     // Calculate Revenue
     const currentRevenue = currentMonthPayments.reduce(
       (sum, pay) => sum + Number(pay.amount),
@@ -182,7 +192,7 @@ export async function GET(request: NextRequest) {
         teachersTrend,
         monthlyRevenue: currentRevenue,
         revenueTrend,
-        systemStatus: 'operational'
+        systemStatus
       },
       userGrowth: formattedGrowth,
       financialHealth: {
@@ -191,7 +201,7 @@ export async function GET(request: NextRequest) {
         materials: materialsPct,
         pending: pendingPct
       },
-      activeSessions: formattedSessions
+      activeSessions: formattedSessions.map(s => ({ ...s, latency })) // Use live latency
     });
 
   } catch (error) {

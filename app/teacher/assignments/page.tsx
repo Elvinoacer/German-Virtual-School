@@ -44,8 +44,8 @@ export default function TeacherAssignmentsPage() {
   const [formSuccess, setFormSuccess] = useState("");
   const [resources, setResources] = useState<string[]>([]);
   const [resourceInput, setResourceInput] = useState("");
-  const [rubricCriteria, setRubricCriteria] = useState<string[]>([]); // Simple list for now
-  const [rubricInput, setRubricInput] = useState("");
+  const [rubricCriteria, setRubricCriteria] = useState<{ id: string; name: string; maxPoints: number }[]>([]);
+  const [rubricInput, setRubricInput] = useState({ name: "", points: 10 });
 
   // File upload state
   const [selectedFiles, setSelectedFiles] = useState<{ file: File; preview: string; type: 'image' | 'video' | 'doc' }[]>([]);
@@ -149,7 +149,7 @@ export default function TeacherAssignmentsPage() {
       setResources([]);
       setResourceInput("");
       setRubricCriteria([]);
-      setRubricInput("");
+      setRubricInput({ name: "", points: 10 });
       setSelectedFiles([]);
       setFormError("");
     },
@@ -454,38 +454,55 @@ export default function TeacherAssignmentsPage() {
                       )}
                     </div>
 
-                    {/* Rubric Criteria (Simple List) */}
+                    {/* Rubric Criteria (Point-based) */}
                     <div className="space-y-1.5">
                       <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        Grading Criteria (Rubric)
+                        Grading Criteria (Rubric Points)
                       </label>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <input
                           className="flex-1 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-primary focus:border-primary dark:text-white transition-colors duration-200"
-                          placeholder="e.g. Grammar accuracy (20pts)"
+                          placeholder="e.g. Grammar accuracy"
                           type="text"
-                          value={rubricInput}
-                          onChange={(e) => setRubricInput(e.target.value)}
+                          value={rubricInput.name}
+                          onChange={(e) => setRubricInput({...rubricInput, name: e.target.value})}
                         />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (rubricInput) {
-                              setRubricCriteria([...rubricCriteria, rubricInput]);
-                              setRubricInput("");
-                            }
-                          }}
-                          className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-sm font-medium"
-                        >
-                          Add
-                        </button>
+                        <div className="flex gap-2">
+                          <input
+                            className="w-24 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-primary focus:border-primary dark:text-white transition-colors duration-200"
+                            placeholder="Points"
+                            type="number"
+                            min="1"
+                            value={rubricInput.points}
+                            onChange={(e) => setRubricInput({...rubricInput, points: parseInt(e.target.value) || 0})}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (rubricInput.name && rubricInput.points > 0) {
+                                setRubricCriteria([...rubricCriteria, { 
+                                  id: crypto.randomUUID(), 
+                                  name: rubricInput.name, 
+                                  maxPoints: rubricInput.points 
+                                }]);
+                                setRubricInput({ name: "", points: 10 });
+                              }
+                            }}
+                            className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-sm font-medium shrink-0"
+                          >
+                            Add
+                          </button>
+                        </div>
                       </div>
                       {/* Rubric List */}
                       {rubricCriteria.length > 0 && (
                         <div className="flex flex-col gap-2 mt-2">
                           {rubricCriteria.map((c, idx) => (
-                            <div key={idx} className="flex items-center justify-between text-xs bg-slate-50 dark:bg-slate-800/50 p-2 rounded border border-slate-200 dark:border-slate-700">
-                              <span className="text-slate-700 dark:text-slate-300">{c}</span>
+                            <div key={c.id} className="flex items-center justify-between text-xs bg-slate-50 dark:bg-slate-800/50 p-2 rounded border border-slate-200 dark:border-slate-700">
+                              <div className="flex flex-col">
+                                <span className="font-bold text-slate-700 dark:text-slate-300">{c.name}</span>
+                                <span className="text-[10px] text-slate-400">{c.maxPoints} Points</span>
+                              </div>
                               <button
                                 type="button"
                                 onClick={() => setRubricCriteria(rubricCriteria.filter((_, i) => i !== idx))}

@@ -4,7 +4,7 @@ import { authenticate } from "@/lib/auth-middleware";
 import { prisma } from "@/lib/prisma";
 import { successResponse, errors } from "@/lib/api-response";
 import { notify } from "@/lib/notifications/orchestrator";
-import { UserRole } from "@/generated/prisma/enums";
+import { UserRole } from '@/generated/prisma/client';
 
 export async function POST(request: NextRequest) {
   try {

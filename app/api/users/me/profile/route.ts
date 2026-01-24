@@ -10,6 +10,15 @@ export async function PATCH(request: NextRequest) {
     const payload = await authenticate(request);
 
     const body = await request.json();
+    const { avatarUrl } = body;
+
+    // Update User model if avatar is provided (common for all roles)
+    if (avatarUrl) {
+      await prisma.user.update({
+        where: { id: payload.userId },
+        data: { image: avatarUrl, avatarUrl: avatarUrl }, // Sync both fields if schema has both
+      });
+    }
 
     // Update profile based on role
     if (payload.role === 'STUDENT') {
@@ -25,7 +34,7 @@ export async function PATCH(request: NextRequest) {
         },
       });
 
-      return successResponse(profile);
+      return successResponse({ ...profile, avatarUrl });
     } else if (payload.role === 'TEACHER') {
       const { bio, specialization, qualifications, hourlyRate } = body;
 
@@ -39,7 +48,7 @@ export async function PATCH(request: NextRequest) {
         },
       });
 
-      return successResponse(profile);
+      return successResponse({ ...profile, avatarUrl });
     }
 
     return errors.badRequest('Invalid user role');

@@ -7,7 +7,7 @@ import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
-import { CourseLevel } from "@/generated/prisma/client";
+import { CourseLevel } from '@/generated/prisma/client';
 import { MediaUpload } from "@/components/ui/MediaUpload";
 import { FileUpload } from "@/components/ui/FileUpload";
 

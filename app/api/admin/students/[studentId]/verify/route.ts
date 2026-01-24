@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { authenticate } from '@/lib/auth-middleware';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errors } from '@/lib/api-response';
+import { createAuditLog } from '@/lib/audit';
 
 export async function PATCH(
   request: NextRequest,
@@ -36,6 +37,15 @@ export async function PATCH(
       }
     });
 
+    // Audit log the verification
+    await createAuditLog({
+      userId: payload.userId,
+      action: "VERIFY",
+      entity: "Student",
+      entityId: studentId,
+      details: { studentName: `${updatedStudent.firstName} ${updatedStudent.lastName}` }
+    });
+
     return successResponse(updatedStudent, 'Student verified successfully');
 
   } catch (error) {
@@ -43,3 +53,4 @@ export async function PATCH(
     return errors.internal('Failed to verify student');
   }
 }
+

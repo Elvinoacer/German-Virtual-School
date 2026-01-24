@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 import NotificationIcon from "@/components/shared/NotificationIcon";
 import NotificationRegistrar from "@/components/shared/NotificationRegistrar";
@@ -15,7 +16,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isBottomCollapsed, setIsBottomCollapsed] = useState(false);
   const pathname = usePathname();
   const { count: unreadCount } = useUnreadCount();
-  const { user } = useAuth();
+  const { user, status } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "authenticated" && user && user.role !== "ADMIN") {
+      router.replace("/student/dashboard"); // Or a 403 page
+    }
+  }, [user, status, router]);
+
+  if (status === "loading" || (user && user.role !== "ADMIN")) {
+     return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0b0f1a]">
+           <div className="size-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+        </div>
+     )
+  }
 
   const toggleSidebar = () => {
     if (window.innerWidth >= 1024) {

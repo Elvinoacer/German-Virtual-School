@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { authenticate } from '@/lib/auth-middleware';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errors } from '@/lib/api-response';
+import { createAuditLog } from '@/lib/audit';
 
 const SETTINGS_ID = 'system-settings';
 
@@ -71,9 +72,19 @@ export async function PATCH(request: NextRequest) {
       }
     });
 
+    // Audit log the settings update
+    await createAuditLog({
+      userId: payload.userId,
+      action: "SETTINGS_UPDATE",
+      entity: "Settings",
+      entityId: SETTINGS_ID,
+      details: { updatedFields: Object.keys(body) }
+    });
+
     return successResponse(settings, 'Settings updated successfully');
   } catch (error) {
     console.error('Update settings error:', error);
     return errors.internal('Failed to update system settings');
   }
 }
+

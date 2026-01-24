@@ -3,7 +3,7 @@ import { NextRequest } from 'next/server';
 import { authenticate } from '@/lib/auth-middleware';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errors } from '@/lib/api-response';
-import { CourseLevel, CourseStatus, NotificationType, UserRole } from '@/generated/prisma/enums';
+import { CourseLevel, CourseStatus, NotificationType, UserRole } from '@/generated/prisma/client';
 import { notify } from '@/lib/notifications/orchestrator';
 
 function generateSlug(title: string): string {

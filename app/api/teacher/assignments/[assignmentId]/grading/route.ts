@@ -25,8 +25,9 @@ export async function GET(
             title: true,
             level: true,
           }
-        }
-      }
+        },
+        rubric: true,
+      } as any
     });
 
     if (!assignment) {
@@ -88,7 +89,8 @@ export async function GET(
         title: assignment.title,
         dueDate: assignment.dueDate,
         maxPoints: assignment.maxPoints,
-        course: assignment.course
+        course: (assignment as any).course,
+        rubric: assignment.rubric,
       },
       students: studentsData
     });
@@ -111,7 +113,7 @@ export async function POST(
 
     const { assignmentId } = await params;
     const payload = await request.json();
-    const { studentId, grade, feedback } = payload;
+    const { studentId, grade, feedback, rubricScores } = payload;
 
     if (!studentId || grade === undefined) {
       return errors.badRequest('Missing required fields');
@@ -127,6 +129,7 @@ export async function POST(
       update: {
         grade: parseFloat(grade),
         feedback: feedback,
+        rubricScores: rubricScores || null,
         status: 'GRADED',
         gradedAt: new Date(),
         gradedById: user.id,
@@ -136,6 +139,7 @@ export async function POST(
         studentId: studentId,
         grade: parseFloat(grade),
         feedback: feedback,
+        rubricScores: rubricScores || null,
         status: 'GRADED',
         gradedAt: new Date(),
         gradedById: user.id,

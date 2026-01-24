@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession, signOut } from "next-auth/react";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { upload } from "@vercel/blob/client";
+import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface UserProfile {
@@ -28,6 +30,9 @@ interface UserProfile {
 export default function UserProfilePage() {
   const { data: sessionData } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const queryClient = useQueryClient();
   
   const { data: user, isLoading } = useQuery<UserProfile>({
     queryKey: ["user-profile"],
@@ -38,6 +43,46 @@ export default function UserProfilePage() {
       return json.data;
     },
   });
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || event.target.files.length === 0) {
+      return;
+    }
+
+    const file = event.target.files[0];
+    setIsUploading(true);
+    const toastId = toast.loading("Uploading avatar...");
+
+    try {
+      const newBlob = await upload(file.name, file, {
+        access: 'public',
+        handleUploadUrl: '/api/upload',
+      });
+
+      // Update profile with new avatar URL
+      const updateRes = await fetch("/api/users/me/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ avatarUrl: newBlob.url }),
+      });
+
+      if (!updateRes.ok) throw new Error("Failed to update profile");
+
+      await queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+      toast.success("Avatar updated successfully", { id: toastId });
+    } catch (error) {
+      console.error("Upload failed:", error);
+      toast.error("Failed to upload avatar", { id: toastId });
+    } finally {
+      setIsUploading(false);
+      // Reset input
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   if (isLoading) {
     return (
@@ -240,8 +285,23 @@ export default function UserProfilePage() {
                         backgroundImage: `url('${user.image || "https://ui-avatars.com/api/?name=" + user.firstName + "+" + user.lastName}')`,
                       }}
                     ></div>
-                    <button className="absolute -bottom-2 -right-2 bg-primary text-white size-8 md:size-10 rounded-xl shadow-lg hover:bg-indigo-600 transition-all flex items-center justify-center z-20 group-hover/avatar:translate-y-[-2px]">
-                      <span className="material-symbols-outlined text-lg md:text-xl">add_a_photo</span>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      accept="image/png, image/jpeg, image/gif"
+                      className="hidden"
+                    />
+                    <button 
+                      onClick={handleAvatarClick}
+                      disabled={isUploading}
+                      className="absolute -bottom-2 -right-2 bg-primary text-white size-8 md:size-10 rounded-xl shadow-lg hover:bg-indigo-600 transition-all flex items-center justify-center z-20 group-hover/avatar:translate-y-[-2px] disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                      {isUploading ? (
+                        <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      ) : (
+                        <span className="material-symbols-outlined text-lg md:text-xl">add_a_photo</span>
+                      )}
                     </button>
                   </div>
 

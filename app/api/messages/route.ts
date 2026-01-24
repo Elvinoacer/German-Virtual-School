@@ -3,7 +3,7 @@ import { authenticate } from '@/lib/auth-middleware';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errors } from '@/lib/api-response';
 import { notify } from '@/lib/notifications/orchestrator';
-import { NotificationType } from '@/generated/prisma/enums';
+import { NotificationType } from '@/generated/prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -78,6 +78,20 @@ export async function POST(request: NextRequest) {
 
         if (!receiverId || !content) {
             return errors.validation("Receiver and content are required");
+        }
+
+        // Validate that both sender and receiver exist in the database
+        const [sender, receiver] = await Promise.all([
+            prisma.user.findUnique({ where: { id: userId }, select: { id: true } }),
+            prisma.user.findUnique({ where: { id: receiverId }, select: { id: true } })
+        ]);
+
+        if (!sender) {
+            return errors.unauthorized("Your session is invalid. Please log out and log back in.");
+        }
+
+        if (!receiver) {
+            return errors.notFound("Recipient not found");
         }
 
         const message = await prisma.message.create({

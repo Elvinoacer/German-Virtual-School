@@ -110,6 +110,14 @@ io.on('connection', (socket) => {
     // Ack to sender (optional, if they are listening for confirmation)
     socket.emit('message:sent', { id });
   });
+  
+  socket.on('message:read', (data) => {
+    const { messageId, senderId } = data;
+    console.log(`👁️ Message ${messageId} read by ${userId}`);
+    
+    // Relay 'read' status back to the original sender
+    io.to(`user:${senderId}`).emit('message:read_relay', { messageId, readerId: userId });
+  });
 
   socket.on('typing:start', ({ receiverId }) => {
     io.to(`user:${receiverId}`).emit('user:typing', { userId, isTyping: true });

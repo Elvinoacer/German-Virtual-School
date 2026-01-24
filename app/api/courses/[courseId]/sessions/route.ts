@@ -3,7 +3,7 @@ import { authenticate, isTeacherOfCourse } from '@/lib/auth-middleware';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errors } from '@/lib/api-response';
 import { notify } from '@/lib/notifications/orchestrator';
-import { NotificationType } from '@/generated/prisma/enums';
+import { NotificationType } from '@/generated/prisma/client';
 
 export async function POST(
   request: NextRequest,

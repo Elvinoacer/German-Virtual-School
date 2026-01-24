@@ -49,19 +49,37 @@ export async function POST(
       return errors.conflict('Already enrolled in this course');
     }
 
-    // Fetch Billing context
-    const [currentTerm, billingSettings] = await Promise.all([
+    const body = await request.json();
+    const { feePlanId } = body;
+
+    // Fetch Billing context & FeePlan
+    const [currentTerm, billingSettings, chosenPlan] = await Promise.all([
       prisma.academicTerm.findFirst({ where: { isCurrent: true } }),
-      prisma.globalBillingSettings.findFirst()
+      prisma.globalBillingSettings.findFirst(),
+      feePlanId ? prisma.feePlan.findUnique({ where: { id: feePlanId } }) : null
     ]);
 
     // Transaction to ensure atomicity of enrollment and invoicing
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Create enrollment
+      // 1. Create enrollment with billing tracking
+      // Calculate next billing date if plan is recurring
+      let nextBillingDate = null;
+      if (chosenPlan) {
+          const now = new Date();
+          if (chosenPlan.billingCycle === 'MONTHLY') {
+              nextBillingDate = new Date(now.setMonth(now.getMonth() + 1));
+          } else if (chosenPlan.billingCycle === 'QUARTERLY') {
+              nextBillingDate = new Date(now.setMonth(now.getMonth() + 3));
+          }
+      }
+
       const enrollment = await tx.enrollment.create({
         data: {
           studentId,
           courseId,
+          feePlanId: feePlanId || null,
+          billingCycle: chosenPlan?.billingCycle || 'ONE_TIME',
+          nextBillingDate: nextBillingDate
         },
         include: {
           course: {
@@ -76,25 +94,16 @@ export async function POST(
 
       // 2. Check for Semester Registration & Fee
       if (currentTerm && billingSettings && Number(billingSettings.defaultFee) > 0) {
+        // ... (existing term registration logic remains same)
         const existingRegistration = await tx.termRegistration.findUnique({
-          where: {
-            studentId_termId: {
-              studentId,
-              termId: currentTerm.id
-            }
-          }
+          where: { studentId_termId: { studentId, termId: currentTerm.id } }
         });
 
         if (!existingRegistration) {
-          // Create registration record
           await tx.termRegistration.create({
-            data: {
-              studentId,
-              termId: currentTerm.id
-            }
+            data: { studentId, termId: currentTerm.id }
           });
 
-          // Create Semester Fee invoice
           invoicesToCreate.push({
             studentId,
             termId: currentTerm.id,
@@ -106,14 +115,16 @@ export async function POST(
         }
       }
 
-      // 3. Check for Course Fee
-      if (Number(enrollment.course.price) > 0) {
+      // 3. Create initial Course Fee invoice
+      const invoiceAmount = chosenPlan ? chosenPlan.amount : enrollment.course.price;
+      
+      if (Number(invoiceAmount) > 0) {
         invoicesToCreate.push({
           studentId,
           enrollmentId: enrollment.id,
           termId: currentTerm?.id,
-          amount: enrollment.course.price,
-          description: `Course Fee: ${enrollment.course.title}`,
+          amount: invoiceAmount,
+          description: `Course Fee: ${enrollment.course.title}${chosenPlan ? ` (${chosenPlan.billingCycle} Plan)` : ''}`,
           dueDate: dueDate,
           status: 'PENDING'
         });
@@ -122,7 +133,6 @@ export async function POST(
       // 4. Create Invoices
       if (invoicesToCreate.length > 0) {
         for (const invData of invoicesToCreate) {
-          // Use any for data to bypass strict InvoiceCreateInput if it insists on relations
           await (tx.invoice as any).create({ data: invData });
         }
       }

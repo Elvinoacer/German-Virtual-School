@@ -19,6 +19,9 @@ interface GradingData {
       title: string;
       level: string;
     };
+    rubric?: {
+      criteria: { id: string; name: string; maxPoints: number }[];
+    } | null;
   };
   students: {
     student: {
@@ -36,6 +39,7 @@ interface GradingData {
       feedback: string | null;
       content: string | null;
       attachmentUrls: string[];
+      rubricScores: Record<string, number> | null;
     } | null;
   }[];
 }
@@ -50,6 +54,7 @@ export default function AssignmentGradingPage() {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [grade, setGrade] = useState<number | string>("");
   const [feedback, setFeedback] = useState("");
+  const [rubricScores, setRubricScores] = useState<Record<string, number>>({});
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const { data, isLoading, isError } = useQuery<GradingData>({
@@ -75,16 +80,18 @@ export default function AssignmentGradingPage() {
       if (studentData?.submission) {
         setGrade(studentData.submission.grade ?? "");
         setFeedback(studentData.submission.feedback ?? "");
+        setRubricScores((studentData.submission.rubricScores as Record<string, number>) || {});
       } else {
         setGrade("");
         setFeedback("");
+        setRubricScores({});
       }
       setSubmitStatus('idle');
     }
   }, [selectedStudentId, data]);
 
   const submitGradeMutation = useMutation({
-    mutationFn: async (payload: { studentId: string, grade: number, feedback: string }) => {
+    mutationFn: async (payload: { studentId: string, grade: number, feedback: string, rubricScores?: Record<string, number> }) => {
       const response = await axiosInstance.post(`/api/teacher/assignments/${assignmentId}/grading`, payload);
       return response.data;
     },
@@ -102,8 +109,18 @@ export default function AssignmentGradingPage() {
     submitGradeMutation.mutate({
       studentId: selectedStudentId,
       grade: Number(grade),
-      feedback
+      feedback,
+      rubricScores
     });
+  };
+
+  const handleRubricScoreChange = (id: string, score: number) => {
+    const newScores = { ...rubricScores, [id]: score };
+    setRubricScores(newScores);
+    
+    // Auto-calculate total
+    const total = Object.values(newScores).reduce((sum, val) => sum + val, 0);
+    setGrade(total);
   };
 
   const handleStudentSelect = (id: string) => {
@@ -410,10 +427,51 @@ export default function AssignmentGradingPage() {
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-8 bg-surface-light dark:bg-surface-dark">
             {/* Feedback Section */}
-            <div className="space-y-3">
-              <h4 className="font-semibold text-sm text-slate-900 dark:text-white">
-                Feedback
-              </h4>
+            <div className="space-y-6">
+              {assignment.rubric?.criteria && assignment.rubric.criteria.length > 0 && (
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-xs text-slate-400 uppercase tracking-widest">
+                    Interactive Rubric
+                  </h4>
+                  <div className="flex flex-col gap-4">
+                    {assignment.rubric.criteria.map((c) => (
+                      <div key={c.id} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors">
+                        <div className="flex justify-between items-start mb-3">
+                          <span className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
+                            {c.name}
+                          </span>
+                          <span className="text-[10px] font-black text-slate-400 uppercase">
+                            Max: {c.maxPoints}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <input 
+                            type="range"
+                            min="0"
+                            max={c.maxPoints}
+                            value={rubricScores[c.id] || 0}
+                            onChange={(e) => handleRubricScoreChange(c.id, parseInt(e.target.value))}
+                            className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary"
+                          />
+                          <input 
+                            type="number"
+                            min="0"
+                            max={c.maxPoints}
+                            value={rubricScores[c.id] || 0}
+                            onChange={(e) => handleRubricScoreChange(c.id, Math.min(c.maxPoints, parseInt(e.target.value) || 0))}
+                            className="w-16 h-8 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-bold text-primary"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <h4 className="font-semibold text-sm text-slate-900 dark:text-white">
+                  Feedback
+                </h4>
               <div className="relative">
                 <textarea
                   className="w-full h-40 p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-background-light dark:bg-background-dark focus:ring-2 focus:ring-primary focus:border-transparent text-sm resize-none text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 transition-colors duration-200"
@@ -436,6 +494,7 @@ export default function AssignmentGradingPage() {
                 />
               </div>
             </div>
+          </div>
             {/* Helper text for mobile */}
             <div className="lg:hidden text-xs text-slate-400 italic">
                Tip: Switch back to 'Submission' tab to reference student work while grading.

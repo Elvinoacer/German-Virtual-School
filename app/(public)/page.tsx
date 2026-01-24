@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { usePublicStats } from "@/hooks/usePublicStats";
 
 export default function Home() {
   useEffect(() => {
@@ -31,6 +32,8 @@ export default function Home() {
 
   const [testimonials, setTestimonials] = useState<any[]>([]);
   const [isLoadingTestimonials, setIsLoadingTestimonials] = useState(true);
+  
+  const { stats, isLoading: isLoadingStats } = usePublicStats();
 
   useEffect(() => {
     const fetchTestimonials = async () => {
@@ -52,63 +55,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900 font-serif text-slate-900 dark:text-slate-100">
       {/* Classic Navigation */}
-      <header className="border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-14 md:h-16 lg:h-20">
-            <Link href="/" className="flex items-center gap-2 md:gap-3">
-              <img src="/gvs-logo.png" alt="GVS Logo" className="h-8 md:h-10 w-auto dark:brightness-0 dark:invert" />
-              <div className="flex flex-col">
-                <h1 className="text-sm md:text-xl font-bold tracking-tight text-slate-900 dark:text-white font-sans">
-                  German Virtual School
-                </h1>
-                <p className="hidden sm:block text-[10px] text-slate-500 dark:text-slate-400 font-sans uppercase tracking-widest">
-                  Excellence in German Education
-                </p>
-              </div>
-            </Link>
-            <nav className="hidden md:flex items-center gap-6 lg:gap-8 font-sans">
-              <a
-                href="#about"
-                className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-primary transition-colors"
-              >
-                About
-              </a>
-              <a
-                href="#curriculum"
-                className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-primary transition-colors"
-              >
-                Curriculum
-              </a>
-              <a
-                href="#faculty"
-                className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-primary transition-colors"
-              >
-                Faculty
-              </a>
-              <a
-                href="#testimonials"
-                className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-primary transition-colors"
-              >
-                Testimonials
-              </a>
-            </nav>
-            <div className="flex items-center gap-2 md:gap-4">
-              <Link
-                href="/login"
-                className="hidden sm:block text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-primary transition-colors font-sans"
-              >
-                Student Portal
-              </Link>
-              <Link
-                href="/register"
-                className="px-3 py-1.5 md:px-4 lg:px-6 md:py-2 lg:py-2.5 bg-primary text-white text-xs md:text-sm font-semibold hover:bg-blue-700 transition-colors font-sans rounded-lg"
-              >
-                Enroll Now
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Classic Navigation - REMOVED (handled by layout) */}
 
       <main>
         {/* Hero Section - Classic & Elegant */}
@@ -173,7 +120,7 @@ export default function Home() {
             <div className="grid grid-cols-2 gap-4 md:gap-6 lg:gap-8 md:grid-cols-4">
               <div className="text-center">
                 <p className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-primary mb-1 md:mb-2 font-sans">
-                  5,000+
+                  {isLoadingStats ? <span className="text-lg">Loading...</span> : stats.studentsCount.toLocaleString()}
                 </p>
                 <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 uppercase tracking-wider font-sans">
                   Enrolled Students
@@ -181,7 +128,7 @@ export default function Home() {
               </div>
               <div className="text-center">
                 <p className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-primary mb-1 md:mb-2 font-sans">
-                  50+
+                  {isLoadingStats ? <span className="text-lg">Loading...</span> : stats.instructorsCount.toLocaleString()}
                 </p>
                 <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 uppercase tracking-wider font-sans">
                   Qualified Instructors
@@ -189,7 +136,7 @@ export default function Home() {
               </div>
               <div className="text-center">
                 <p className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-primary mb-1 md:mb-2 font-sans">
-                  97%
+                  {isLoadingStats ? <span className="text-lg">Loading...</span> : `${stats.successRate}%`}
                 </p>
                 <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 uppercase tracking-wider font-sans">
                   Success Rate
@@ -197,7 +144,7 @@ export default function Home() {
               </div>
               <div className="text-center">
                 <p className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-primary mb-1 md:mb-2 font-sans">
-                  6
+                  {isLoadingStats ? <span className="text-lg">Loading...</span> : stats.levelsCount}
                 </p>
                 <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 uppercase tracking-wider font-sans">
                   CEFR Levels
@@ -273,6 +220,112 @@ export default function Home() {
                   dedicated academic advising, progress monitoring, and
                   personalized feedback.
                 </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Platform Features - The Advantage */}
+        <section className="py-20 lg:py-28 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-6">
+                A Premium Digital Campus
+              </h2>
+              <p className="text-lg text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
+                Join a platform designed for success. Our state-of-the-art virtual environment provides everything you need to master German, all in one place.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
+              {/* Feature 1: Live Classes */}
+              <div className="flex gap-4 items-start p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors group">
+                <div className="w-12 h-12 shrink-0 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+                  <span className="material-symbols-outlined text-2xl">video_camera_front</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 font-sans">
+                    Immersive Live Sessions
+                  </h3>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                    Connect directly with instructors in secure, real-time video classrooms. Experience interactive lessons with automated attendance and participation tracking.
+                  </p>
+                </div>
+              </div>
+
+              {/* Feature 2: Resources */}
+              <div className="flex gap-4 items-start p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors group">
+                <div className="w-12 h-12 shrink-0 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                  <span className="material-symbols-outlined text-2xl">library_books</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 font-sans">
+                    Digital Library Access
+                  </h3>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                    Unlimited access to a wealth of study materials including PDFs, video recordings of past classes, and interactive handouts available 24/7.
+                  </p>
+                </div>
+              </div>
+
+              {/* Feature 3: Progress Tracking */}
+              <div className="flex gap-4 items-start p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors group">
+                <div className="w-12 h-12 shrink-0 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors">
+                  <span className="material-symbols-outlined text-2xl">monitoring</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 font-sans">
+                    Real-Time Performance
+                  </h3>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                    Track your growth with detailed analytics. Monitor your attendance, assignment grades, and proficiency levels through your personal dashboard.
+                  </p>
+                </div>
+              </div>
+
+              {/* Feature 4: Community */}
+              <div className="flex gap-4 items-start p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors group">
+                <div className="w-12 h-12 shrink-0 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-lg flex items-center justify-center group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                  <span className="material-symbols-outlined text-2xl">forum</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 font-sans">
+                    Vibrant Community
+                  </h3>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                    Join the conversation. Engage with peers and teachers in dedicated course forums to discuss topics, share insights, and practice language skills.
+                  </p>
+                </div>
+              </div>
+
+              {/* Feature 5: Assessments */}
+              <div className="flex gap-4 items-start p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors group">
+                <div className="w-12 h-12 shrink-0 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors">
+                  <span className="material-symbols-outlined text-2xl">assignment_turned_in</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 font-sans">
+                    Structured Assessments
+                  </h3>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                    Test your knowledge with regular assignments and quizzes. Receive comprehensive feedback and grading from qualified instructors to guide your improvement.
+                  </p>
+                </div>
+              </div>
+
+              {/* Feature 6: Schedule */}
+              <div className="flex gap-4 items-start p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors group">
+                <div className="w-12 h-12 shrink-0 bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 rounded-lg flex items-center justify-center group-hover:bg-teal-600 group-hover:text-white transition-colors">
+                  <span className="material-symbols-outlined text-2xl">calendar_month</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 font-sans">
+                    Smart Scheduling
+                  </h3>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                    Never miss a class. Your integrated academic calendar automatically updates with live session times, assignment deadlines, and exam schedules.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -365,7 +418,7 @@ export default function Home() {
                 Distinguished Faculty
               </h2>
               <p className="text-lg text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
-                Learn from native German speakers with advanced degrees in
+                Learn from qualified instructors with advanced degrees in
                 linguistics, education, and German studies from prestigious
                 European universities.
               </p>
@@ -379,10 +432,10 @@ export default function Home() {
                   </span>
                 </div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 font-sans">
-                  Native Speakers
+                  Qualified Instructors
                 </h3>
                 <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
-                  100% of our instructors are native German speakers
+                  100% of our instructors are qualified experts
                 </p>
                 <div className="text-xs text-primary font-semibold font-sans uppercase tracking-wider">
                   Authentic Language
@@ -563,117 +616,7 @@ export default function Home() {
         </section>
 
         {/* Footer */}
-        <footer className="bg-slate-900 dark:bg-black text-slate-300 py-16 border-t border-slate-800">
-          <div className="max-w-7xl mx-auto px-6 lg:px-8">
-            <div className="grid grid-cols-2 gap-8 md:grid-cols-4 mb-12">
-              <div className="md:col-span-2">
-                <div className="flex items-center gap-3 mb-4">
-                  <img src="/gvs-logo.png" alt="GVS Logo" className="h-10 w-auto brightness-0 invert" />
-                  <h3 className="text-xl font-bold text-white font-sans">
-                    German Virtual School
-                  </h3>
-                </div>
-                <p className="text-sm leading-relaxed mb-6">
-                  Providing premier German language education through innovative
-                  virtual learning platforms since 2020. Accredited programs
-                  following CEFR standards.
-                </p>
-                <p className="text-xs text-slate-400">
-                  Registered Educational Institution
-                  <br />
-                  Certificate No. EDU-2020-GVS-001
-                </p>
-              </div>
-
-              <div>
-                <h4 className="font-semibold text-white mb-4 font-sans">
-                  Quick Links
-                </h4>
-                <ul className="space-y-2 text-sm">
-                  <li>
-                    <Link
-                      href="/courses"
-                      className="hover:text-primary transition-colors"
-                    >
-                      Courses
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/register"
-                      className="hover:text-primary transition-colors"
-                    >
-                      Admissions
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/about"
-                      className="hover:text-primary transition-colors"
-                    >
-                      About Us
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/calendar"
-                      className="hover:text-primary transition-colors"
-                    >
-                      Academic Calendar
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="font-semibold text-white mb-4 font-sans">
-                  Resources
-                </h4>
-                <ul className="space-y-2 text-sm">
-                  <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary transition-colors"
-                    >
-                      Student Portal
-                    </a>
-                  </li>
-                  <li>
-                    <Link
-                      href="/about"
-                      className="hover:text-primary transition-colors"
-                    >
-                      About Us
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/terms"
-                      className="hover:text-primary transition-colors"
-                    >
-                      Terms of Service
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/privacy"
-                      className="hover:text-primary transition-colors"
-                    >
-                      Privacy Policy
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="pt-8 border-t border-slate-800 text-center text-sm">
-              <p>
-                © {new Date().getFullYear()} German Virtual School. All rights
-                reserved.
-              </p>
-            </div>
-          </div>
-        </footer>
+      {/* Footer - REMOVED (handled by layout) */}
       </main>
 
       {/* Material Symbols Icons */}

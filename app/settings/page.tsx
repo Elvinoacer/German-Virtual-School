@@ -7,6 +7,7 @@ import { useSession, signOut } from "next-auth/react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import NotificationPreferencesSection from "@/components/settings/NotificationPreferencesSection";
 
 interface UserProfile {
     id: string;
@@ -395,6 +396,11 @@ export default function UserSettingsPage() {
                 </div>
               </div>
             </section>
+
+            <div className="h-px w-full bg-slate-200 dark:bg-slate-800 my-6"></div>
+
+            {/* Section: Notification Preferences */}
+            <NotificationPreferencesSection />
 
             {/* Footer Actions */}
             <div className="mt-8 flex items-center justify-end gap-4 border-t border-slate-200 dark:border-slate-800 pt-6">

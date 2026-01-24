@@ -16,12 +16,15 @@ export async function POST(request: NextRequest) {
 
     // Add token to user's list if not already present
     // Since fcmTokens is a string[] array
+    console.log(`[RegisterPush] Searching for user: ${payload.userId}`);
     const user = await prisma.user.findUnique({
       where: { id: payload.userId },
       select: { fcmTokens: true },
     });
+    console.log(`[RegisterPush] User found: ${!!user}`);
 
     if (!user) {
+        console.error(`[RegisterPush] User not found for ID: ${payload.userId}`);
         return errors.notFound("User not found");
     }
 

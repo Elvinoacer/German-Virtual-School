@@ -19,7 +19,7 @@ export async function POST(
     // Get session
     const session = await prisma.classSession.findUnique({
       where: { id: sessionId },
-      select: { courseId: true, status: true, teacherId: true },
+      select: { courseId: true, status: true, teacherId: true, startTime: true },
     });
 
     if (!session) {
@@ -31,6 +31,7 @@ export async function POST(
       return errors.badRequest('Session is no longer active');
     }
 
+    // Verify enrollment/teacher status
     // Students must be enrolled, teachers must be the instructor
     if (payload.role === 'STUDENT') {
       const isEnrolled = await isStudentEnrolled(studentId, session.courseId);
@@ -41,6 +42,16 @@ export async function POST(
       if (session.teacherId !== studentId) {
         return errors.forbidden('You are not the instructor for this session');
       }
+    }
+
+    // Determine status (PRESENT vs LATE)
+    // Late threshold: 15 minutes after start time
+    let status: 'PRESENT' | 'LATE' = 'PRESENT';
+    const startTime = new Date(session.startTime);
+    const lateThreshold = new Date(startTime.getTime() + 15 * 60000); // 15 minutes buffer
+    
+    if (new Date() > lateThreshold) {
+      status = 'LATE';
     }
 
     // Create or update attendance record
@@ -54,7 +65,7 @@ export async function POST(
       create: {
         classSessionId: sessionId,
         studentId,
-        status: 'PRESENT',
+        status,
         checkInTime: new Date(),
         logs: {
           create: { type: 'JOIN' }

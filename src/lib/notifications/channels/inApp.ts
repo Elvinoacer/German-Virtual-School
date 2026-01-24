@@ -2,7 +2,7 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { NotificationPayload, ChannelResult } from "../types";
-import { NotificationType } from "@/generated/prisma/enums";
+import { NotificationType } from '@/generated/prisma/client';
 
 export const runtime = "nodejs";
 

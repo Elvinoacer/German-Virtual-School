@@ -15,20 +15,38 @@ export async function POST(request: NextRequest) {
       return errors.badRequest('Missing required fields');
     }
 
-    // In a real app, this would trigger an async job to generate the file.
-    // For now, we'll simulate success and create a record.
+    // 1. Create the report record as PENDING
     const report = await prisma.systemReport.create({
       data: {
         name,
         type,
         format,
-        status: 'READY',
-        url: '#', // Placeholder for the actual file link
+        status: 'PENDING',
+        url: '#', // Initial placeholder
         generatedById: payload.userId
       }
     });
 
-    return successResponse(report, 'Report generated successfully', 201);
+    // 2. Simulate an async generation process
+    // In a real environment, this would be a background job / Celery task
+    (async () => {
+        try {
+            await new Promise(resolve => setTimeout(resolve, 5000)); // Simulate work
+            await prisma.systemReport.update({
+                where: { id: report.id },
+                data: {
+                    status: 'READY',
+                    url: `/api/admin/reports/download/${report.id}` // Simulated download path
+                }
+            });
+            console.log(`✅ Report ${report.id} is now READY`);
+        } catch (err) {
+            console.error(`❌ Failed to finalize report ${report.id}:`, err);
+        }
+    })();
+
+    // 3. Return the pending record immediately
+    return successResponse(report, 'Report generation started (Pending)', 201);
   } catch (error) {
     console.error('Generate report error:', error);
     return errors.internal('Failed to generate report');

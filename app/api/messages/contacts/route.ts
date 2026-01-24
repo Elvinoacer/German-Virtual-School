@@ -3,113 +3,105 @@ import { authenticate } from '@/lib/auth-middleware';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errors } from '@/lib/api-response';
 
+/**
+ * GET /api/messages/contacts
+ * 
+ * Returns contacts for messaging, prioritizing faculty (teachers/admins) first,
+ * then paginated students. Supports search filtering.
+ * 
+ * Query params:
+ * - search: Filter by firstName or lastName (optional)
+ * - page: Page number for students pagination (default: 1)
+ * - limit: Items per page for students (default: 20)
+ */
 export async function GET(request: NextRequest) {
   try {
     const payload = await authenticate(request);
     const userId = payload.userId;
-    const role = payload.role;
 
-    let contacts = [];
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search') || '';
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const skip = (page - 1) * limit;
 
-    if (role === 'TEACHER') {
-        // Fetch all students enrolled in courses taught by this teacher
-        const courses = await prisma.course.findMany({
-            where: { teacherId: userId },
-            select: { id: true }
-        });
+    // Build search filter
+    const searchFilter = search.trim() 
+      ? {
+          OR: [
+            { firstName: { contains: search.trim(), mode: 'insensitive' as const } },
+            { lastName: { contains: search.trim(), mode: 'insensitive' as const } },
+          ]
+        }
+      : {};
 
-        const courseIds = courses.map(c => c.id);
+    // Exclude self from all results
+    const excludeSelf = { id: { not: userId } };
 
-        const enrollments = await prisma.enrollment.findMany({
-            where: { courseId: { in: courseIds } },
-            select: {
-                student: {
-                    select: {
-                        id: true,
-                        firstName: true,
-                        lastName: true,
-                        role: true,
-                        avatarUrl: true,
-                        image: true
-                    }
-                }
-            }
-        });
+    // 1. Fetch ALL faculty (teachers and admins) - no pagination
+    const faculty = await prisma.user.findMany({
+      where: {
+        ...excludeSelf,
+        ...searchFilter,
+        role: { in: ['TEACHER', 'ADMIN'] },
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        avatarUrl: true,
+        image: true,
+      },
+      orderBy: [
+        { role: 'asc' }, // ADMIN comes before TEACHER alphabetically
+        { firstName: 'asc' },
+        { lastName: 'asc' },
+      ],
+    });
 
-        // Unique students
-        const studentMap = new Map();
-        enrollments.forEach(e => {
-            if (!studentMap.has(e.student.id)) {
-                studentMap.set(e.student.id, e.student);
-            }
-        });
-        contacts = Array.from(studentMap.values());
+    // 2. Fetch paginated students
+    const [students, totalStudents] = await Promise.all([
+      prisma.user.findMany({
+        where: {
+          ...excludeSelf,
+          ...searchFilter,
+          role: 'STUDENT',
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          avatarUrl: true,
+          image: true,
+        },
+        orderBy: [
+          { firstName: 'asc' },
+          { lastName: 'asc' },
+        ],
+        skip,
+        take: limit,
+      }),
+      prisma.user.count({
+        where: {
+          ...excludeSelf,
+          ...searchFilter,
+          role: 'STUDENT',
+        },
+      }),
+    ]);
 
-    } else if (role === 'STUDENT') {
-        // Fetch teachers of courses enrolled by this student
-        // AND other students in the same courses
-        const enrollments = await prisma.enrollment.findMany({
-            where: { studentId: userId },
-            include: {
-                course: {
-                    select: {
-                        id: true,
-                        teacher: {
-                            select: {
-                                id: true,
-                                firstName: true,
-                                lastName: true,
-                                role: true,
-                                avatarUrl: true,
-                                image: true
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        const myCourseIds = enrollments.map(e => e.course.id);
-        const teachers = enrollments.map(e => e.course.teacher);
-
-        // Find classmates
-        const classmatesEnrollments = await prisma.enrollment.findMany({
-            where: { 
-                courseId: { in: myCourseIds },
-                studentId: { not: userId } 
-            },
-            select: {
-                student: {
-                    select: {
-                        id: true,
-                        firstName: true,
-                        lastName: true,
-                        role: true,
-                        avatarUrl: true,
-                        image: true
-                    }
-                }
-            }
-        });
-
-        const classmates = classmatesEnrollments.map(e => e.student);
-
-        // Merge and unique
-        const contactMap = new Map();
-        
-        teachers.forEach(t => contactMap.set(t.id, t));
-        classmates.forEach(s => contactMap.set(s.id, s));
-
-        contacts = Array.from(contactMap.values());
-    } else {
-        // Admin or other: maybe fetch everyone? For now empty or restricted.
-        return successResponse([]);
-    }
-
-    // Sort by name
-    contacts.sort((a, b) => (a.firstName + a.lastName).localeCompare(b.firstName + b.lastName));
-
-    return successResponse(contacts);
+    return successResponse({
+      faculty,
+      students,
+      pagination: {
+        page,
+        limit,
+        total: totalStudents,
+        totalPages: Math.ceil(totalStudents / limit),
+      },
+    });
 
   } catch (error) {
     console.error('Fetch contacts error:', error);

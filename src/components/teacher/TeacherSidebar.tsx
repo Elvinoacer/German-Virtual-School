@@ -5,6 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { deleteAndUnregisterToken } from "@/lib/firebase-client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUnreadCount } from "@/hooks/useNotifications";
 
@@ -13,8 +14,21 @@ export default function TeacherSidebar({ mobileOpen, desktopCollapsed, onMobileC
   const { user } = useAuth();
   const { count: unreadCount } = useUnreadCount();
   const [isBottomCollapsed, setIsBottomCollapsed] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const isActive = (path: string) => pathname === path;
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      // Delete FCM token before logout to prevent notifications going to wrong user
+      await deleteAndUnregisterToken();
+    } catch (err) {
+      console.error("[Logout] Failed to delete FCM token:", err);
+    }
+    signOut({ callbackUrl: '/login' });
+  };
+
 
   return (
     <aside 
@@ -280,14 +294,15 @@ export default function TeacherSidebar({ mobileOpen, desktopCollapsed, onMobileC
           </div>
           
           <button
-            onClick={() => signOut({ callbackUrl: '/login' })}
+            onClick={handleLogout}
+            disabled={isLoggingOut}
             title="Log Out"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left disabled:opacity-50
               ${desktopCollapsed ? 'lg:justify-center' : ''}`}
           >
-            <span className="material-symbols-outlined shrink-0">logout</span>
+            <span className="material-symbols-outlined shrink-0">{isLoggingOut ? 'sync' : 'logout'}</span>
             <span className={`text-sm font-medium transition-all duration-300 whitespace-nowrap ${desktopCollapsed ? 'lg:w-0 lg:opacity-0 lg:overflow-hidden' : 'w-auto opacity-100'}`}>
-              Log Out
+              {isLoggingOut ? 'Logging out...' : 'Log Out'}
             </span>
           </button>
         </div>

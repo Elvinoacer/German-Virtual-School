@@ -2,34 +2,14 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { usePublicStats } from "@/hooks/usePublicStats";
 
 export default function AboutPage() {
+  const { stats, isLoading } = usePublicStats();
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900 font-serif text-slate-900 dark:text-slate-100 overflow-x-hidden">
       {/* Header/Nav */}
-      <header className="border-b border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 h-16 md:h-20 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2 md:gap-3">
-            <img src="/gvs-logo.png" alt="GVS Logo" className="h-8 md:h-10 w-auto dark:brightness-0 dark:invert" />
-            <div className="flex flex-col">
-              <h1 className="text-sm md:text-xl font-bold tracking-tight text-slate-900 dark:text-white font-sans">
-                German Virtual School
-              </h1>
-              <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400 font-sans uppercase tracking-widest">
-                Excellence in German Education
-              </p>
-            </div>
-          </Link>
-          <div className="flex items-center gap-3 md:gap-6 font-sans">
-            <Link href="/login" className="hidden sm:inline-block text-xs md:text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary transition-colors">
-              Student Portal
-            </Link>
-            <Link href="/register" className="px-3 py-1.5 md:px-6 md:py-2 bg-primary text-white text-xs md:text-sm font-semibold hover:bg-blue-700 transition-all rounded-sm">
-              Enroll Now
-            </Link>
-          </div>
-        </div>
-      </header>
+      {/* Header/Nav - REMOVED (handled by layout) */}
 
       <main>
         {/* Hero Section */}
@@ -118,7 +98,9 @@ export default function AboutPage() {
                   <span className="material-symbols-outlined text-white text-3xl">auto_graph</span>
                 </div>
                 <h3 className="text-xl font-bold font-sans">Proven Outcomes</h3>
-                <p className="text-slate-400 leading-relaxed">97% of our students pass their proficiency exams on the first attempt, with many securing admissions to elite German universities and global firms.</p>
+                <p className="text-slate-400 leading-relaxed">
+                  {isLoading ? '...' : `${stats.successRate}%`} of our students pass their proficiency exams on the first attempt, with many securing admissions to elite German universities and global firms.
+                </p>
               </div>
             </div>
           </div>
@@ -155,15 +137,7 @@ export default function AboutPage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-slate-400 py-12 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center text-sm">
-          <p>© {new Date().getFullYear()} German Virtual School. All rights reserved.</p>
-          <div className="mt-4 flex justify-center gap-6 font-sans">
-            <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
-            <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-          </div>
-        </div>
-      </footer>
+      {/* Footer - REMOVED (handled by layout) */}
       
       {/* Material Symbols */}
       <link

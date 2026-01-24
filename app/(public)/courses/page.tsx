@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCourses } from '@/hooks/useCourses';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Link from 'next/link';
@@ -9,13 +9,28 @@ import { toast } from 'sonner';
 export default function CoursesPage() {
   const [search, setSearch] = useState('');
   const [level, setLevel] = useState('');
+  const [teacherId, setTeacherId] = useState('');
   const [page, setPage] = useState(1);
+  // Fetch teachers
+  const [teachers, setTeachers] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch('/api/teachers')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setTeachers(data.data);
+        }
+      })
+      .catch(err => console.error('Failed to load teachers', err));
+  }, []);
   
   const { data, isLoading, error } = useCourses({ 
     page, 
     limit: 12, 
     search: search || undefined,
     level: level || undefined,
+    teacherId: teacherId || undefined
   });
 
   if (error) {
@@ -63,6 +78,21 @@ export default function CoursesPage() {
             <option value="B2">B2 - Upper Intermediate</option>
             <option value="C1">C1 - Advanced</option>
             <option value="C2">C2 - Proficient</option>
+          </select>
+
+          {/* Teacher Filter */}
+          <select
+            value={teacherId}
+            onChange={(e) => {
+                setTeacherId(e.target.value);
+                setPage(1);
+            }}
+            className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-main dark:text-white focus:ring-2 focus:ring-primary"
+          >
+            <option value="">All Instructors</option>
+            {teachers.map((t) => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
           </select>
         </div>
 

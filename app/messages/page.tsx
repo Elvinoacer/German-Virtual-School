@@ -44,8 +44,13 @@ export default function MessagesPage() {
   const [isLoadingConversations, setIsLoadingConversations] = useState(true);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false);
-  const [contacts, setContacts] = useState<User[]>([]);
+  const [faculty, setFaculty] = useState<User[]>([]);
+  const [students, setStudents] = useState<User[]>([]);
+  const [contactsSearch, setContactsSearch] = useState('');
+  const [contactsPage, setContactsPage] = useState(1);
+  const [contactsTotalPages, setContactsTotalPages] = useState(1);
   const [isLoadingContacts, setIsLoadingContacts] = useState(false);
+  const [isLoadingMoreStudents, setIsLoadingMoreStudents] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'all' | 'unread'>('all');
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -63,6 +68,11 @@ export default function MessagesPage() {
     // Listen for new messages
     socketRef.current.on(SOCKET_EVENTS.MESSAGE_NEW, (newMessage: Message) => {
         handleIncomingMessage(newMessage);
+    });
+
+    // Listen for read events from others
+    socketRef.current.on('message:read_relay', ({ messageId }: { messageId: string }) => {
+        setMessages(prev => prev.map(m => m.id === messageId ? { ...m, isRead: true } : m));
     });
 
     // Polling fallback (every 10s) to ensure sync
@@ -91,24 +101,55 @@ export default function MessagesPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const fetchContacts = async () => {
-      setIsLoadingContacts(true);
+  const fetchContacts = async (search = '', page = 1, append = false) => {
+      if (append) {
+          setIsLoadingMoreStudents(true);
+      } else {
+          setIsLoadingContacts(true);
+      }
       try {
-          const res = await fetch("/api/messages/contacts");
+          const params = new URLSearchParams();
+          if (search.trim()) params.set('search', search.trim());
+          params.set('page', page.toString());
+          params.set('limit', '20');
+          
+          const res = await fetch(`/api/messages/contacts?${params.toString()}`);
           if (res.ok) {
               const data = await res.json();
-              setContacts(data.data || []);
+              const result = data.data;
+              setFaculty(result.faculty || []);
+              if (append) {
+                  setStudents(prev => [...prev, ...(result.students || [])]);
+              } else {
+                  setStudents(result.students || []);
+              }
+              setContactsPage(result.pagination?.page || 1);
+              setContactsTotalPages(result.pagination?.totalPages || 1);
           }
       } catch (error) {
           console.error("Failed to fetch contacts", error);
       } finally {
           setIsLoadingContacts(false);
+          setIsLoadingMoreStudents(false);
+      }
+  };
+
+  const handleContactsSearch = (value: string) => {
+      setContactsSearch(value);
+      fetchContacts(value, 1, false);
+  };
+
+  const loadMoreStudents = () => {
+      if (contactsPage < contactsTotalPages) {
+          fetchContacts(contactsSearch, contactsPage + 1, true);
       }
   };
 
   const openNewChatModal = () => {
       setIsNewChatModalOpen(true);
-      fetchContacts();
+      setContactsSearch('');
+      setContactsPage(1);
+      fetchContacts('', 1, false);
   };
 
   const handleIncomingMessage = (newMessage: Message) => {
@@ -142,8 +183,12 @@ export default function MessagesPage() {
               if (prev.find(m => m.id === newMessage.id)) return prev; // Dedup
               return [...prev, newMessage];
           });
-          // Mark as read immediately (optimistic)? Or let the user interaction do it?
-          // For now, we assume viewing it marks it read (handled by fetchMessages usually, but real-time needs an emit 'read')
+          
+          // Emit 'read' event if chat is active
+          socketRef.current?.emit('message:read', { 
+              messageId: newMessage.id, 
+              senderId: newMessage.senderId 
+          });
       }
   };
 
@@ -197,6 +242,12 @@ export default function MessagesPage() {
       setSelectedUserId(userId);
       fetchMessages(userId);
       setIsNewChatModalOpen(false);
+      
+      // Emit 'read' for any unread messages from this user (logic simplified - the API handles mass update, but socket can trigger UI sync)
+      const unreadMsgs = messages.filter(m => m.senderId === userId && !m.isRead);
+      unreadMsgs.forEach(msg => {
+          socketRef.current?.emit('message:read', { messageId: msg.id, senderId: userId });
+      });
   };
 
   const sendMessage = async () => {
@@ -397,41 +448,111 @@ export default function MessagesPage() {
                             <span className="material-symbols-outlined">close</span>
                         </button>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
+                    {/* Search Input */}
+                    <div className="p-4 pb-2">
+                        <div className="relative w-full">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span className="material-symbols-outlined text-slate-400 text-[20px]">search</span>
+                            </div>
+                            <input
+                                className="block w-full pl-10 pr-3 py-2.5 border-none rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary focus:outline-none text-sm shadow-sm"
+                                placeholder="Search for someone..."
+                                type="text"
+                                value={contactsSearch}
+                                onChange={(e) => handleContactsSearch(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                    <div className="flex-1 overflow-y-auto custom-scrollbar">
                         {isLoadingContacts ? (
                             <div className="flex justify-center p-8">
                                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                             </div>
-                        ) : contacts.length === 0 ? (
+                        ) : faculty.length === 0 && students.length === 0 ? (
                             <div className="p-8 text-center text-slate-500">No contacts found.</div>
                         ) : (
-                            contacts.map(contact => (
-                                <button
-                                    key={contact.id}
-                                    onClick={() => handleSelectConversation(contact.id)}
-                                    className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left group"
-                                >
-                                    <div
-                                        className="size-10 rounded-full bg-cover bg-center bg-gray-200"
-                                        style={{ backgroundImage: contact.avatarUrl || contact.image ? `url('${contact.avatarUrl || contact.image}')` : undefined }}
-                                    >
-                                        {!(contact.avatarUrl || contact.image) && (
-                                            <div className="size-full flex items-center justify-center text-slate-500 font-bold">
-                                                {contact.firstName[0]}{contact.lastName[0]}
-                                            </div>
+                            <>
+                                {/* Faculty Section */}
+                                {faculty.length > 0 && (
+                                    <div className="p-2">
+                                        <div className="px-3 py-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                            Faculty ({faculty.length})
+                                        </div>
+                                        {faculty.map(contact => (
+                                            <button
+                                                key={contact.id}
+                                                onClick={() => handleSelectConversation(contact.id)}
+                                                className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left group"
+                                            >
+                                                <div
+                                                    className="size-10 rounded-full bg-cover bg-center bg-gray-200"
+                                                    style={{ backgroundImage: contact.avatarUrl || contact.image ? `url('${contact.avatarUrl || contact.image}')` : undefined }}
+                                                >
+                                                    {!(contact.avatarUrl || contact.image) && (
+                                                        <div className="size-full flex items-center justify-center text-slate-500 font-bold">
+                                                            {contact.firstName[0]}{contact.lastName[0]}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <h4 className="font-semibold text-slate-900 dark:text-white group-hover:text-primary transition-colors">
+                                                        {contact.firstName} {contact.lastName}
+                                                    </h4>
+                                                    <p className="text-xs text-primary uppercase font-bold tracking-wider">
+                                                        {contact.role}
+                                                    </p>
+                                                </div>
+                                                <span className="material-symbols-outlined text-slate-300 group-hover:text-primary">chevron_right</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                                {/* Students Section */}
+                                {students.length > 0 && (
+                                    <div className="p-2">
+                                        <div className="px-3 py-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                            Students
+                                        </div>
+                                        {students.map(contact => (
+                                            <button
+                                                key={contact.id}
+                                                onClick={() => handleSelectConversation(contact.id)}
+                                                className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left group"
+                                            >
+                                                <div
+                                                    className="size-10 rounded-full bg-cover bg-center bg-gray-200"
+                                                    style={{ backgroundImage: contact.avatarUrl || contact.image ? `url('${contact.avatarUrl || contact.image}')` : undefined }}
+                                                >
+                                                    {!(contact.avatarUrl || contact.image) && (
+                                                        <div className="size-full flex items-center justify-center text-slate-500 font-bold">
+                                                            {contact.firstName[0]}{contact.lastName[0]}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <h4 className="font-semibold text-slate-900 dark:text-white group-hover:text-primary transition-colors">
+                                                        {contact.firstName} {contact.lastName}
+                                                    </h4>
+                                                    <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">
+                                                        {contact.role}
+                                                    </p>
+                                                </div>
+                                                <span className="material-symbols-outlined text-slate-300 group-hover:text-primary">chevron_right</span>
+                                            </button>
+                                        ))}
+                                        {/* Load More Button */}
+                                        {contactsPage < contactsTotalPages && (
+                                            <button
+                                                onClick={loadMoreStudents}
+                                                disabled={isLoadingMoreStudents}
+                                                className="w-full py-3 mt-2 text-sm text-primary hover:bg-primary/10 rounded-lg transition-colors font-medium disabled:opacity-50"
+                                            >
+                                                {isLoadingMoreStudents ? 'Loading...' : 'Load More Students'}
+                                            </button>
                                         )}
                                     </div>
-                                    <div className="flex-1">
-                                        <h4 className="font-semibold text-slate-900 dark:text-white group-hover:text-primary transition-colors">
-                                            {contact.firstName} {contact.lastName}
-                                        </h4>
-                                        <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">
-                                            {contact.role}
-                                        </p>
-                                    </div>
-                                    <span className="material-symbols-outlined text-slate-300 group-hover:text-primary">chevron_right</span>
-                                </button>
-                            ))
+                                )}
+                            </>
                         )}
                     </div>
                 </div>

@@ -27,7 +27,8 @@ export default auth((req) => {
   const isClassroomRoute = nextUrl.pathname.startsWith("/classroom");
   const isPublicApiRoute =
     (nextUrl.pathname.startsWith("/api/courses") && req.method === "GET") ||
-    (nextUrl.pathname.startsWith("/api/testimonials") && req.method === "GET");
+    (nextUrl.pathname.startsWith("/api/testimonials") && req.method === "GET") ||
+    (nextUrl.pathname.startsWith("/api/stats/public") && req.method === "GET");
 
   if (isApiAuthRoute) {
     return;

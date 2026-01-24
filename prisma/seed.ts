@@ -1,3 +1,5 @@
+// Prisma 7.x Seed Script
+// Uses the singleton from src/lib/prisma.ts which handles adapter configuration
 import {
   UserRole,
   CourseLevel,
@@ -7,7 +9,7 @@ import {
   AttendanceStatus,
   PaymentStatus,
 } from "../src/generated/prisma/client";
-import { prisma } from "../src/lib/prisma";
+import { prisma, disconnectPrisma } from "../src/lib/prisma";
 
 // Cleanup
 async function cleanupDatabase() {
@@ -253,5 +255,5 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect();
+    await disconnectPrisma();
   });

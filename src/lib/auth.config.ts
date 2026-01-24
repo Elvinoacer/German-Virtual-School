@@ -3,7 +3,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth";
-import { UserRole } from "@/generated/prisma/enums";
+import { UserRole } from '@/generated/prisma/client';
 
 declare module "next-auth" {
   interface Session {
@@ -157,29 +157,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.isVerified = (user as any).isVerified;
       }
 
-      // Fetch fresh data from DB on every session check to ensure real-time updates
-      // This allows role changes and verification status to be reflected immediately
-      if (token.sub) {
-        try {
-          const dbUser = await prisma.user.findUnique({
-            where: { id: token.sub },
-            select: { 
-              role: true, 
-              isVerified: true, 
-              firstName: true, 
-              lastName: true 
-            },
-          });
-
-          if (dbUser) {
-            token.role = dbUser.role;
-            token.isVerified = dbUser.isVerified;
-            token.firstName = dbUser.firstName;
-            token.lastName = dbUser.lastName;
-          }
-        } catch (error) {
-          console.error("Error refreshing user data in JWT:", error);
-        }
+      // Optimize: Only fetch user data on sign-in or explicit update
+      // We trust the JWT token for subsequent requests to reduce DB load
+      if (trigger === "update" && session?.user) {
+        // Allow updating token from client-side session.update()
+        if (session.user.role) token.role = session.user.role;
+        if (session.user.isVerified !== undefined) token.isVerified = session.user.isVerified;
+        if (session.user.firstName) token.firstName = session.user.firstName;
+        if (session.user.lastName) token.lastName = session.user.lastName;
       }
       
       // Update session if data changed (e.g. verification status update)

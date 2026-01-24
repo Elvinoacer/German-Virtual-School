@@ -11,6 +11,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  // Note: url is managed in prisma.config.ts for Prisma 7.x
 }
 
 // ============================================
@@ -180,6 +181,7 @@ model User {
   // Relations
   studentProfile StudentProfile?
   teacherProfile TeacherProfile?
+  notificationPreferences NotificationPreferences?
   
   // Teacher Relations
   createdCourses    Course[]        @relation("TeacherCourses")
@@ -209,6 +211,33 @@ model User {
   // Admin Relations
   generatedReports  SystemReport[]
   testimonials      Testimonial[]
+}
+
+// --------------------------------------------
+// Notification Preferences
+// --------------------------------------------
+
+model NotificationPreferences {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  
+  // Channel preferences
+  emailNotifications  Boolean @default(true)
+  pushNotifications   Boolean @default(true)
+  inAppNotifications  Boolean @default(true)
+  
+  // Category preferences
+  classReminders      Boolean @default(true)
+  assignmentAlerts    Boolean @default(true)
+  gradeNotifications  Boolean @default(true)
+  messageAlerts       Boolean @default(true)
+  paymentReminders    Boolean @default(true)
+  forumUpdates        Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model StudentProfile {
@@ -330,6 +359,9 @@ model Enrollment {
   completedAt        DateTime?
   progressPercentage Float            @default(0)
   grade              String?
+  billingCycle       PaymentCycle?
+  nextBillingDate    DateTime?
+  feePlanId          String?
 
   // Relations
   student          User               @relation(fields: [studentId], references: [id])
@@ -451,6 +483,7 @@ model Submission {
   status         SubmissionStatus @default(PENDING)
   grade          Float?
   feedback       String?
+  rubricScores   Json? // Per-criterion scores { criterionId: score }
   gradedById     String?
   gradedAt       DateTime?
 
@@ -696,3 +729,23 @@ model Testimonial {
   student     User     @relation(fields: [studentId], references: [id])
 }
 
+// --------------------------------------------
+// Audit Logging
+// --------------------------------------------
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String   // Admin who performed action
+  action      String   // CREATE, UPDATE, DELETE, VERIFY, LOGIN, etc.
+  entity      String   // User, Course, Payment, Settings, etc.
+  entityId    String?  // ID of the affected entity
+  details     Json?    // Additional details about the action
+  ipAddress   String?  // Request IP address
+  userAgent   String?  // Browser user agent
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([entity])
+  @@index([createdAt])
+}

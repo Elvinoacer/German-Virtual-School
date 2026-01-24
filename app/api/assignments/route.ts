@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, dueDate, maxPoints, courseId, attachmentUrls } = body;
+    const { title, description, dueDate, maxPoints, courseId, attachmentUrls, rubric } = body;
 
     // Validate required fields
     if (!title || !dueDate || !courseId) {
@@ -92,6 +92,7 @@ export async function POST(request: NextRequest) {
         maxPoints: maxPoints || 100,
         courseId,
         attachmentUrls: attachmentUrls || [],
+        rubric: rubric || null,
       },
     });
 
