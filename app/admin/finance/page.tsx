@@ -15,15 +15,13 @@ interface Invoice {
   status: string;
   dueDate: string;
   createdAt: string;
+  description: string;
   student: {
     id: string;
     name: string;
     email: string;
   };
-  course: {
-    title: string;
-    level: string;
-  } | null;
+  term: string | null;
 }
 
 interface Term {
@@ -117,6 +115,20 @@ export default function AdminFinancePage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-terms'] });
       toast.success("Active term updated");
+    }
+  });
+
+  const generateInvoicesMutation = useMutation({
+    mutationFn: async () => {
+      const response = await axiosInstance.post('/api/admin/finance/generate');
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-finance'] });
+      toast.success(data.message || `Generated ${data.data?.created || 0} invoices`);
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to generate invoices');
     }
   });
 
@@ -235,15 +247,23 @@ export default function AdminFinancePage() {
 
           {/* Invoices Table */}
           <div className="bg-white dark:bg-surface-dark rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-            <div className="p-8 border-b border-slate-100 dark:border-slate-800">
+            <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <h2 className="text-xl font-black text-slate-900 dark:text-white">Recent Invoices</h2>
+              <Button 
+                onClick={() => generateInvoicesMutation.mutate()} 
+                disabled={generateInvoicesMutation.isPending}
+                className="flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-lg">receipt_long</span>
+                {generateInvoicesMutation.isPending ? 'Generating...' : 'Generate Invoices'}
+              </Button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50 dark:bg-slate-900/50">
                     <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Student</th>
-                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Course</th>
+                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Description</th>
                     <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Amount</th>
                     <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Paid</th>
                     <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
@@ -260,7 +280,7 @@ export default function AdminFinancePage() {
                         </div>
                       </td>
                       <td className="px-8 py-6 text-sm font-bold text-slate-600 dark:text-slate-300">
-                        {invoice.course?.title || 'N/A'}
+                        {invoice.description || 'N/A'}
                       </td>
                       <td className="px-8 py-6 font-black text-slate-900 dark:text-white">
                         KES {invoice.amount.toLocaleString()}

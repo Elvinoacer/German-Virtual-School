@@ -1,14 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errors } from '@/lib/api-response';
+import { addMonths, addDays } from 'date-fns';
 
 /**
  * RECURRING BILLING JOB
  * 
- * This endpoint should be triggered by a Cron job (system) once a day.
- * It identifies enrollments due for their next billing cycle and generates invoices.
+ * This endpoint should be triggered by a Cron job (system) periodically.
+ * It identifies the current term, checks if invoices are due based on the
+ * global billing cycle, and generates invoices for registered students.
+ * 
+ * Billing logic:
+ * - MONTHLY: Generates an invoice every month for each registered student.
+ * - QUARTERLY: Generates one invoice per term (aligned with semester).
+ * - ONE_TIME: No recurring invoices, handled manually.
  */
-
 export async function POST(request: NextRequest) {
   try {
     // 1. Verify Request (Secret Key check)
@@ -21,104 +27,139 @@ export async function POST(request: NextRequest) {
     const now = new Date();
     console.log(`🚀 Starting Recurring Billing Job at ${now.toISOString()}`);
 
-    // 2. Find eligible enrollments
-    // Status: ACTIVE
-    // nextBillingDate: <= now
-    // billingCycle: NOT ONE_TIME
-    const dueEnrollments = await prisma.enrollment.findMany({
-      where: {
-        status: 'ACTIVE',
-        billingCycle: { in: ['MONTHLY', 'QUARTERLY', 'BIANNUAL', 'ANNUAL'] },
-        nextBillingDate: { lte: now },
-      },
-      include: {
-        course: true,
-        student: true,
-        // Include fee plan if it exists
-        // (Note: feePlanId was added to schema, using it to get correct amount)
-      }
+    // 2. Fetch billing settings and current term
+    const [billingSettings, currentTerm] = await Promise.all([
+      prisma.globalBillingSettings.findFirst(),
+      prisma.academicTerm.findFirst({ where: { isCurrent: true } })
+    ]);
+
+    if (!billingSettings) {
+      console.log('❌ No billing settings configured. Exiting.');
+      return successResponse({ processed: 0 }, 'No billing settings configured.');
+    }
+
+    if (!currentTerm) {
+      console.log('❌ No current term set. Exiting.');
+      return successResponse({ processed: 0 }, 'No current term set.');
+    }
+
+    const billingCycle = billingSettings.billingCycle;
+
+    // Skip if billing cycle is ONE_TIME (manual only)
+    if (billingCycle === 'ONE_TIME') {
+      console.log('ℹ️ Billing cycle is ONE_TIME. No recurring invoices needed.');
+      return successResponse({ processed: 0 }, 'Billing cycle is ONE_TIME. No action taken.');
+    }
+
+    // 3. Find all students registered for the current term
+    const registrations = await prisma.termRegistration.findMany({
+      where: { termId: currentTerm.id },
+      include: { student: { select: { id: true, firstName: true, lastName: true } } }
     });
 
-    console.log(`📋 Found ${dueEnrollments.length} enrollments due for billing.`);
+    console.log(`📋 Found ${registrations.length} students registered for ${currentTerm.name}.`);
 
     const results = {
       processed: 0,
-      failed: 0,
       invoicesCreated: 0,
+      skipped: 0,
+      failed: 0
     };
 
-    // 3. Process each enrollment
-    for (const enrollment of dueEnrollments) {
+    const feeAmount = Number(billingSettings.defaultFee);
+    const shouldRollArrears = billingSettings.lateFeeAction === 'ROLL_TO_NEXT';
+
+    // 4. Process each registered student
+    for (const reg of registrations) {
       try {
-        await prisma.$transaction(async (tx) => {
-          // A. Fetch the specific FeePlan if linked
-          let amount = enrollment.course.price;
-          let installmentsLimit = null;
-          
-          if (enrollment.feePlanId) {
-            const plan = await tx.feePlan.findUnique({ where: { id: enrollment.feePlanId } });
-            if (plan) {
-              amount = plan.amount;
-              installmentsLimit = plan.installments;
-            }
-          }
+        // Check if student already has an invoice for this billing period
+        // For QUARTERLY, we check if they have an invoice for this term already
+        // For MONTHLY, we check if they have one created this month
+        let existingInvoice = null;
 
-          // B. Check installment limits (if applicable)
-          if (installmentsLimit && installmentsLimit > 0) {
-              const existingInvoicesCount = await tx.invoice.count({
-                  where: { enrollmentId: enrollment.id }
+        if (billingCycle === 'QUARTERLY') {
+          existingInvoice = await prisma.invoice.findFirst({
+            where: {
+              studentId: reg.studentId,
+              termId: currentTerm.id,
+              description: { contains: 'Semester Fee' }
+            }
+          });
+        } else if (billingCycle === 'MONTHLY') {
+          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+          const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+          existingInvoice = await prisma.invoice.findFirst({
+            where: {
+              studentId: reg.studentId,
+              termId: currentTerm.id,
+              createdAt: { gte: startOfMonth, lte: endOfMonth }
+            }
+          });
+        }
+
+        if (existingInvoice) {
+          results.skipped++;
+          continue;
+        }
+
+        // Calculate total amount (base fee + arrears if applicable)
+        let totalAmount = feeAmount;
+
+        if (shouldRollArrears) {
+          const overdueInvoices = await prisma.invoice.findMany({
+            where: {
+              studentId: reg.studentId,
+              status: { in: ['PENDING', 'PARTIAL', 'OVERDUE'] },
+              dueDate: { lt: now }
+            },
+            select: { id: true, amount: true, paidAmount: true }
+          });
+
+          for (const oldInvoice of overdueInvoices) {
+            const arrears = Number(oldInvoice.amount) - Number(oldInvoice.paidAmount);
+            if (arrears > 0) {
+              totalAmount += arrears;
+              // Mark old invoice as rolled over
+              await prisma.invoice.update({
+                where: { id: oldInvoice.id },
+                data: { status: 'PAID', description: `Rolled over to ${currentTerm.name}` }
               });
-              
-              if (existingInvoicesCount >= installmentsLimit) {
-                  console.log(`🛑 Limit reached for enrollment ${enrollment.id}. Disabling further billing.`);
-                  await tx.enrollment.update({
-                      where: { id: enrollment.id },
-                      data: { nextBillingDate: null }
-                  });
-                  return; // Skip this one
-              }
-          }
-
-          // C. Create the new invoice
-          const dueDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 day grace period
-          
-          await (tx.invoice as any).create({
-            data: {
-              studentId: enrollment.studentId,
-              enrollmentId: enrollment.id,
-              amount: amount,
-              description: `Recurring Fee: ${enrollment.course.title} (${enrollment.billingCycle} Cycle)`,
-              dueDate: dueDate,
-              status: 'PENDING',
             }
-          });
+          }
+        }
 
-          // D. Advance next billing date
-          const nextDate = new Date(enrollment.nextBillingDate!);
-          if (enrollment.billingCycle === 'MONTHLY') nextDate.setMonth(nextDate.getMonth() + 1);
-          else if (enrollment.billingCycle === 'QUARTERLY') nextDate.setMonth(nextDate.getMonth() + 3);
-          else if (enrollment.billingCycle === 'ANNUAL') nextDate.setFullYear(nextDate.getFullYear() + 1);
-          else nextDate.setMonth(nextDate.getMonth() + 6); // Biannual
+        // Create the new invoice
+        const dueDate = addDays(now, 14); // 14 day grace period
+        const cycleLabel = billingCycle === 'MONTHLY' ? 'Monthly Fee' : 'Semester Fee';
+        const description = `${cycleLabel}: ${currentTerm.name}${totalAmount > feeAmount ? ' (includes arrears)' : ''}`;
 
-          await tx.enrollment.update({
-            where: { id: enrollment.id },
-            data: { nextBillingDate: nextDate }
-          });
-
-          results.invoicesCreated++;
+        await (prisma.invoice as any).create({
+          data: {
+            studentId: reg.studentId,
+            termId: currentTerm.id,
+            amount: totalAmount,
+            description,
+            dueDate,
+            status: 'PENDING'
+          }
         });
 
+        results.invoicesCreated++;
         results.processed++;
+
       } catch (err) {
-        console.error(`❌ Failed to process enrollment ${enrollment.id}:`, err);
+        console.error(`❌ Failed to process student ${reg.studentId}:`, err);
         results.failed++;
       }
     }
 
-    return successResponse(results, `Billing job completed. Processed: ${results.processed}, Invoices Created: ${results.invoicesCreated}`);
+    console.log(`✅ Billing job completed. Created: ${results.invoicesCreated}, Skipped: ${results.skipped}, Failed: ${results.failed}`);
+
+    return successResponse(results, `Billing job completed. Invoices Created: ${results.invoicesCreated}`);
 
   } catch (error) {
     console.error('Job Error:', error);
     return errors.internal('Failed to run billing job');
   }
 }
+

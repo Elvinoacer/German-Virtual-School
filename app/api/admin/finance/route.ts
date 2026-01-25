@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const currentMonthStart = startOfMonth(now);
     const currentMonthEnd = endOfMonth(now);
 
-    // Fetch all invoices with student and course info
+    // Fetch all invoices with student and term info
     const [allInvoices, monthlyInvoices] = await Promise.all([
       prisma.invoice.findMany({
         select: {
@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
           status: true,
           dueDate: true,
           createdAt: true,
+          description: true,
           student: {
             select: {
               id: true,
@@ -35,14 +36,9 @@ export async function GET(request: NextRequest) {
               email: true
             }
           },
-          enrollment: {
+          term: {
             select: {
-              course: {
-                select: {
-                  title: true,
-                  level: true
-                }
-              }
+              name: true
             }
           }
         },
@@ -83,15 +79,13 @@ export async function GET(request: NextRequest) {
       status: invoice.status,
       dueDate: invoice.dueDate,
       createdAt: invoice.createdAt,
+      description: invoice.description,
       student: {
         id: invoice.student.id,
         name: `${invoice.student.firstName} ${invoice.student.lastName}`,
         email: invoice.student.email
       },
-      course: invoice.enrollment?.course ? {
-        title: invoice.enrollment.course.title,
-        level: invoice.enrollment.course.level
-      } : null
+      term: invoice.term?.name || null
     }));
 
     return successResponse({
@@ -112,3 +106,4 @@ export async function GET(request: NextRequest) {
     return errors.internal('Failed to fetch finance data');
   }
 }
+
