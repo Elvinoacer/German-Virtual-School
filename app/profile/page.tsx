@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession, signOut } from "next-auth/react";
 import { useState, useRef } from "react";
-import { upload } from "@vercel/blob/client";
+
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -58,16 +58,25 @@ export default function UserProfilePage() {
     const toastId = toast.loading("Uploading avatar...");
 
     try {
-      const newBlob = await upload(file.name, file, {
-        access: 'public',
-        handleUploadUrl: '/api/upload',
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', 'avatars');
+
+      const uploadRes = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
       });
+
+      if (!uploadRes.ok) throw new Error('Upload failed');
+
+      const result = await uploadRes.json();
+      const newAvatarUrl = result.data.url;
 
       // Update profile with new avatar URL
       const updateRes = await fetch("/api/users/me/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ avatarUrl: newBlob.url }),
+        body: JSON.stringify({ avatarUrl: newAvatarUrl }),
       });
 
       if (!updateRes.ok) throw new Error("Failed to update profile");

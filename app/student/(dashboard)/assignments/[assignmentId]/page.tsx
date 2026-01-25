@@ -71,19 +71,21 @@ export default function AssignmentDetailsPage() {
 
     try {
       let url = "";
-      if (file.type.startsWith('image/')) {
-        const formData = new FormData();
-        formData.append('file', file);
-        const response = await axiosInstance.post('/api/upload/cloudinary', formData);
-        url = response.data.secure_url;
-      } else {
-        const response = await fetch(`/api/upload/blob?filename=${encodeURIComponent(file.name)}`, {
-          method: 'POST',
-          body: file,
-        });
-        const blob = await response.json();
-        url = blob.url;
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', 'submissions');
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
       }
+
+      const result = await response.json();
+      url = result.data.url;
 
       setSubmissionUrl(url);
       toast.success("File uploaded successfully!", { id: toastId });

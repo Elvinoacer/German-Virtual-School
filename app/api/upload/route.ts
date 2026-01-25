@@ -1,46 +1,84 @@
-
-import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { uploadFile, getContentType } from '@/lib/do-spaces';
 import { authenticate } from '@/lib/auth-middleware';
-import { errors } from '@/lib/api-response';
 
-export async function POST(request: Request): Promise<NextResponse> {
-  const body = (await request.json()) as HandleUploadBody;
-
+/**
+ * POST /api/upload
+ * 
+ * Unified file upload endpoint using DigitalOcean Spaces.
+ * All files are uploaded as public.
+ * 
+ * Form data:
+ * - file: The file to upload
+ * - folder: (optional) The folder/category for organization (default: 'uploads')
+ */
+export async function POST(request: NextRequest) {
   try {
-    const payload = await authenticate(request as any);
+    // Authenticate user
+    await authenticate(request);
 
-    const jsonResponse = await handleUpload({
-      body,
-      request,
-      onBeforeGenerateToken: async (
-        pathname: string,
-        /* clientPayload */
-      ) => {
-        // Only allow authenticated users to upload
-        if (!payload) {
-          throw new Error('Unauthorized');
-        }
+    const formData = await request.formData();
+    const file = formData.get('file') as File | null;
+    const folder = (formData.get('folder') as string) || 'uploads';
 
-        return {
-          allowedContentTypes: ['image/jpeg', 'image/png', 'image/gif'],
-          tokenPayload: JSON.stringify({
-            userId: payload.userId,
-          }),
-        };
-      },
-      onUploadCompleted: async ({ blob, tokenPayload }) => {
-        // Optimization: We could update the user profile here directly if we wanted to enforce it server-side
-        // But letting the client trigger the update allows for better UI feedback and flexibility
-        console.log('Blob upload completed', blob, tokenPayload);
+    if (!file) {
+      return NextResponse.json(
+        { error: 'No file provided' },
+        { status: 400 }
+      );
+    }
+
+    // Validate file size (max 50MB)
+    const MAX_SIZE = 50 * 1024 * 1024; // 50MB
+    if (file.size > MAX_SIZE) {
+      return NextResponse.json(
+        { error: 'File too large. Maximum size is 50MB.' },
+        { status: 400 }
+      );
+    }
+
+    // Convert File to Buffer
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Get content type
+    const contentType = file.type || getContentType(file.name);
+
+    // Upload to DO Spaces
+    const result = await uploadFile(buffer, folder, file.name, contentType);
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        url: result.url,
+        key: result.key,
+        filename: file.name,
+        size: file.size,
+        contentType,
       },
     });
 
-    return NextResponse.json(jsonResponse);
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Upload error:', error);
+    
+    if (error.message === 'Unauthorized') {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     return NextResponse.json(
-      { error: (error as Error).message },
-      { status: 400 }, // The webhook will retry 5 times if you return a 500
+      { error: 'Upload failed', details: error.message },
+      { status: 500 }
     );
   }
+}
+
+// Handle client-side upload token generation (for backwards compatibility)
+export async function GET(request: NextRequest) {
+  return NextResponse.json(
+    { error: 'Use POST to upload files' },
+    { status: 405 }
+  );
 }

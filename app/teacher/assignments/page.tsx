@@ -89,26 +89,23 @@ export default function TeacherAssignmentsPage() {
     setIsUploading(true);
 
     try {
-      for (const { file, type } of selectedFiles) {
-        if (type === 'image' || type === 'video') {
-          // Upload to Cloudinary
-          const formData = new FormData();
-          formData.append('file', file);
-          const response = await fetch('/api/upload/cloudinary', {
-            method: 'POST',
-            body: formData,
-          });
-          const result = await response.json();
-          if (result.secure_url) uploadedUrls.push(result.secure_url);
-        } else {
-          // Upload to Vercel Blob
-          const response = await fetch(`/api/upload/blob?filename=${encodeURIComponent(file.name)}`, {
-            method: 'POST',
-            body: file,
-          });
-          const result = await response.json();
-          if (result.url) uploadedUrls.push(result.url);
+      for (const { file } of selectedFiles) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folder', 'assignments');
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Upload failed');
         }
+
+        const result = await response.json();
+        if (result.data?.url) uploadedUrls.push(result.data.url);
       }
       return uploadedUrls;
     } catch (error) {
@@ -340,7 +337,7 @@ export default function TeacherAssignmentsPage() {
                           Files & Resources
                         </label>
                         <span className="text-[10px] text-slate-400">
-                          Cloudinary & Blob
+                          Public Files
                         </span>
                       </div>
                       

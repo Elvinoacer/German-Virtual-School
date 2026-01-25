@@ -65,7 +65,7 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('/api/upload/cloudinary', {
+      const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       });
@@ -73,8 +73,8 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
       if (!response.ok) throw new Error('Upload failed');
 
       const result = await response.json();
-      setPreviewUrl(result.secure_url);
-      onUploadComplete(result.secure_url);
+      setPreviewUrl(result.data.url);
+      onUploadComplete(result.data.url);
       toast.success(`${type === 'image' ? 'Image' : 'Video'} uploaded successfully`);
     } catch (error) {
       console.error('Upload error:', error);
