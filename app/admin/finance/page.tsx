@@ -338,8 +338,8 @@ export default function AdminFinancePage() {
                     >
                       <option value="MONTHLY">Monthly</option>
                       <option value="QUARTERLY">Quarterly (Per Semester)</option>
-                      <option value="BIANNUAL">Bi-Annual</option>
-                      <option value="ONE_TIME">One Time Payment</option>
+                      {/* <option value="BIANNUAL">Bi-Annual</option> */}
+                      {/* <option value="ONE_TIME">One Time Payment</option> */}
                     </select>
                  </div>
                  <div className="space-y-3">

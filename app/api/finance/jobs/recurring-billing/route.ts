@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errors } from '@/lib/api-response';
 import { addMonths, addDays } from 'date-fns';
+import { sendInvoiceNotification } from '@/lib/invoice-notification';
 
 /**
  * RECURRING BILLING JOB
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     const now = new Date();
-    console.log(`🚀 Starting Recurring Billing Job at ${now.toISOString()}`);
+    // console.log(`🚀 Starting Recurring Billing Job at ${now.toISOString()}`); // Use logger instead of console in prod
 
     // 2. Fetch billing settings and current term
     const [billingSettings, currentTerm] = await Promise.all([
@@ -34,12 +35,10 @@ export async function POST(request: NextRequest) {
     ]);
 
     if (!billingSettings) {
-      console.log('❌ No billing settings configured. Exiting.');
       return successResponse({ processed: 0 }, 'No billing settings configured.');
     }
 
     if (!currentTerm) {
-      console.log('❌ No current term set. Exiting.');
       return successResponse({ processed: 0 }, 'No current term set.');
     }
 
@@ -47,17 +46,16 @@ export async function POST(request: NextRequest) {
 
     // Skip if billing cycle is ONE_TIME (manual only)
     if (billingCycle === 'ONE_TIME') {
-      console.log('ℹ️ Billing cycle is ONE_TIME. No recurring invoices needed.');
       return successResponse({ processed: 0 }, 'Billing cycle is ONE_TIME. No action taken.');
     }
 
     // 3. Find all students registered for the current term
     const registrations = await prisma.termRegistration.findMany({
       where: { termId: currentTerm.id },
-      include: { student: { select: { id: true, firstName: true, lastName: true } } }
+      include: { student: { select: { id: true, firstName: true, lastName: true, email: true } } }
     });
 
-    console.log(`📋 Found ${registrations.length} students registered for ${currentTerm.name}.`);
+    // console.log(`📋 Found ${registrations.length} students registered for ${currentTerm.name}.`);
 
     const results = {
       processed: 0,
@@ -73,8 +71,6 @@ export async function POST(request: NextRequest) {
     for (const reg of registrations) {
       try {
         // Check if student already has an invoice for this billing period
-        // For QUARTERLY, we check if they have an invoice for this term already
-        // For MONTHLY, we check if they have one created this month
         let existingInvoice = null;
 
         if (billingCycle === 'QUARTERLY') {
@@ -104,47 +100,66 @@ export async function POST(request: NextRequest) {
 
         // Calculate total amount (base fee + arrears if applicable)
         let totalAmount = feeAmount;
-
-        if (shouldRollArrears) {
-          const overdueInvoices = await prisma.invoice.findMany({
-            where: {
-              studentId: reg.studentId,
-              status: { in: ['PENDING', 'PARTIAL', 'OVERDUE'] },
-              dueDate: { lt: now }
-            },
-            select: { id: true, amount: true, paidAmount: true }
-          });
-
-          for (const oldInvoice of overdueInvoices) {
-            const arrears = Number(oldInvoice.amount) - Number(oldInvoice.paidAmount);
-            if (arrears > 0) {
-              totalAmount += arrears;
-              // Mark old invoice as rolled over
-              await prisma.invoice.update({
-                where: { id: oldInvoice.id },
-                data: { status: 'PAID', description: `Rolled over to ${currentTerm.name}` }
-              });
-            }
-          }
-        }
-
-        // Create the new invoice
         const dueDate = addDays(now, 14); // 14 day grace period
         const cycleLabel = billingCycle === 'MONTHLY' ? 'Monthly Fee' : 'Semester Fee';
-        const description = `${cycleLabel}: ${currentTerm.name}${totalAmount > feeAmount ? ' (includes arrears)' : ''}`;
+        
+        let newInvoiceData = null;
 
-        await (prisma.invoice as any).create({
-          data: {
-            studentId: reg.studentId,
-            termId: currentTerm.id,
-            amount: totalAmount,
-            description,
-            dueDate,
-            status: 'PENDING'
-          }
+        await prisma.$transaction(async (tx) => {
+            if (shouldRollArrears) {
+            const overdueInvoices = await tx.invoice.findMany({
+                where: {
+                studentId: reg.studentId,
+                status: { in: ['PENDING', 'PARTIAL', 'OVERDUE'] },
+                dueDate: { lt: now }
+                },
+                select: { id: true, amount: true, paidAmount: true }
+            });
+
+            for (const oldInvoice of overdueInvoices) {
+                const arrears = Number(oldInvoice.amount) - Number(oldInvoice.paidAmount);
+                if (arrears > 0) {
+                totalAmount += arrears;
+                // Mark old invoice as rolled over
+                await tx.invoice.update({
+                    where: { id: oldInvoice.id },
+                    data: { status: 'PAID', description: `Rolled over to ${currentTerm.name}` }
+                });
+                }
+            }
+            }
+
+            // Create the new invoice
+            const description = `${cycleLabel}: ${currentTerm.name}${totalAmount > feeAmount ? ' (includes arrears)' : ''}`;
+
+            const invoice = await (tx.invoice as any).create({
+            data: {
+                studentId: reg.studentId,
+                termId: currentTerm.id,
+                amount: totalAmount,
+                description,
+                dueDate,
+                status: 'PENDING'
+            }
+            });
+            
+            newInvoiceData = {
+                id: invoice.id,
+                amount: totalAmount,
+                description,
+                dueDate,
+                createdAt: now,
+                studentName: `${reg.student.firstName} ${reg.student.lastName}`,
+                studentEmail: reg.student.email
+            };
         });
 
-        results.invoicesCreated++;
+        if (newInvoiceData) {
+            // Send notification (non-blocking)
+            sendInvoiceNotification(newInvoiceData).catch(err => console.error('Failed to send notification', err));
+            results.invoicesCreated++;
+        }
+        
         results.processed++;
 
       } catch (err) {
@@ -153,8 +168,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log(`✅ Billing job completed. Created: ${results.invoicesCreated}, Skipped: ${results.skipped}, Failed: ${results.failed}`);
-
     return successResponse(results, `Billing job completed. Invoices Created: ${results.invoicesCreated}`);
 
   } catch (error) {
@@ -162,4 +175,5 @@ export async function POST(request: NextRequest) {
     return errors.internal('Failed to run billing job');
   }
 }
+
 

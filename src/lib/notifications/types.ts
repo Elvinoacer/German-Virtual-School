@@ -8,6 +8,7 @@ export interface NotificationPayload {
     subject?: string;
     html?: string;
     text?: string;
+    attachments?: { filename: string; content: Buffer | string; contentType?: string }[];
   };
   push?: {
     tokens?: string[];

@@ -29,6 +29,7 @@ export async function sendEmailNotification(payload: NotificationPayload): Promi
       subject: email.subject || payload.title,
       text: email.text || payload.message,
       html: email.html, 
+      attachments: email.attachments,
     });
 
     console.log(`[Email] Sent to ${email.to}`);

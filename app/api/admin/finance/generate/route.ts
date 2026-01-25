@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { authenticate } from '@/lib/auth-middleware';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errors } from '@/lib/api-response';
+import { sendInvoiceNotification } from '@/lib/invoice-notification';
 
 /**
  * POST /api/admin/finance/generate
@@ -30,17 +31,22 @@ export async function POST(request: NextRequest) {
       return errors.badRequest('Default fee is not configured or is zero.');
     }
 
-    // 2. Get all students registered for the current term
+    // 2. Get all students registered for the current term with details
     const registrations = await prisma.termRegistration.findMany({
       where: { termId: currentTerm.id },
-      select: { studentId: true }
+      include: {
+        student: {
+          select: { id: true, firstName: true, lastName: true, email: true }
+        }
+      }
     });
 
     if (registrations.length === 0) {
       return successResponse({ created: 0, skipped: 0 }, 'No students are registered for the current term.');
     }
 
-    const studentIds = registrations.map(r => r.studentId);
+    const students = registrations.map(r => r.student);
+    const studentIds = students.map(s => s.id);
 
     // 3. Find students who already have an invoice for this term
     const existingInvoices = await prisma.invoice.findMany({
@@ -52,7 +58,7 @@ export async function POST(request: NextRequest) {
     });
 
     const studentsWithInvoice = new Set(existingInvoices.map(i => i.studentId));
-    const studentsNeedingInvoice = studentIds.filter(id => !studentsWithInvoice.has(id));
+    const studentsNeedingInvoice = students.filter(s => !studentsWithInvoice.has(s.id));
 
     if (studentsNeedingInvoice.length === 0) {
       return successResponse(
@@ -69,17 +75,18 @@ export async function POST(request: NextRequest) {
     const dueDate = new Date(currentTerm.startDate > now ? currentTerm.startDate : now);
     dueDate.setDate(dueDate.getDate() + 14); // 14 day grace period
 
-    let createdCount = 0;
+    // Store data for notifications
+    const invoicesForNotification: any[] = [];
 
     await prisma.$transaction(async (tx) => {
-      for (const studentId of studentsNeedingInvoice) {
+      for (const student of studentsNeedingInvoice) {
         let totalAmount = Number(billingSettings.defaultFee);
 
         // Check for arrears from previous term if applicable
         if (shouldRollArrears) {
           const previousOverdueInvoices = await tx.invoice.findMany({
             where: {
-              studentId,
+              studentId: student.id,
               status: { in: ['PENDING', 'PARTIAL', 'OVERDUE'] },
               termId: { not: currentTerm.id },
               dueDate: { lt: now }
@@ -103,23 +110,39 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        await (tx.invoice as any).create({
+        const description = `Semester Fee: ${currentTerm.name}${totalAmount > Number(billingSettings.defaultFee) ? ' (includes arrears)' : ''}`;
+
+        const newInvoice = await (tx.invoice as any).create({
           data: {
-            studentId,
+            studentId: student.id,
             termId: currentTerm.id,
             amount: totalAmount,
-            description: `Semester Fee: ${currentTerm.name}${totalAmount > Number(billingSettings.defaultFee) ? ' (includes arrears)' : ''}`,
+            description,
             dueDate,
             status: 'PENDING'
           }
         });
-        createdCount++;
+        
+        invoicesForNotification.push({
+          id: newInvoice.id,
+          amount: totalAmount,
+          description,
+          dueDate,
+          createdAt: now,
+          studentName: `${student.firstName} ${student.lastName}`,
+          studentEmail: student.email
+        });
       }
     });
 
+    // 6. Send Notifications (Fire and forget, don't block response)
+    Promise.allSettled(
+      invoicesForNotification.map(invoice => sendInvoiceNotification(invoice))
+    );
+
     return successResponse(
-      { created: createdCount, skipped: studentsWithInvoice.size },
-      `Successfully generated ${createdCount} invoices for ${currentTerm.name}.`
+      { created: invoicesForNotification.length, skipped: studentsWithInvoice.size },
+      `Successfully generated ${invoicesForNotification.length} invoices for ${currentTerm.name}.`
     );
 
   } catch (error) {
