@@ -130,7 +130,8 @@ export async function POST(request: NextRequest) {
           dueDate,
           createdAt: now,
           studentName: `${student.firstName} ${student.lastName}`,
-          studentEmail: student.email
+          studentEmail: student.email,
+          studentId: student.id
         });
       }
     });
