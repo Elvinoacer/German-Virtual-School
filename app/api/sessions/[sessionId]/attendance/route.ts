@@ -11,10 +11,10 @@ export async function GET(
     const payload = await authenticate(request);
     const { sessionId } = await params;
 
-    // Get session
+    // Get session with start/end times for duration calculation
     const session = await prisma.classSession.findUnique({
       where: { id: sessionId },
-      select: { teacherId: true, courseId: true, title: true, endTime: true },
+      select: { teacherId: true, courseId: true, title: true, startTime: true, endTime: true },
     });
 
     if (!session) {
@@ -98,19 +98,48 @@ export async function GET(
       orderBy: { checkInTime: 'asc' },
     });
 
+    // Calculate session duration in minutes
+    const sessionDurationMs = new Date(session.endTime).getTime() - new Date(session.startTime).getTime();
+    const sessionDurationMinutes = Math.round(sessionDurationMs / 60000);
+
+    // Helper function to determine attendance category
+    const determineCategory = (durationMinutes: number | null, sessionDuration: number): 'FULL' | 'PARTIAL' | 'MISSING' => {
+      if (!durationMinutes || durationMinutes === 0) return 'MISSING';
+      const percent = (durationMinutes / sessionDuration) * 100;
+      if (percent >= 80) return 'FULL';
+      if (percent >= 30) return 'PARTIAL';
+      return 'MISSING';
+    };
+
+    // Enhance attendance records with percentage and category
+    const enhancedAttendance = attendance.map(a => ({
+      ...a,
+      attendancePercent: sessionDurationMinutes > 0 
+        ? Math.min(100, Math.round(((a.durationMinutes || 0) / sessionDurationMinutes) * 100))
+        : 0,
+      category: determineCategory(a.durationMinutes, sessionDurationMinutes)
+    }));
+
     // Summary statistics
     const stats = {
-        totalAttendees: attendance.length,
-        averageDuration: attendance.length > 0 
-            ? Math.round(attendance.reduce((sum, a) => sum + (a.durationMinutes || 0), 0) / attendance.length) 
+        totalEnrolled: enhancedAttendance.length,
+        sessionDurationMinutes,
+        averageDuration: enhancedAttendance.length > 0 
+            ? Math.round(enhancedAttendance.reduce((sum, a) => sum + (a.durationMinutes || 0), 0) / enhancedAttendance.length) 
             : 0,
-        presentCount: attendance.filter(a => a.status === 'PRESENT').length,
+        averageAttendancePercent: enhancedAttendance.length > 0
+            ? Math.round(enhancedAttendance.reduce((sum, a) => sum + a.attendancePercent, 0) / enhancedAttendance.length)
+            : 0,
+        fullAttendance: enhancedAttendance.filter(a => a.category === 'FULL').length,
+        partialAttendance: enhancedAttendance.filter(a => a.category === 'PARTIAL').length,
+        missing: enhancedAttendance.filter(a => a.category === 'MISSING').length,
     };
 
     return successResponse({ 
         sessionTitle: session.title,
+        sessionDurationMinutes,
         stats,
-        attendance 
+        attendance: enhancedAttendance 
     });
   } catch (error) {
     console.error('Get attendance error:', error);

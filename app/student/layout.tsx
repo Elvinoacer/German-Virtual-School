@@ -33,6 +33,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     { href: '/student/grades', icon: 'school', label: 'Grades' },
     { href: '/student/assignments', icon: 'assignment', label: 'Assignments' },
     { href: '/student/schedule', icon: 'calendar_month', label: 'Schedule' },
+    { href: '/student/attendance', icon: 'fact_check', label: 'Attendance' },
     { href: '/student/billing', icon: 'payments', label: 'Billing' },
     { href: '/student/reports', icon: 'description', label: 'Reports' },
     { href: '/messages', icon: 'chat', label: 'Messages' },

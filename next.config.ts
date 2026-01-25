@@ -5,6 +5,12 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Support large file uploads (100MB+ documents)
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '150mb',
+    },
+  },
 };
 
 export default nextConfig;

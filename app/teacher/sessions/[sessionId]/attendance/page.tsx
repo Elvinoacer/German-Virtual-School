@@ -1,11 +1,11 @@
 "use client";
 
-import { use, useState } from "react";
+import { use } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import Link from "next/link";
 import { format } from "date-fns";
-import { ChevronLeft, Clock, Users, Timer } from "lucide-react";
+import { ChevronLeft, Clock, Users, Timer, TrendingUp, UserX, UserCheck } from "lucide-react";
 
 export default function SessionAttendanceReportPage({ params }: { params: Promise<{ sessionId: string }> }) {
   const { sessionId } = use(params);
@@ -37,7 +37,33 @@ export default function SessionAttendanceReportPage({ params }: { params: Promis
     );
   }
 
-  const { stats, attendance, sessionTitle } = data;
+  const { stats, attendance, sessionTitle, sessionDurationMinutes } = data;
+
+  // Helper for category colors
+  const getCategoryStyle = (category: string) => {
+    switch (category) {
+      case 'FULL':
+        return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+      case 'PARTIAL':
+        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
+      default:
+        return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+    }
+  };
+
+  const getCategoryLabel = (category: string) => {
+    switch (category) {
+      case 'FULL': return 'Full';
+      case 'PARTIAL': return 'Partial';
+      default: return 'Missing';
+    }
+  };
+
+  const getPercentColor = (percent: number) => {
+    if (percent >= 80) return 'text-green-600 dark:text-green-400';
+    if (percent >= 30) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-red-600 dark:text-red-400';
+  };
 
   return (
     <div className="p-4 md:p-6 lg:p-10 max-w-7xl mx-auto space-y-6 md:space-y-8">
@@ -55,39 +81,72 @@ export default function SessionAttendanceReportPage({ params }: { params: Promis
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
             {sessionTitle}
           </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Session Duration: <span className="font-bold">{sessionDurationMinutes} minutes</span>
+          </p>
         </div>
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-        <div className="bg-white dark:bg-card-dark p-4 md:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
-          <div className="size-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600">
-            <Users className="w-6 h-6" />
+      {/* Stats Overview - Updated with new metrics */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="bg-white dark:bg-card-dark p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="size-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600">
+              <Users className="w-5 h-5" />
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-medium text-slate-500">Total Attendees</p>
-            <p className="text-2xl font-black">{stats.totalAttendees}</p>
-          </div>
-        </div>
-        
-        <div className="bg-white dark:bg-card-dark p-4 md:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
-          <div className="size-12 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-600">
-            <Timer className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-slate-500">Avg. Duration</p>
-            <p className="text-2xl font-black">{stats.averageDuration}m</p>
-          </div>
+          <p className="text-xs font-medium text-slate-500">Total Enrolled</p>
+          <p className="text-2xl font-black">{stats.totalEnrolled}</p>
         </div>
 
-        <div className="bg-white dark:bg-card-dark p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
-          <div className="size-12 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-600">
-            <Clock className="w-6 h-6" />
+        <div className="bg-white dark:bg-card-dark p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="size-10 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-600">
+              <UserCheck className="w-5 h-5" />
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-medium text-slate-500">Present Count</p>
-            <p className="text-2xl font-black">{stats.presentCount}</p>
+          <p className="text-xs font-medium text-slate-500">Full Attendance</p>
+          <p className="text-2xl font-black text-green-600">{stats.fullAttendance}</p>
+        </div>
+
+        <div className="bg-white dark:bg-card-dark p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="size-10 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 flex items-center justify-center text-yellow-600">
+              <Clock className="w-5 h-5" />
+            </div>
           </div>
+          <p className="text-xs font-medium text-slate-500">Partial</p>
+          <p className="text-2xl font-black text-yellow-600">{stats.partialAttendance}</p>
+        </div>
+
+        <div className="bg-white dark:bg-card-dark p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="size-10 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-600">
+              <UserX className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-xs font-medium text-slate-500">Missing</p>
+          <p className="text-2xl font-black text-red-600">{stats.missing}</p>
+        </div>
+
+        <div className="bg-white dark:bg-card-dark p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="size-10 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-600">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-xs font-medium text-slate-500">Avg. Attendance</p>
+          <p className="text-2xl font-black">{stats.averageAttendancePercent}%</p>
+        </div>
+
+        <div className="bg-white dark:bg-card-dark p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="size-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600">
+              <Timer className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-xs font-medium text-slate-500">Avg. Duration</p>
+          <p className="text-2xl font-black">{stats.averageDuration}m</p>
         </div>
       </div>
 
@@ -101,10 +160,12 @@ export default function SessionAttendanceReportPage({ params }: { params: Promis
             <thead>
               <tr className="border-b border-slate-100 dark:border-slate-800 text-xs font-bold uppercase text-slate-400">
                 <th className="px-6 py-4">Student</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4 text-center">Attendance %</th>
+                <th className="px-6 py-4 text-center">Duration</th>
                 <th className="px-6 py-4">First Joined</th>
                 <th className="px-6 py-4">Last Left</th>
-                <th className="px-6 py-4 text-center">Duration</th>
-                <th className="px-6 py-4">Logs</th>
+                <th className="px-6 py-4">Activity Log</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
@@ -121,20 +182,30 @@ export default function SessionAttendanceReportPage({ params }: { params: Promis
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                    {record.checkInTime ? format(new Date(record.checkInTime), "HH:mm:ss") : "-"}
+                  <td className="px-6 py-4">
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${getCategoryStyle(record.category)}`}>
+                      {getCategoryLabel(record.category)}
+                    </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                    {record.checkOutTime ? format(new Date(record.checkOutTime), "HH:mm:ss") : "Still in call"}
+                  <td className="px-6 py-4 text-center">
+                    <span className={`text-lg font-black ${getPercentColor(record.attendancePercent)}`}>
+                      {record.attendancePercent}%
+                    </span>
                   </td>
                   <td className="px-6 py-4 text-center">
                     <span className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-black">
                       {record.durationMinutes}m
                     </span>
                   </td>
+                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                    {record.checkInTime ? format(new Date(record.checkInTime), "HH:mm:ss") : "-"}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                    {record.checkOutTime ? format(new Date(record.checkOutTime), "HH:mm:ss") : "Still in call"}
+                  </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-wrap gap-1 max-w-xs">
-                      {record.logs.map((log: any, i: number) => (
+                      {record.logs.map((log: any) => (
                         <span key={log.id} className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${
                           log.type === 'JOIN' ? 'bg-green-100 text-green-700 dark:bg-green-900/30' : 'bg-red-100 text-red-700 dark:bg-red-900/30'
                         }`}>
@@ -147,7 +218,7 @@ export default function SessionAttendanceReportPage({ params }: { params: Promis
               ))}
               {attendance.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-slate-500 italic">
+                  <td colSpan={7} className="px-6 py-12 text-center text-slate-500 italic">
                     No attendance data available for this session.
                   </td>
                 </tr>
