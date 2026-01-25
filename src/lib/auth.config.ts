@@ -130,8 +130,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async signIn({ user, account, profile }) {
       console.log("[DEBUG] signIn callback started");
-      console.log("[DEBUG] user:", user);
-      console.log("[DEBUG] account:", account);
       
       // For OAuth providers, ensure custom fields are populated
       if (account?.provider && account.provider !== "credentials" && user?.id) {
@@ -144,31 +142,37 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           });
           console.log("[DEBUG] Existing user found in DB:", existingUser);
           
-          // Prepare update data
-          const updateData: any = {
-            emailVerified: new Date(), // Always verify email for Google sign-in
-          };
+          // Only attempt update if user ALREADY exists (prevent P2025 error for new users)
+          if (existingUser) {
+             // Prepare update data
+            const updateData: any = {
+              emailVerified: new Date(), // Always verify email for Google sign-in
+              isVerified: true, // Automatically approve Google users (bypass admin check)
+            };
 
-          // If firstName is the default empty string or missing, populate profile data
-          if (existingUser && (!existingUser.firstName || existingUser.firstName === "")) {
-            console.log("[DEBUG] New user detected (missing firstName), populating profile");
-            const profileData = profile as any;
-            const fullName = user.name || profileData?.name || "";
-            const nameParts = fullName.split(" ");
-            
-            updateData.firstName = profileData?.given_name || nameParts[0] || "Unknown";
-            updateData.lastName = profileData?.family_name || nameParts.slice(1).join(" ") || ".";
-            updateData.role = "STUDENT";
-            updateData.isVerified = false;
+            // If firstName is the default empty string or missing, populate profile data
+            if (!existingUser.firstName || existingUser.firstName === "") {
+              console.log("[DEBUG] User detected with missing profile, populating...");
+              const profileData = profile as any;
+              const fullName = user.name || profileData?.name || "";
+              const nameParts = fullName.split(" ");
+              
+              updateData.firstName = profileData?.given_name || nameParts[0] || "Unknown";
+              updateData.lastName = profileData?.family_name || nameParts.slice(1).join(" ") || ".";
+              updateData.role = "STUDENT";
+              // match linkAccount logic
+            }
+
+            console.log("[DEBUG] Updating EXISTING user with data:", updateData);
+            // Force update to ensure email is verified
+            await prisma.user.update({
+              where: { id: user.id },
+              data: updateData
+            });
+            console.log("[DEBUG] Existing User updated successfully");
+          } else {
+            console.log("[DEBUG] User does not exist yet (New SignUp). Skipping update in signIn callback. expecting events.linkAccount to handle it.");
           }
-
-          console.log("[DEBUG] Updating user with data:", updateData);
-          // Force update to ensure email is verified
-          const updatedUser = await prisma.user.update({
-            where: { id: user.id },
-            data: updateData
-          });
-          console.log("[DEBUG] User updated successfully:", updatedUser);
         } catch (error) {
           console.error("[DEBUG] Error updating OAuth user:", error);
         }
@@ -270,4 +274,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
   },
+  events: {
+    async linkAccount({ user, account }) {
+      console.log("[DEBUG] linkAccount event triggered for:", account.provider);
+      if (account.provider === "google") {
+        try {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { 
+                emailVerified: new Date(),
+                isVerified: true, // Automatically approve Google users (bypass admin check)
+            }
+          });
+          console.log("[DEBUG] linkAccount: User email AND status automatically verified for Google");
+        } catch (error) {
+          console.error("[DEBUG] linkAccount: Failed to auto-verify email", error);
+        }
+      }
+    }
+  }
 });
