@@ -63,18 +63,10 @@ export default auth((req) => {
 
   // RBAC Checks
   if (isLoggedIn) {
-    // 0. Check for Email Verification first (before any other checks)
-    const isEmailVerifyPage = nextUrl.pathname === "/verify-email" || nextUrl.pathname.startsWith("/check-email");
     const isVerificationStatusPage = nextUrl.pathname === "/student/verification-status";
-    
-    // If email is not verified, redirect to verify-email page
-    // emailVerified is null for unverified emails (credentials signup)
-    // OAuth users have emailVerified set automatically
-    if (!user?.emailVerified && !isEmailVerifyPage) {
-      return NextResponse.redirect(new URL("/verify-email", nextUrl));
-    }
 
     // 1. Check for Student Admin Verification (isVerified = admin approval)
+    // Email verification is now handled at login level - users can't login without verified email
     if (user?.role === "STUDENT" && !user.isVerified) {
        // If student is unverified by admin and trying to access anything but the verification status page
        if (!isVerificationStatusPage) {

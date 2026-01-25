@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -14,14 +14,9 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
       router.push('/login');
       return;
     }
-
-    // Check email verification (skip for the verify-email and verification-status pages)
-    if (!isLoading && isAuthenticated && user && !pathname.startsWith('/verify-email') && !pathname.startsWith('/student/verification-status')) {
-      if (!user.emailVerified) {
-        router.push('/verify-email');
-      }
-    }
-  }, [isAuthenticated, isLoading, user, router, pathname]);
+    // Note: Email verification is now handled at login level
+    // Users cannot login without verified email, so no need to check here
+  }, [isAuthenticated, isLoading, router, pathname]);
 
   if (isLoading) {
     return (
@@ -38,11 +33,5 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return null;
   }
 
-  // Block rendering if email not verified (except on verify-email and verification-status pages)
-  if (!user?.emailVerified && !pathname.startsWith('/verify-email') && !pathname.startsWith('/student/verification-status')) {
-    return null;
-  }
-
   return <>{children}</>;
 }
-
