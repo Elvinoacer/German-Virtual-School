@@ -129,30 +129,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
-      console.log("[DEBUG] signIn callback started");
       
       // For OAuth providers, ensure custom fields are populated
       if (account?.provider && account.provider !== "credentials" && user?.id) {
-        console.log("[DEBUG] Processing OAuth signin for:", account.provider);
         try {
           // Check if user already has custom fields populated
           const existingUser = await prisma.user.findUnique({
             where: { id: user.id },
             select: { firstName: true, lastName: true, role: true, isVerified: true, emailVerified: true }
           });
-          console.log("[DEBUG] Existing user found in DB:", existingUser);
           
           // Only attempt update if user ALREADY exists (prevent P2025 error for new users)
           if (existingUser) {
              // Prepare update data
             const updateData: any = {
               emailVerified: new Date(), // Always verify email for Google sign-in
-              isVerified: true, // Automatically approve Google users (bypass admin check)
             };
 
             // If firstName is the default empty string or missing, populate profile data
             if (!existingUser.firstName || existingUser.firstName === "") {
-              console.log("[DEBUG] User detected with missing profile, populating...");
               const profileData = profile as any;
               const fullName = user.name || profileData?.name || "";
               const nameParts = fullName.split(" ");
@@ -160,29 +155,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               updateData.firstName = profileData?.given_name || nameParts[0] || "Unknown";
               updateData.lastName = profileData?.family_name || nameParts.slice(1).join(" ") || ".";
               updateData.role = "STUDENT";
-              // match linkAccount logic
+              updateData.isVerified = false;
             }
 
-            console.log("[DEBUG] Updating EXISTING user with data:", updateData);
             // Force update to ensure email is verified
             await prisma.user.update({
               where: { id: user.id },
               data: updateData
             });
-            console.log("[DEBUG] Existing User updated successfully");
           } else {
-            console.log("[DEBUG] User does not exist yet (New SignUp). Skipping update in signIn callback. expecting events.linkAccount to handle it.");
           }
         } catch (error) {
-          console.error("[DEBUG] Error updating OAuth user:", error);
+          console.error("Error updating OAuth user:", error);
         }
       }
       return true;
     },
     async jwt({ token, user, trigger, session, account }) {
-      console.log("[DEBUG] jwt callback started. trigger:", trigger);
       if (user) {
-        console.log("[DEBUG] jwt - user object present (sign in event)");
         token.id = user.id as string;
         token.userId = user.id as string;
         
@@ -192,15 +182,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         
         // Check if we need to fetch fresh data from DB
         const needsDbFetch = !userWithRole.role || !userWithRole.firstName || !userWithRole.emailVerified;
-        console.log("[DEBUG] needsDbFetch:", needsDbFetch);
 
         if (needsDbFetch) {
-          console.log("[DEBUG] Fetching user from DB for JWT...");
           const dbUser = await prisma.user.findUnique({
             where: { id: user.id as string },
             select: { firstName: true, lastName: true, role: true, isVerified: true, emailVerified: true }
           });
-          console.log("[DEBUG] DB User fetched:", dbUser);
           if (dbUser) {
             token.role = dbUser.role;
             token.firstName = dbUser.firstName;
@@ -219,25 +206,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         // Force email verified for OAuth providers if not already set (fixes race condition)
         if (account?.provider?.toLowerCase() === 'google' && !token.emailVerified) {
-          console.log("[DEBUG] Forcing emailVerified in JWT for Google signin");
           token.emailVerified = new Date();
         }
       }
 
       // On subsequent calls (no 'user'), check if token is verified. 
       if (!token.emailVerified) {
-         console.log("[DEBUG] Token emailVerified is missing on subsequent call. Checking DB...");
          try {
             const dbUser = await prisma.user.findUnique({
               where: { id: token.id as string },
               select: { emailVerified: true }
             });
-            console.log("[DEBUG] DB re-check result:", dbUser);
             if (dbUser?.emailVerified) {
               token.emailVerified = dbUser.emailVerified;
             }
          } catch (e) {
-           console.error("[DEBUG] DB re-check failed:", e);
+           // Ignore db error
          }
       }
 
@@ -276,19 +260,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   events: {
     async linkAccount({ user, account }) {
-      console.log("[DEBUG] linkAccount event triggered for:", account.provider);
       if (account.provider === "google") {
         try {
           await prisma.user.update({
             where: { id: user.id },
             data: { 
                 emailVerified: new Date(),
-                isVerified: true, // Automatically approve Google users (bypass admin check)
+                // Admin verification (isVerified) remains false by default
             }
           });
-          console.log("[DEBUG] linkAccount: User email AND status automatically verified for Google");
         } catch (error) {
-          console.error("[DEBUG] linkAccount: Failed to auto-verify email", error);
+          console.error("Failed to auto-verify email", error);
         }
       }
     }
