@@ -1,111 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { format, parseISO } from "date-fns";
-import { toast } from "sonner";
-import {
-  useNotifications,
-  useMarkAsRead,
-  useMarkAllAsRead,
-  useDeleteNotification,
-  useDeleteAllNotifications,
-  Notification
-} from "@/hooks/useNotifications";
+import { useSession } from "next-auth/react";
 
-const TYPE_ICONS: Record<string, string> = {
-  COURSE_UPDATE: "school",
-  ASSIGNMENT: "assignment",
-  GRADE: "grade",
-  PAYMENT: "payments",
-  SESSION_REMINDER: "video_call",
-  EVALUATION: "rate_review",
-  GENERAL: "info",
-  SYSTEM: "settings",
-  WARNING: "warning",
-  SUCCESS: "check_circle",
-  ERROR: "error",
-  INFO: "info",
-};
+// ... (keep existing imports)
 
 export default function NotificationsPage() {
   const router = useRouter();
+  const { data: session } = useSession(); // Get session
   const { data: notifications, isLoading, isError } = useNotifications();
-  const markAsRead = useMarkAsRead();
-  const markAllAsRead = useMarkAllAsRead();
-  const deleteNotification = useDeleteNotification();
-  const deleteAll = useDeleteAllNotifications();
+  // ... (keep existing hooks)
 
-  const [filter, setFilter] = useState<"all" | "unread">("all");
+  const userRole = session?.user?.role;
+  const dashboardLink = userRole === 'ADMIN' ? '/admin/dashboard' : userRole === 'TEACHER' ? '/teacher/dashboard' : '/student/dashboard';
 
-  const filteredNotifications = notifications?.filter(n => 
-    filter === "all" ? true : !n.isRead
-  ) ?? [];
-
-  const handleNotificationClick = (notification: Notification) => {
-    if (!notification.isRead) {
-      markAsRead.mutate(notification.id);
-    }
-    
-    if (notification.data?.link) {
-      let link = notification.data.link;
-      
-      // Fix legacy message links: /messages/123 -> /messages?userId=123
-      // Check if it matches /messages/ followed by something that isn't a query param
-      const messageMatch = link.match(/^\/messages\/([^?]+)$/);
-      if (messageMatch) {
-        link = `/messages?userId=${messageMatch[1]}`;
-      }
-      
-      router.push(link);
-    }
-  };
-
-  const handleMarkAllAsRead = () => {
-    markAllAsRead.mutate(undefined, {
-      onSuccess: () => toast.success("All notifications marked as read"),
-    });
-  };
-
-  const handleDeleteAll = () => {
-    if (confirm("Are you sure you want to delete all notifications? This cannot be undone.")) {
-      deleteAll.mutate(undefined, {
-        onSuccess: () => toast.success("All notifications deleted"),
-      });
-    }
-  };
-
-  const handleDelete = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    deleteNotification.mutate(id, {
-      onSuccess: () => toast.success("Notification deleted"),
-    });
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background-light dark:bg-background-dark">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen gap-4 bg-background-light dark:bg-background-dark text-slate-900 dark:text-white">
-        <span className="material-symbols-outlined text-5xl text-red-500">error</span>
-        <p className="text-lg font-medium">Failed to load notifications</p>
-        <button 
-          onClick={() => window.location.reload()}
-          className="px-6 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-all"
-        >
-          Try Again
-        </button>
-      </div>
-    );
-  }
-
-  const unreadCount = notifications?.filter(n => !n.isRead).length ?? 0;
+  // ... (keep existing state/derivations)
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white">
@@ -119,6 +27,13 @@ export default function NotificationsPage() {
             </p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
+            <button
+                onClick={() => router.push(dashboardLink)}
+                className="w-full sm:w-auto justify-center px-4 py-2.5 bg-primary/10 text-primary hover:bg-primary/20 rounded-xl font-bold text-sm transition-all flex items-center gap-2"
+            >
+                <span className="material-symbols-outlined text-lg">dashboard</span>
+                Dashboard
+            </button>
             <button
               onClick={handleMarkAllAsRead}
               disabled={unreadCount === 0 || markAllAsRead.isPending}
