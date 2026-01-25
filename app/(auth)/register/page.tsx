@@ -118,7 +118,7 @@ export default function RegisterPage() {
                   <span className="material-symbols-outlined text-[18px]">
                     language
                   </span>
-                  <span>Native Teachers</span>
+                  <span>Qualified Instructors</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-sm font-medium text-white/80">
                   <span className="material-symbols-outlined text-[18px]">
