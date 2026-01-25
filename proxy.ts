@@ -16,8 +16,10 @@ export default auth((req) => {
     nextUrl.pathname === "/" ||
     nextUrl.pathname.startsWith("/public") ||
     nextUrl.pathname.startsWith("/about") ||
+    nextUrl.pathname.startsWith("/privacy") ||
     nextUrl.pathname.startsWith("/terms") ||
     nextUrl.pathname.startsWith("/courses") ||
+    nextUrl.pathname.startsWith("/calendar") ||
     nextUrl.pathname.startsWith("/verify-email") || 
     nextUrl.pathname.startsWith("/check-email");
 
