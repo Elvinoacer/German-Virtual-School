@@ -66,6 +66,11 @@ export default auth((req) => {
 
   // RBAC Checks
   if (isLoggedIn) {
+    if (nextUrl.pathname.startsWith('/verify-email') || nextUrl.pathname.startsWith('/student')) {
+        console.log(`[MIDDLEWARE] Checking path: ${nextUrl.pathname}`);
+        console.log(`[MIDDLEWARE] User: ${user?.email}, Verified: ${user?.emailVerified}, Role: ${user?.role}`);
+    }
+
     // 0. Check for Email Verification first (before any other checks)
     const isEmailVerifyPage = nextUrl.pathname === "/verify-email";
     // Also allow check-email just in case, though usually verify-email is the target now
