@@ -102,9 +102,15 @@ export default auth((req) => {
     
     // 2. Role-based Access
     if (isStudentRoute && user?.role !== "STUDENT") {
+       if (user?.role === "ADMIN") {
+          return NextResponse.redirect(new URL("/admin/dashboard", nextUrl));
+       }
        return NextResponse.redirect(new URL("/", nextUrl));
     }
-    if (isTeacherRoute && user?.role !== "TEACHER" && user?.role !== "ADMIN") { // Admin might need access?
+    if (isTeacherRoute && user?.role !== "TEACHER") {
+       if (user?.role === "ADMIN") {
+          return NextResponse.redirect(new URL("/admin/dashboard", nextUrl));
+       }
        return NextResponse.redirect(new URL("/", nextUrl));
     }
     if (isAdminRoute && user?.role !== "ADMIN") {
