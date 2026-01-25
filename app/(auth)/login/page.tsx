@@ -51,8 +51,7 @@ export default function LoginPage() {
               Master the German language from anywhere.
             </h2>
             <p className="text-lg opacity-90 font-light">
-              Join over 10,000 students accessing world-class education through
-              our virtual classrooms.
+            Experience world-class education through immersive, high-performance virtual classrooms.
             </p>
           </motion.div>
         </motion.div>

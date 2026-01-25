@@ -1,12 +1,12 @@
 "use client";
 
-import RegisterForm from '@/components/auth/RegisterForm';
-import Link from 'next/link';
+import RegisterForm from "@/components/auth/RegisterForm";
+import Link from "next/link";
 
 export default function RegisterPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background-light dark:bg-background-dark text-gray-900 dark:text-white font-display">
-       {/* Material Symbols */}
+      {/* Material Symbols */}
       <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet"
@@ -15,7 +15,11 @@ export default function RegisterPage() {
       {/* Navigation Header */}
       <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-gray-200 dark:border-gray-800 bg-white dark:bg-[#101622] px-4 lg:px-10 py-4 sticky top-0 z-50">
         <Link href="/" className="flex items-center gap-3">
-          <img src="/gvs-logo.png" alt="GVS Logo" className="h-10 w-auto dark:brightness-0 dark:invert" />
+          <img
+            src="/gvs-logo.png"
+            alt="GVS Logo"
+            className="h-10 w-auto dark:brightness-0 dark:invert"
+          />
           <div className="flex flex-col">
             <h2 className="text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">
               German Virtual School
@@ -48,17 +52,31 @@ export default function RegisterPage() {
                 Create your Account
               </h1>
               <p className="text-gray-500 dark:text-gray-400 text-base font-normal leading-normal">
-                Willkommen! Join the German Virtual School today and access secure, scalable education online.
+                Willkommen! Join the German Virtual School today and access
+                secure, scalable education online.
               </p>
             </div>
-            
+
             {/* The Form Component */}
             <RegisterForm />
 
             <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-4 leading-relaxed font-sans">
-              By creating an account, you agree to our <br className="sm:hidden" />
-              <Link href="/terms" className="text-primary hover:underline font-bold">Terms of Service</Link> and{" "}
-              <Link href="/privacy" className="text-primary hover:underline font-bold">Privacy Policy</Link>.
+              By creating an account, you agree to our{" "}
+              <br className="sm:hidden" />
+              <Link
+                href="/terms"
+                className="text-primary hover:underline font-bold"
+              >
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/privacy"
+                className="text-primary hover:underline font-bold"
+              >
+                Privacy Policy
+              </Link>
+              .
             </p>
           </div>
         </div>
@@ -66,10 +84,11 @@ export default function RegisterPage() {
         {/* Right Side: Visual Image */}
         <div className="hidden lg:block lg:w-1/2 relative overflow-hidden bg-gray-200 dark:bg-gray-800">
           {/* Background Image */}
-          <div 
+          <div
             className="absolute inset-0 bg-cover bg-center transition-transform duration-700 hover:scale-105"
             style={{
-                backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuA3HdvC9V0Tu6ALGzpthbuXqz6oxq4_B38yAR6cNJtBAutoMltYWcGtaBDBvFz0Hp8K4ovMihyj_gH6eFC0xmnq-ISpgQj_kCh5p8U8l5rGPo9ovLGIIVBaz3DZEeJYZKZfms-opQ8YNNKkXWzwC-0K0HDAY_5xbyUCiZNQI6teHspZvdmkkrP3EO7tO9u77LvtAi-34muC-Oof6_LACUoCmo8i7zTf0yO3KsH8hIkMmFbT6hjzWejtI5cHnHr1jNUkeYgI39A71jM')"
+              backgroundImage:
+                "url('https://lh3.googleusercontent.com/aida-public/AB6AXuA3HdvC9V0Tu6ALGzpthbuXqz6oxq4_B38yAR6cNJtBAutoMltYWcGtaBDBvFz0Hp8K4ovMihyj_gH6eFC0xmnq-ISpgQj_kCh5p8U8l5rGPo9ovLGIIVBaz3DZEeJYZKZfms-opQ8YNNKkXWzwC-0K0HDAY_5xbyUCiZNQI6teHspZvdmkkrP3EO7tO9u77LvtAi-34muC-Oof6_LACUoCmo8i7zTf0yO3KsH8hIkMmFbT6hjzWejtI5cHnHr1jNUkeYgI39A71jM')",
             }}
           >
             {/* Gradient Overlay */}
@@ -80,24 +99,31 @@ export default function RegisterPage() {
           <div className="absolute bottom-0 left-0 w-full p-12 text-white z-10">
             <div className="max-w-md">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-xs font-bold uppercase tracking-wider mb-4">
-                <span className="material-symbols-outlined text-[16px]">verified_user</span>
+                <span className="material-symbols-outlined text-[16px]">
+                  verified_user
+                </span>
                 Secure Platform
               </div>
               <h3 className="text-3xl font-bold mb-3 leading-tight">
                 Master the German language from anywhere.
               </h3>
               <p className="text-lg text-white/90 leading-relaxed">
-                Join over 10,000 students experiencing our immersive, scalable virtual classrooms.
+                Join our founding cohort and help shape the future of virtual
+                learning.
               </p>
-              
+
               {/* Feature Tags */}
               <div className="flex gap-3 mt-6">
                 <div className="flex items-center gap-1.5 text-sm font-medium text-white/80">
-                  <span className="material-symbols-outlined text-[18px]">language</span>
+                  <span className="material-symbols-outlined text-[18px]">
+                    language
+                  </span>
                   <span>Native Teachers</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-sm font-medium text-white/80">
-                  <span className="material-symbols-outlined text-[18px]">schedule</span>
+                  <span className="material-symbols-outlined text-[18px]">
+                    schedule
+                  </span>
                   <span>Flexible Schedule</span>
                 </div>
               </div>
