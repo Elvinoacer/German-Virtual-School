@@ -55,8 +55,8 @@ export default function RegisterForm() {
       });
 
       if (response.data.success) {
-        toast.success('Registration successful! Please sign in.');
-        router.push('/login');
+        toast.success('Registration successful! Please check your email to verify your account.');
+        router.push(`/check-email?email=${encodeURIComponent(data.email)}`);
       }
     } catch (error: any) {
       console.error('Registration error:', error);
