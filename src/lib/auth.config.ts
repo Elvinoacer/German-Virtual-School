@@ -140,23 +140,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             select: { firstName: true, lastName: true, role: true, isVerified: true, emailVerified: true }
           });
           
-          // If firstName is the default empty string or missing, this is a new OAuth user
+          // Prepare update data
+          const updateData: any = {
+            emailVerified: new Date(), // Always verify email for Google sign-in
+          };
+
+          // If firstName is the default empty string or missing, populate profile data
           if (existingUser && (!existingUser.firstName || existingUser.firstName === "")) {
             const profileData = profile as any;
             const fullName = user.name || profileData?.name || "";
             const nameParts = fullName.split(" ");
             
-            await prisma.user.update({
-              where: { id: user.id },
-              data: {
-                firstName: profileData?.given_name || nameParts[0] || "Unknown",
-                lastName: profileData?.family_name || nameParts.slice(1).join(" ") || ".",
-                role: "STUDENT" as const,
-                isVerified: false,
-                emailVerified: new Date(),
-              }
-            });
+            updateData.firstName = profileData?.given_name || nameParts[0] || "Unknown";
+            updateData.lastName = profileData?.family_name || nameParts.slice(1).join(" ") || ".";
+            updateData.role = "STUDENT";
+            updateData.isVerified = false;
           }
+
+          // Force update to ensure email is verified
+          await prisma.user.update({
+            where: { id: user.id },
+            data: updateData
+          });
         } catch (error) {
           console.error("Error updating OAuth user with custom fields:", error);
         }
