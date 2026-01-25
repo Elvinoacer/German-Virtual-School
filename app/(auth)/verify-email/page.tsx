@@ -3,18 +3,24 @@
 import { signOut, useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
 import { toast } from "sonner";
 import axiosInstance from "@/lib/axios";
+import Link from "next/link";
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isResending, setIsResending] = useState(false);
+  
+  // Get email from query params (for just-registered users) or session (for logged-in users)
+  const emailFromParams = searchParams.get("email");
+  const email = session?.user?.email || emailFromParams;
 
   useEffect(() => {
-    // If already verified, redirect to appropriate page
+    // If already verified and logged in, redirect to appropriate page
     if (status === "authenticated" && session?.user?.emailVerified) {
       if (session.user.role === "STUDENT" && !session.user.isVerified) {
         router.push("/student/verification-status");
@@ -25,12 +31,15 @@ export default function VerifyEmailPage() {
   }, [session, status, router]);
 
   const handleResendEmail = async () => {
-    if (!session?.user?.email) return;
+    if (!email) {
+      toast.error("No email address provided");
+      return;
+    }
     
     setIsResending(true);
     try {
       await axiosInstance.post('/api/auth/resend-verification', {
-        email: session.user.email
+        email: email
       });
       toast.success("Verification email sent! Check your inbox.");
     } catch (error: any) {
@@ -78,8 +87,8 @@ export default function VerifyEmailPage() {
             <p className="text-slate-500">
               We've sent a verification link to:
             </p>
-            <p className="font-semibold text-primary">
-              {session?.user?.email}
+            <p className="font-semibold text-primary break-all">
+              {email || "your email address"}
             </p>
           </div>
 
@@ -96,21 +105,33 @@ export default function VerifyEmailPage() {
           <div className="flex flex-col gap-3 pt-4">
             <Button
               onClick={handleResendEmail}
-              disabled={isResending}
+              disabled={isResending || !email}
               className="w-full h-11 flex items-center justify-center gap-2"
             >
               <span className="material-symbols-outlined text-[20px]">send</span>
               {isResending ? "Sending..." : "Resend Verification Email"}
             </Button>
             
-            <Button
-              variant="outline"
-              onClick={handleLogout}
-              className="w-full h-11 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center gap-2"
-            >
-              <span className="material-symbols-outlined text-[20px]">logout</span>
-              Log Out
-            </Button>
+            {session ? (
+              <Button
+                variant="outline"
+                onClick={handleLogout}
+                className="w-full h-11 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[20px]">logout</span>
+                Log Out
+              </Button>
+            ) : (
+              <Link href="/login">
+                <Button
+                  variant="outline"
+                  className="w-full h-11 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[20px]">login</span>
+                  Go to Login
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
         
@@ -119,6 +140,24 @@ export default function VerifyEmailPage() {
           Need help? Contact us at support@gvs.edu.de
         </div>
       </motion.div>
+
+      {/* Material Symbols Icons */}
+      <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet"
+      />
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-background-light dark:bg-background-dark">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <VerifyEmailContent />
+    </Suspense>
   );
 }

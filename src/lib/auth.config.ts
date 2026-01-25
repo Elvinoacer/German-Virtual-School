@@ -81,11 +81,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        // Block login if email is not verified
-        if (!user.emailVerified) {
-          throw new Error("Please verify your email before logging in. Check your inbox for the verification link.");
-        }
-
+        // Allow login even if email not verified - middleware will redirect to verify-email
         return {
           id: user.id,
           email: user.email,
