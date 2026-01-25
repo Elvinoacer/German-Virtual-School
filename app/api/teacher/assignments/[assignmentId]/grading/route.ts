@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticate } from '@/lib/auth-middleware';
 import { successResponse, errorResponse, errors } from '@/lib/api-response';
+import { notify } from '@/lib/notifications/orchestrator';
+import { NotificationType } from '@/generated/prisma/client';
 
 export async function GET(
   request: NextRequest,
@@ -146,6 +148,30 @@ export async function POST(
         submittedAt: new Date(), // Assume submitted now if creating new
       },
     });
+
+    // Notify the student about their grade
+    const [student, assignment] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: studentId },
+        select: { email: true, fcmTokens: true }
+      }),
+      prisma.assignment.findUnique({
+        where: { id: assignmentId },
+        select: { title: true, courseId: true, maxPoints: true }
+      })
+    ]);
+
+    if (student && assignment) {
+      notify({
+        userId: studentId,
+        title: 'Assignment Graded',
+        message: `Your submission for "${assignment.title}" has been graded: ${grade}/${assignment.maxPoints} points`,
+        type: NotificationType.ASSIGNMENT_GRADED,
+        email: { to: student.email },
+        push: { tokens: student.fcmTokens },
+        metadata: { link: `/student/grades`, assignmentId }
+      }).catch(err => console.error('Grading notification error:', err));
+    }
 
     return successResponse({ submission }, 'Grade submitted successfully');
 

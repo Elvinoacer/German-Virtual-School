@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { authenticate } from '@/lib/auth-middleware';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errors } from '@/lib/api-response';
+import { notify } from '@/lib/notifications/orchestrator';
+import { NotificationType } from '@/generated/prisma/client';
 
 export async function POST(
   request: NextRequest,
@@ -49,6 +51,26 @@ export async function POST(
         },
       },
     });
+
+    // Notify thread author if not replying to self
+    if (thread.authorId !== user.id) {
+      const author = await prisma.user.findUnique({
+        where: { id: thread.authorId },
+        select: { email: true, fcmTokens: true }
+      });
+
+      if (author) {
+        notify({
+          userId: thread.authorId,
+          title: 'New Reply to Your Thread',
+          message: `Someone replied to your thread: "${thread.title}"`,
+          type: NotificationType.FORUM_REPLY,
+          email: { to: author.email },
+          push: { tokens: author.fcmTokens },
+          metadata: { link: `/forum/${threadId}`, postId: post.id }
+        }).catch(err => console.error('Forum reply notification error:', err));
+      }
+    }
 
     return successResponse(post, 'Reply added successfully', 201);
   } catch (error) {

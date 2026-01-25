@@ -3,6 +3,8 @@ import { authenticate } from "@/lib/auth-middleware";
 import { prisma } from "@/lib/prisma";
 import { successResponse, errors } from "@/lib/api-response";
 import { calculateEvaluationGrade } from "@/lib/grading";
+import { notify } from "@/lib/notifications/orchestrator";
+import { NotificationType } from "@/generated/prisma/client";
 
 export async function POST(request: NextRequest) {
   try {
@@ -62,6 +64,30 @@ export async function POST(request: NextRequest) {
         category,
       },
     });
+
+    // Notify the student about the new evaluation
+    const [student, course] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: studentId },
+        select: { email: true, fcmTokens: true }
+      }),
+      prisma.course.findUnique({
+        where: { id: courseId },
+        select: { title: true }
+      })
+    ]);
+
+    if (student && course) {
+      notify({
+        userId: studentId,
+        title: 'New Evaluation Posted',
+        message: `Your teacher has submitted an evaluation for "${course.title}". Grade: ${finalGrade}`,
+        type: NotificationType.INFO,
+        email: { to: student.email },
+        push: { tokens: student.fcmTokens },
+        metadata: { link: `/student/evaluations/${evaluation.id}`, evaluationId: evaluation.id }
+      }).catch(err => console.error('Evaluation notification error:', err));
+    }
 
     return successResponse(evaluation, "Evaluation created successfully", 201);
   } catch (error) {

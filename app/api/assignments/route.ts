@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { authenticate } from '@/lib/auth-middleware';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errors } from '@/lib/api-response';
+import { notify } from '@/lib/notifications/orchestrator';
+import { NotificationType } from '@/generated/prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -94,6 +96,28 @@ export async function POST(request: NextRequest) {
         attachmentUrls: attachmentUrls || [],
         rubric: rubric || null,
       },
+    });
+
+    // Notify all enrolled students about the new assignment
+    const enrollments = await prisma.enrollment.findMany({
+      where: { courseId, status: 'ACTIVE' },
+      select: { studentId: true, student: { select: { email: true, fcmTokens: true } } }
+    });
+
+    const dueDateFormatted = new Date(dueDate).toLocaleDateString('en-US', { 
+      month: 'short', day: 'numeric', year: 'numeric' 
+    });
+
+    enrollments.forEach(enrollment => {
+      notify({
+        userId: enrollment.studentId,
+        title: `New Assignment: ${title}`,
+        message: `A new assignment has been posted. Due: ${dueDateFormatted}`,
+        type: NotificationType.ASSIGNMENT_NEW,
+        email: { to: enrollment.student.email },
+        push: { tokens: enrollment.student.fcmTokens },
+        metadata: { link: `/student/courses/${courseId}` },
+      }).catch(err => console.error('Assignment notification error:', err));
     });
 
     return successResponse(assignment, 'Assignment created successfully', 201);

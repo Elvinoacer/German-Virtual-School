@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { authenticate, isStudentEnrolled } from '@/lib/auth-middleware';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errors } from '@/lib/api-response';
+import { notify } from '@/lib/notifications/orchestrator';
+import { NotificationType } from '@/generated/prisma/client';
 
 export async function POST(
   request: NextRequest,
@@ -16,10 +18,16 @@ export async function POST(
 
     const { assignmentId } = await params;
 
-    // Get assignment and verify student is enrolled
+    // Get assignment with course and teacher info
     const assignment = await prisma.assignment.findUnique({
       where: { id: assignmentId },
-      select: { courseId: true },
+      include: { 
+        course: { 
+          include: { 
+            teacher: { select: { id: true, email: true, fcmTokens: true } } 
+          } 
+        } 
+      },
     });
 
     if (!assignment) {
@@ -61,6 +69,24 @@ export async function POST(
         status: 'SUBMITTED',
       },
     });
+
+    // Notify the course teacher about the new submission
+    const student = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: { firstName: true, lastName: true }
+    });
+
+    if (assignment.course.teacher && student) {
+      notify({
+        userId: assignment.course.teacher.id,
+        title: 'New Assignment Submission',
+        message: `${student.firstName} ${student.lastName} submitted "${assignment.title}"`,
+        type: NotificationType.INFO,
+        email: { to: assignment.course.teacher.email },
+        push: { tokens: assignment.course.teacher.fcmTokens },
+        metadata: { link: `/teacher/assignments/${assignmentId}/grading`, submissionId: submission.id }
+      }).catch(err => console.error('Submission notification error:', err));
+    }
 
     return successResponse(submission, 'Assignment submitted successfully', 201);
   } catch (error) {
