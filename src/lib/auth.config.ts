@@ -259,6 +259,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
   events: {
+    async createUser({ user }) {
+      try {
+        // Dynamically import to safely run server-side logic (e.g. sending emails)
+        // without breaking Edge Middleware compatibility
+        const { notifyAdminsOfNewUser } = await import("@/lib/auth-events");
+        await notifyAdminsOfNewUser(user as any);
+      } catch (error) {
+        console.error("Failed to process createUser event:", error);
+      }
+    },
     async linkAccount({ user, account }) {
       if (account.provider === "google") {
         try {
