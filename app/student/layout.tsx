@@ -7,6 +7,7 @@ import { signOut } from 'next-auth/react';
 import { useAuth } from '@/hooks/useAuth';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { RoleGuard } from '@/components/RoleGuard';
+import { BillingAccessGuard } from '@/components/BillingAccessGuard';
 import NotificationIcon from '@/components/shared/NotificationIcon';
 import NotificationRegistrar from "@/components/shared/NotificationRegistrar";
 import { useUnreadCount } from '@/hooks/useNotifications';
@@ -240,9 +241,11 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
             </header>
 
             {/* Page Content */}
-            <div className="flex-1 overflow-y-auto thin-scrollbar">
-              {children}
-            </div>
+            <BillingAccessGuard>
+              <div className="flex-1 overflow-y-auto thin-scrollbar">
+                {children}
+              </div>
+            </BillingAccessGuard>
           </main>
         </div>
         <NotificationRegistrar />
