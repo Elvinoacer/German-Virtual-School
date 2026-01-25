@@ -176,7 +176,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // For OAuth users, the user object from adapter doesn't include custom fields
         // We need to fetch them from the database
         const userWithRole = user as any;
-        if (!userWithRole.role || !userWithRole.firstName) {
+        
+        // Check if we need to fetch fresh data from DB
+        // Fetch if:
+        // 1. Missing custom fields (role, firstName)
+        // 2. OR Email is not verified (to check if it was just verified in DB)
+        const needsDbFetch = !userWithRole.role || !userWithRole.firstName || !userWithRole.emailVerified;
+
+        if (needsDbFetch) {
           const dbUser = await prisma.user.findUnique({
             where: { id: user.id as string },
             select: { firstName: true, lastName: true, role: true, isVerified: true, emailVerified: true }
@@ -189,7 +196,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             token.emailVerified = dbUser.emailVerified;
           }
         } else {
-          // Credentials login - use the user object directly
+          // Credentials login - use the user object directly if it has everything
           token.role = userWithRole.role;
           token.firstName = userWithRole.firstName;
           token.lastName = userWithRole.lastName;
@@ -201,6 +208,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (account?.provider === 'google' && !token.emailVerified) {
           token.emailVerified = new Date();
         }
+      }
+
+      // On subsequent calls (no 'user'), check if token is verified. 
+      // If not, we might want to check DB one last time or rely on the logic above which ran on signin.
+      // However, to be absolutely sure, if token is unverified, we can check DB.
+      if (!token.emailVerified) {
+         try {
+            const dbUser = await prisma.user.findUnique({
+              where: { id: token.id as string },
+              select: { emailVerified: true }
+            });
+            if (dbUser?.emailVerified) {
+              token.emailVerified = dbUser.emailVerified;
+            }
+         } catch (e) {
+           // Ignore db error, keep token as is
+         }
       }
 
       // Optimize: Only fetch user data on sign-in or explicit update
