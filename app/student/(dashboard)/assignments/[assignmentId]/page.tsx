@@ -301,16 +301,23 @@ export default function AssignmentDetailsPage() {
                   )}
 
                   {/* Rubric Criteria */}
-                  {assignment.rubric?.criteria && assignment.rubric.criteria.length > 0 && (
+                   {assignment.rubric?.criteria && assignment.rubric.criteria.length > 0 && (
                      <div className="mt-10 pt-10 border-t border-slate-100 dark:border-slate-800">
                         <h4 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-6">Grading Rubric</h4>
                         <div className="space-y-3">
-                           {assignment.rubric.criteria.map((criterion: string, idx: number) => (
-                              <div key={idx} className="flex items-start gap-3 p-4 bg-amber-50/30 dark:bg-amber-500/5 rounded-2xl border border-amber-100/50 dark:border-amber-500/10">
+                           {assignment.rubric.criteria.map((criterion: any, idx: number) => (
+                              <div key={criterion?.id || idx} className="flex items-start gap-3 p-4 bg-amber-50/30 dark:bg-amber-500/5 rounded-2xl border border-amber-100/50 dark:border-amber-500/10">
                                  <div className="size-6 bg-amber-100 dark:bg-amber-500/20 rounded-full flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0 mt-0.5">
                                     <span className="text-[12px] font-black">{idx + 1}</span>
                                  </div>
-                                 <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{criterion}</p>
+                                 <div className="flex-1">
+                                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                       {typeof criterion === 'string' ? criterion : criterion?.name || 'Criterion'}
+                                    </p>
+                                    {typeof criterion === 'object' && criterion?.maxPoints && (
+                                       <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">{criterion.maxPoints} points</p>
+                                    )}
+                                 </div>
                               </div>
                            ))}
                         </div>
