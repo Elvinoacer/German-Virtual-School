@@ -125,30 +125,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         };
       },
     },
-    // Microsoft Provider
-    // Note: Requires AUTH_MICROSOFT_ENTRA_ID_ID and AUTH_MICROSOFT_ENTRA_ID_SECRET env vars
-    {
-      id: "microsoft-entra-id",
-      name: "Microsoft Entra ID",
-      type: "oidc",
-      issuer: `https://login.microsoftonline.com/${process.env.AUTH_MICROSOFT_ENTRA_ID_TENANT_ID}/v2.0`,
-      clientId: process.env.AUTH_MICROSOFT_ENTRA_ID_ID,
-      clientSecret: process.env.AUTH_MICROSOFT_ENTRA_ID_SECRET,
-      authorization: { params: { scope: "openid profile email User.Read" } },
-      profile(profile: any) {
-         return {
-          id: profile.sub,
-          email: profile.email,
-          name: profile.name,
-          firstName: profile.given_name || profile.name?.split(" ")[0] || "Unknown",
-          lastName: profile.family_name || profile.name?.split(" ").slice(1).join(" ") || ".",
-          image: null,
-          role: "STUDENT" as UserRole,
-          isVerified: false,
-          emailVerified: new Date(),
-        };
-      }
-    }
+
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
