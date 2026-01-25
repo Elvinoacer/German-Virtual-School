@@ -10,12 +10,17 @@ export default function VerificationStatusPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
+  console.log("[CLIENT DEBUG] VerificationStatusPage render - status:", status, ", session:", JSON.stringify(session?.user, null, 2));
+
   useEffect(() => {
+    console.log("[CLIENT DEBUG] useEffect triggered - status:", status, ", isVerified:", session?.user?.isVerified);
     if (status === "authenticated" && session?.user?.isVerified) {
+      console.log("[CLIENT DEBUG] User is verified, redirecting to dashboard");
       router.push("/student/dashboard");
     }
     // Redirect to login if not authenticated
     if (status === "unauthenticated") {
+      console.log("[CLIENT DEBUG] User is unauthenticated, redirecting to login");
       router.push("/login");
     }
   }, [session, status, router]);
