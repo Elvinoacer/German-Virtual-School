@@ -36,10 +36,10 @@ export const metadata: Metadata = {
     siteName: "German Virtual School",
     images: [
       {
-        url: "/gvs-logo.png",
-        width: 800,
-        height: 800,
-        alt: "German Virtual School Logo",
+        url: "/images/gvs-marketing-banner.webp",
+        width: 1200,
+        height: 630,
+        alt: "German Virtual School Marketing Banner",
       },
     ],
   },
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "German Virtual School",
     description: "Master the German language with live classes and expert tutors.",
-    images: ["/gvs-logo.png"],
+    images: ["/images/gvs-marketing-banner.webp"],
     creator: "@germanvirtualschool",
   },
   robots: {
