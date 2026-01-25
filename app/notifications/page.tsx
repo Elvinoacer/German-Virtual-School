@@ -1,19 +1,73 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { 
+  useNotifications, 
+  useMarkAllAsRead, 
+  useDeleteAllNotifications, 
+  useMarkAsRead, 
+  useDeleteNotification,
+  type Notification 
+} from "@/hooks/useNotifications";
+import { useState } from "react";
+import { format, parseISO } from "date-fns";
 
-// ... (keep existing imports)
+const TYPE_ICONS: Record<string, string> = {
+  info: "info",
+  success: "check_circle",
+  warning: "warning",
+  error: "error",
+  assignment: "assignment",
+  grade: "grade",
+  course: "school",
+  payment: "payments",
+  system: "settings_suggest",
+  default: "notifications"
+};
 
 export default function NotificationsPage() {
   const router = useRouter();
-  const { data: session } = useSession(); // Get session
-  const { data: notifications, isLoading, isError } = useNotifications();
-  // ... (keep existing hooks)
-
+  const { data: session } = useSession();
   const userRole = session?.user?.role;
   const dashboardLink = userRole === 'ADMIN' ? '/admin/dashboard' : userRole === 'TEACHER' ? '/teacher/dashboard' : '/student/dashboard';
 
-  // ... (keep existing state/derivations)
+  const [filter, setFilter] = useState<"all" | "unread">("all");
+
+  const { data: notifications = [], isLoading, isError } = useNotifications();
+  const markAllAsRead = useMarkAllAsRead();
+  const deleteAll = useDeleteAllNotifications();
+  const markAsRead = useMarkAsRead();
+  const deleteNotification = useDeleteNotification();
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  const filteredNotifications = notifications.filter(n => {
+    if (filter === "unread") return !n.isRead;
+    return true;
+  });
+
+  const handleMarkAllAsRead = () => {
+    markAllAsRead.mutate();
+  };
+
+  const handleDeleteAll = () => {
+    deleteAll.mutate();
+  };
+
+  const handleNotificationClick = (notification: Notification) => {
+    if (!notification.isRead) {
+        markAsRead.mutate(notification.id);
+    }
+    if (notification.data?.link) {
+        router.push(notification.data.link);
+    }
+  };
+
+  const handleDelete = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    deleteNotification.mutate(id);
+  };
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white">
@@ -108,7 +162,7 @@ export default function NotificationsPage() {
                       : "bg-primary/10 text-primary"
                   }`}>
                     <span className="material-symbols-outlined text-2xl">
-                      {TYPE_ICONS[notification.type] || "notifications"}
+                      {TYPE_ICONS[notification.type] || TYPE_ICONS.default}
                     </span>
                   </div>
 
