@@ -34,6 +34,7 @@ export async function PATCH(
          id: true,
          firstName: true,
          lastName: true,
+         email: true,
          isVerified: true
       }
     });
@@ -54,6 +55,7 @@ export async function PATCH(
       title: "Account Verified",
       message: "Your account has been verified! Please log out and log in again to access the dashboard.",
       email: {
+        to: updatedStudent.email,
         subject: "Your Account is Verified - German Virtual School",
         html: `
           <div style="font-family: sans-serif; color: #333;">

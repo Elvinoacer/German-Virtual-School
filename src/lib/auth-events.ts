@@ -33,8 +33,13 @@ export async function notifyAdminsOfNewUser(user: User) {
           action: "verify",
           link: `/admin/students?search=${user.email}` 
         },
+        push: {
+            title: "New Student Registration",
+            body: `A new student has registered: ${user.firstName || user.name}`
+        },
         // Optional: Send email to admin too?
         email: {
+            to: admin.email,
             subject: "New Student Registration Pending Approval",
             html: `
                 <p>Hello Admin,</p>
