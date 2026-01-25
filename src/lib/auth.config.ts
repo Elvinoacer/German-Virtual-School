@@ -191,6 +191,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           token.isVerified = userWithRole.isVerified;
           token.emailVerified = userWithRole.emailVerified;
         }
+
+        // Force email verified for OAuth providers if not already set (fixes race condition)
+        if (account?.provider === 'google' && !token.emailVerified) {
+          token.emailVerified = new Date();
+        }
       }
 
       // Optimize: Only fetch user data on sign-in or explicit update

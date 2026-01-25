@@ -68,10 +68,15 @@ export default auth((req) => {
     const isEmailVerifyPage = nextUrl.pathname === "/verify-email";
     // Also allow check-email just in case, though usually verify-email is the target now
     
-    // If email is not verified, redirect to verify-email page
+    // If email is not verified
     // emailVerified is null for unverified emails (credentials signup)
     // OAuth users have emailVerified set automatically
-    if (!user?.emailVerified && !isEmailVerifyPage) {
+    if (!user?.emailVerified) {
+      // If we are already on the verification page, allow it and stop further checks
+      if (isEmailVerifyPage) {
+        return;
+      }
+      // Otherwise redirect to verify-email
       return NextResponse.redirect(new URL("/verify-email", nextUrl));
     }
 
