@@ -14,6 +14,10 @@ export default function VerificationStatusPage() {
     if (status === "authenticated" && session?.user?.isVerified) {
       router.push("/student/dashboard");
     }
+    // Redirect to login if not authenticated
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
   }, [session, status, router]);
 
   const handleLogout = async () => {

@@ -151,17 +151,71 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
+      // For OAuth providers, ensure custom fields are populated
+      // PrismaAdapter only saves standard NextAuth fields (id, email, name, image, emailVerified)
+      // We need to update the user with our custom fields (firstName, lastName, role, isVerified)
+      if (account?.provider && account.provider !== "credentials" && user?.id) {
+        try {
+          // Check if user already has custom fields populated
+          const existingUser = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: { firstName: true, lastName: true, role: true, isVerified: true, emailVerified: true }
+          });
+          
+          // If firstName is the default empty string or missing, this is a new OAuth user
+          // The schema has firstName as required String, so Prisma will set it to empty string by default
+          if (existingUser && (!existingUser.firstName || existingUser.firstName === "")) {
+            const profileData = profile as any;
+            const fullName = user.name || profileData?.name || "";
+            const nameParts = fullName.split(" ");
+            
+            await prisma.user.update({
+              where: { id: user.id },
+              data: {
+                firstName: profileData?.given_name || nameParts[0] || "Unknown",
+                lastName: profileData?.family_name || nameParts.slice(1).join(" ") || ".",
+                role: "STUDENT", // Default role for OAuth signups
+                isVerified: false, // Admin must verify the account
+                emailVerified: new Date(), // Email is verified through OAuth provider
+              }
+            });
+          }
+        } catch (error) {
+          console.error("Error updating OAuth user with custom fields:", error);
+          // Don't block sign-in on error, user can still login
+        }
+      }
       return true;
     },
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user, trigger, session, account }) {
       if (user) {
         token.id = user.id as string;
         token.userId = user.id as string;
-        token.role = (user as any).role;
-        token.firstName = (user as any).firstName;
-        token.lastName = (user as any).lastName;
-        token.isVerified = (user as any).isVerified;
-        token.emailVerified = (user as any).emailVerified;
+        
+        // For OAuth users, the user object from adapter doesn't include custom fields
+        // We need to fetch them from the database
+        const userWithRole = user as any;
+        if (!userWithRole.role || !userWithRole.firstName) {
+          // Fetch user data from database
+          const dbUser = await prisma.user.findUnique({
+            where: { id: user.id as string },
+            select: { firstName: true, lastName: true, role: true, isVerified: true, emailVerified: true }
+          });
+          if (dbUser) {
+            token.role = dbUser.role;
+            token.firstName = dbUser.firstName;
+            token.lastName = dbUser.lastName;
+            token.isVerified = dbUser.isVerified;
+            token.emailVerified = dbUser.emailVerified;
+          }
+        } else {
+          // Credentials login - use the user object directly
+          token.role = userWithRole.role;
+          token.firstName = userWithRole.firstName;
+          token.lastName = userWithRole.lastName;
+          token.isVerified = userWithRole.isVerified;
+          token.emailVerified = userWithRole.emailVerified;
+        }
       }
 
       // Optimize: Only fetch user data on sign-in or explicit update
