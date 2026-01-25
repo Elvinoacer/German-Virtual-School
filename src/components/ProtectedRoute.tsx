@@ -15,8 +15,8 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Check email verification (skip for the verify-email page itself)
-    if (!isLoading && isAuthenticated && user && !pathname.startsWith('/verify-email')) {
+    // Check email verification (skip for the verify-email and verification-status pages)
+    if (!isLoading && isAuthenticated && user && !pathname.startsWith('/verify-email') && !pathname.startsWith('/student/verification-status')) {
       if (!user.emailVerified) {
         router.push('/verify-email');
       }
@@ -38,8 +38,8 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return null;
   }
 
-  // Block rendering if email not verified (except on verify-email page)
-  if (!user?.emailVerified && !pathname.startsWith('/verify-email')) {
+  // Block rendering if email not verified (except on verify-email and verification-status pages)
+  if (!user?.emailVerified && !pathname.startsWith('/verify-email') && !pathname.startsWith('/student/verification-status')) {
     return null;
   }
 
