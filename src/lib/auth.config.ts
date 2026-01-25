@@ -120,6 +120,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           image: profile.picture,
           role: "STUDENT" as UserRole, // Default role for OAuth
           isVerified: false, // Default verification status
+          emailVerified: new Date(),
         };
       },
     },
@@ -143,6 +144,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           image: null,
           role: "STUDENT" as UserRole,
           isVerified: false,
+          emailVerified: new Date(),
         };
       }
     }
