@@ -14,6 +14,7 @@ declare module "next-auth" {
       firstName: string;
       lastName: string;
       isVerified: boolean;
+      emailVerified: Date | null;
     } & DefaultSession["user"];
   }
 
@@ -23,6 +24,7 @@ declare module "next-auth" {
       firstName: string;
       lastName: string;
       isVerified: boolean;
+      emailVerified?: Date | null;
   }
 }
 
@@ -62,6 +64,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             role: true,
             avatarUrl: true,
             isVerified: true,
+            emailVerified: true,
           },
         });
 
@@ -87,6 +90,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           role: user.role,
           image: user.avatarUrl,
           isVerified: user.isVerified,
+          emailVerified: user.emailVerified,
         };
       },
     }),
@@ -155,6 +159,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.firstName = (user as any).firstName;
         token.lastName = (user as any).lastName;
         token.isVerified = (user as any).isVerified;
+        token.emailVerified = (user as any).emailVerified;
       }
 
       // Optimize: Only fetch user data on sign-in or explicit update
@@ -184,6 +189,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.firstName = token.firstName as string;
         session.user.lastName = token.lastName as string;
         session.user.isVerified = token.isVerified as boolean;
+        session.user.emailVerified = token.emailVerified as Date | null;
       }
       return session;
     },

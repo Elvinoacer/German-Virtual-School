@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth.config';
 import { prisma } from '@/lib/prisma';
 import { hashPassword } from '@/lib/auth';
 import { UserRole } from '@/generated/prisma/client';
+import { randomBytes } from 'crypto';
+import { sendEmailNotification } from '@/lib/notifications/channels/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
     // Hash password
     const passwordHash = await hashPassword(password);
 
-    // Create user
+    // Create user (emailVerified = null by default)
     const user = await prisma.user.create({
       data: {
         email,
@@ -48,6 +49,7 @@ export async function POST(request: NextRequest) {
         lastName,
         name: `${firstName} ${lastName}`,
         role: role as UserRole,
+        // emailVerified is null by default, meaning not verified
       },
       select: {
         id: true,
@@ -70,11 +72,59 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Generate verification token
+    const token = randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    await prisma.verificationToken.create({
+      data: {
+        identifier: email,
+        token,
+        expires,
+      },
+    });
+
+    // Send verification email
+    const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/verify-email?token=${token}`;
+    
+    await sendEmailNotification({
+      userId: user.id,
+      title: 'Verify Your Email - German Virtual School',
+      message: `Please verify your email address to complete your registration.`,
+      email: {
+        to: email,
+        subject: 'Verify Your Email - German Virtual School',
+        html: `
+          <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #1a4d8f;">Welcome to German Virtual School!</h1>
+            <p>Dear ${firstName},</p>
+            <p>Thank you for registering. Please verify your email address by clicking the button below:</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${verificationUrl}" 
+                 style="display: inline-block; padding: 14px 32px; background-color: #1a4d8f; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
+                Verify My Email
+              </a>
+            </div>
+            
+            <p style="color: #666; font-size: 14px;">
+              If the button doesn't work, copy and paste this link into your browser:<br>
+              <a href="${verificationUrl}" style="color: #1a4d8f; word-break: break-all;">${verificationUrl}</a>
+            </p>
+            
+            <p style="color: #666; font-size: 12px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+              This link expires in 24 hours. If you didn't create this account, you can safely ignore this email.
+            </p>
+          </div>
+        `,
+      },
+    });
+
     return NextResponse.json(
       {
         success: true,
         data: { user },
-        message: 'Registration successful. Please sign in.',
+        message: 'Registration successful. Please check your email to verify your account.',
       },
       { status: 201 }
     );
@@ -86,3 +136,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
