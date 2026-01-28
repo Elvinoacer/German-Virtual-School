@@ -41,7 +41,7 @@ def create_final_banner():
         
     email = "germanvirtualschool@gmail.com"
     phone = "0742318300"
-    url = "german-virtual-school.vercel.app"
+    url = "germanvirtualschool.com"
     full_text = f"Email: {email}   |   Phone: {phone}   |   Visit: {url}"
     
     # Text Layout

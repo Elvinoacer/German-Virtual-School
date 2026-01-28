@@ -18,7 +18,7 @@ const notoSans = Noto_Sans({
   display: "swap",
 });
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://german-virtual-school.vercel.app";
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://germanvirtualschool.com";
 
 // JSON-LD Structured Data for SEO
 const jsonLd = {
@@ -171,17 +171,10 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/images/gvs-marketing-banner.webp",
-        width: 1200,
-        height: 1200,
+        width: 1024,
+        height: 1024,
         alt: "German Virtual School - Master German Online with Live Expert Classes",
         type: "image/webp",
-      },
-      {
-        url: "/gvs-logo.png",
-        width: 512,
-        height: 512,
-        alt: "German Virtual School Logo",
-        type: "image/png",
       },
     ],
   },

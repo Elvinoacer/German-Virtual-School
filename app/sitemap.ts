@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://german-virtual-school.vercel.app'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://germanvirtualschool.com'
   const currentDate = new Date()
 
   // Define routes with their specific SEO configurations
