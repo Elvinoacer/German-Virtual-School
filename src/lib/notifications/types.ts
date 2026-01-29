@@ -5,6 +5,7 @@ export interface NotificationPayload {
   message: string;
   email?: {
     to: string;
+    from?: string; // Optional custom sender email
     subject?: string;
     html?: string;
     text?: string;

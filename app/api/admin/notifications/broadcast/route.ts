@@ -74,7 +74,11 @@ export async function POST(request: NextRequest) {
             title,
             message,
             type: type || "INFO",
-            email: { to: user.email }, // Default to sending email too? Let's assume yes for broadcasts
+            email: { 
+              to: user.email,
+              from: process.env.ADMIN_EMAIL, // Use ADMIN_EMAIL for broadcasts
+              subject: `📢 ${title}` // Add emoji and title as subject
+            },
             push: { tokens: user.fcmTokens }, // Send push if available
             metadata: {
                 isBroadcast: true,

@@ -199,8 +199,11 @@ export async function sendEmailNotification(payload: NotificationPayload): Promi
       content: att.content instanceof Buffer ? att.content : Buffer.from(att.content),
     }));
 
+    // Use custom from address if provided, otherwise use default
+    const fromEmail = email.from || DEFAULT_FROM_EMAIL;
+    
     const { data, error } = await resend.emails.send({
-      from: `${DEFAULT_FROM_NAME} <${DEFAULT_FROM_EMAIL}>`,
+      from: `${DEFAULT_FROM_NAME} <${fromEmail}>`,
       to: Array.isArray(email.to) ? email.to : [email.to],
       subject: email.subject || payload.title,
       text: email.text || payload.message,
