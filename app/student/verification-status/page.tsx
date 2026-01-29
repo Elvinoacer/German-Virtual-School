@@ -86,7 +86,7 @@ export default function VerificationStatusPage() {
         
         {/* Footer info */}
         <div className="px-8 py-4 bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 text-[11px] text-center text-slate-400">
-          Benötigen Sie Hilfe? Erreichen Sie uns unter support@gvs.de
+          Benötigen Sie Hilfe? Erreichen Sie uns unter {process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@germanvirtualschool.com'}
         </div>
       </motion.div>
 

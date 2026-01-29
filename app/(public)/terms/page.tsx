@@ -62,7 +62,7 @@ export default function TermsPage() {
 
         <div className="mt-20 pt-12 border-t border-slate-200 dark:border-slate-800 text-center">
           <p className="text-slate-500 font-sans text-sm mb-6">
-            Questions about our terms? Contact our legal department at <a href="mailto:legal@gvs.edu" className="text-primary hover:underline">legal@gvs.edu</a>
+            Questions about our terms? Contact our legal department at <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@germanvirtualschool.com'}`} className="text-primary hover:underline">{process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@germanvirtualschool.com'}</a>
           </p>
           <Link href="/" className="px-8 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold font-sans rounded-sm hover:opacity-90 transition-opacity inline-block">
             Back to Home

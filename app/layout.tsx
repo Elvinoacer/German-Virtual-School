@@ -38,7 +38,7 @@ const jsonLd = {
       },
       image: `${baseUrl}/images/gvs-marketing-banner.webp`,
       description: "The premier online platform for learning German with live classes, expert teachers, and comprehensive resources for A1-C2 proficiency levels.",
-      email: "germanvirtualschool@gmail.com",
+      email: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@germanvirtualschool.com",
       telephone: "+254742318300",
       sameAs: [
         "https://twitter.com/germanvirtualschool",

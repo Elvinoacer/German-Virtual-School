@@ -606,10 +606,10 @@ export default function Home() {
             <p className="mt-8 text-sm text-blue-100">
               Questions? Contact our admissions office at{" "}
               <a
-                href="mailto:admissions@gvs.edu"
+                href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@germanvirtualschool.com'}`}
                 className="underline hover:text-white"
               >
-               kinyuaharvey@gmail.com
+               {process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@germanvirtualschool.com'}
               </a>
             </p>
           </div>

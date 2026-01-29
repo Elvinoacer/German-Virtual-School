@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
         data: {
           id: SETTINGS_ID,
           systemName: 'German Virtual School',
-          supportEmail: 'support@gvs.edu.de',
+          supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@germanvirtualschool.com',
           maxStudentsPerClass: 25,
           defaultCurrency: 'KES',
           notifications: {
@@ -64,7 +64,7 @@ export async function PATCH(request: NextRequest) {
       create: {
         id: SETTINGS_ID,
         systemName: body.systemName || 'German Virtual School',
-        supportEmail: body.supportEmail || 'support@gvs.edu.de',
+        supportEmail: body.supportEmail || process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@germanvirtualschool.com',
         maxStudentsPerClass: body.maxStudentsPerClass || 25,
         defaultCurrency: body.defaultCurrency || 'KES',
         notifications: body.notifications || {},

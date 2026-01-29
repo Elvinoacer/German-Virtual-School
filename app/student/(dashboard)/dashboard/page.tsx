@@ -513,7 +513,7 @@ export default function StudentDashboard() {
                     <span className="material-symbols-outlined group-hover:scale-110 transition-transform">event</span>
                     <span className="text-[10px] font-bold uppercase tracking-tighter">Calendar</span>
                   </Link>
-                  <a href="mailto:support@germanvirtualschool.com" className="bg-white/10 hover:bg-white/20 p-3 rounded-xl flex flex-col items-center gap-2 transition-colors group">
+                  <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@germanvirtualschool.com'}`} className="bg-white/10 hover:bg-white/20 p-3 rounded-xl flex flex-col items-center gap-2 transition-colors group">
                     <span className="material-symbols-outlined group-hover:scale-110 transition-transform">help</span>
                     <span className="text-[10px] font-bold uppercase tracking-tighter">Support</span>
                   </a>
