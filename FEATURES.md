@@ -49,7 +49,7 @@ This document provides an end-to-end analysis of the implemented features in the
 - **Export Options**: Generate PDF reports for students.
 
 ## 8. Notifications
-- **Multi-channel**: In-app notifications with support for Email (SMTP) and Push (Firebase) notifications.
+- **Multi-channel**: In-app notifications with support for Email (Resend) and Push (Firebase) notifications.
 - **Real-time Updates**: Socket-based events for messages and notifications.
 - **Preferences**: Configurable notification settings.
 

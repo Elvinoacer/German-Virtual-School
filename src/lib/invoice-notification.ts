@@ -158,20 +158,71 @@ export async function sendInvoiceNotification(invoice: InvoiceData) {
       message,
       email: {
         to: invoice.studentEmail,
+        subject: `💳 Invoice #${invoice.id.split('-')[0].toUpperCase()} - KES ${invoice.amount.toLocaleString()}`,
         html: `
-          <div style="font-family: sans-serif; color: #333;">
-            <h1>${title}</h1>
-            <p>Dear ${invoice.studentName},</p>
-            <p>${message}</p>
-            <p><strong>Amount:</strong> KES ${invoice.amount.toLocaleString()}</p>
-            <p><strong>Due Date:</strong> ${format(new Date(invoice.dueDate), 'MMM dd, yyyy')}</p>
-            
-            <p>Please find the invoice attached as a PDF. You can also view and pay this invoice directly from your <a href="${process.env.NEXT_PUBLIC_APP_URL}/student/billing">Student Dashboard</a>.</p>
-            
-            <br>
-            <p>Best regards,</p>
-            <p>German Virtual School Finance Team</p>
+          <div style="margin-bottom: 24px;">
+            <h1 style="color: #1a1a2e; font-size: 24px; font-weight: 700; margin: 0 0 8px 0;">
+              New Invoice Generated
+            </h1>
+            <p style="color: #64748b; font-size: 14px; margin: 0;">
+              Reference: #${invoice.id.split('-')[0].toUpperCase()}
+            </p>
           </div>
+          
+          <p style="color: #334155; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
+            Dear <strong>${invoice.studentName}</strong>,
+          </p>
+          
+          <p style="color: #334155; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
+            A new invoice has been generated for your German Virtual School account.
+          </p>
+          
+          <!-- Amount Card -->
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 32px; margin-bottom: 24px; text-align: center;">
+            <p style="color: rgba(255,255,255,0.8); font-size: 14px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px;">
+              Amount Due
+            </p>
+            <p style="color: #ffffff; font-size: 36px; font-weight: 700; margin: 0;">
+              KES ${invoice.amount.toLocaleString()}
+            </p>
+          </div>
+          
+          <!-- Details -->
+          <div style="background: #f8fafc; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 12px 0; color: #64748b; font-size: 14px; border-bottom: 1px solid #e2e8f0;">Description</td>
+                <td style="padding: 12px 0; color: #1a1a2e; font-size: 14px; font-weight: 600; text-align: right; border-bottom: 1px solid #e2e8f0;">${invoice.description}</td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 0; color: #64748b; font-size: 14px; border-bottom: 1px solid #e2e8f0;">Issue Date</td>
+                <td style="padding: 12px 0; color: #1a1a2e; font-size: 14px; font-weight: 600; text-align: right; border-bottom: 1px solid #e2e8f0;">${format(new Date(invoice.createdAt), 'MMM dd, yyyy')}</td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 0; color: #64748b; font-size: 14px;">Due Date</td>
+                <td style="padding: 12px 0; text-align: right;">
+                  <span style="display: inline-block; background-color: #fef2f2; color: #dc2626; font-size: 14px; font-weight: 600; padding: 4px 12px; border-radius: 6px;">
+                    ${format(new Date(invoice.dueDate), 'MMM dd, yyyy')}
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </div>
+          
+          <p style="color: #64748b; font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
+            📎 The invoice PDF is attached to this email for your records.
+          </p>
+          
+          <div style="text-align: center; margin: 32px 0;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/student/billing" 
+               style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);">
+              Pay Now →
+            </a>
+          </div>
+          
+          <p style="color: #64748b; font-size: 14px; line-height: 1.6; text-align: center;">
+            Questions about this invoice? Contact us at <a href="mailto:${process.env.ACCOUNTS_EMAIL || 'accounts@germanvirtualschool.com'}" style="color: #667eea;">${process.env.ACCOUNTS_EMAIL || 'accounts@germanvirtualschool.com'}</a>
+          </p>
         `,
         attachments: [
           {
