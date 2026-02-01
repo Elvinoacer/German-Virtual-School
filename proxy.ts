@@ -20,6 +20,7 @@ export default auth((req) => {
     nextUrl.pathname.startsWith("/terms") ||
     nextUrl.pathname.startsWith("/courses") ||
     nextUrl.pathname.startsWith("/calendar") ||
+    nextUrl.pathname.startsWith("/documentation") ||
     nextUrl.pathname.startsWith("/verify-email") || 
     nextUrl.pathname.startsWith("/check-email");
 
