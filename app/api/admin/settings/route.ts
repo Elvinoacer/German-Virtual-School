@@ -51,6 +51,13 @@ export async function PATCH(request: NextRequest) {
 
     const body = await request.json();
     
+    // Helper to parse date strings to Date objects or null
+    const parseDate = (dateStr: string | null | undefined): Date | null => {
+      if (!dateStr) return null;
+      const date = new Date(dateStr);
+      return isNaN(date.getTime()) ? null : date;
+    };
+    
     const settings = await prisma.systemSettings.upsert({
       where: { id: SETTINGS_ID },
       update: {
@@ -59,7 +66,13 @@ export async function PATCH(request: NextRequest) {
         maxStudentsPerClass: body.maxStudentsPerClass,
         defaultCurrency: body.defaultCurrency,
         notifications: body.notifications,
-        integrations: body.integrations
+        integrations: body.integrations,
+        // School Calendar Fields
+        enrollmentStartDate: body.enrollmentStartDate !== undefined ? parseDate(body.enrollmentStartDate) : undefined,
+        enrollmentEndDate: body.enrollmentEndDate !== undefined ? parseDate(body.enrollmentEndDate) : undefined,
+        orientationDate: body.orientationDate !== undefined ? parseDate(body.orientationDate) : undefined,
+        firstClassDate: body.firstClassDate !== undefined ? parseDate(body.firstClassDate) : undefined,
+        lastClassDate: body.lastClassDate !== undefined ? parseDate(body.lastClassDate) : undefined,
       },
       create: {
         id: SETTINGS_ID,
@@ -68,7 +81,12 @@ export async function PATCH(request: NextRequest) {
         maxStudentsPerClass: body.maxStudentsPerClass || 25,
         defaultCurrency: body.defaultCurrency || 'KES',
         notifications: body.notifications || {},
-        integrations: body.integrations || {}
+        integrations: body.integrations || {},
+        enrollmentStartDate: parseDate(body.enrollmentStartDate),
+        enrollmentEndDate: parseDate(body.enrollmentEndDate),
+        orientationDate: parseDate(body.orientationDate),
+        firstClassDate: parseDate(body.firstClassDate),
+        lastClassDate: parseDate(body.lastClassDate),
       }
     });
 
@@ -87,4 +105,3 @@ export async function PATCH(request: NextRequest) {
     return errors.internal('Failed to update system settings');
   }
 }
-

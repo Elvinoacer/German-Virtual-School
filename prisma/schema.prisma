@@ -711,6 +711,13 @@ model SystemSettings {
   maxStudentsPerClass Int      @default(25)
   defaultCurrency     String   @default("KES")
   
+  // School Calendar Settings
+  enrollmentStartDate DateTime?
+  enrollmentEndDate   DateTime?
+  orientationDate     DateTime?
+  firstClassDate      DateTime?
+  lastClassDate       DateTime?
+  
   // JSON fields for flexible configuration
   notifications       Json?    // e.g. { emailNotifications: true, ... }
   integrations        Json?    // e.g. { jitsiDomain: "...", ... }

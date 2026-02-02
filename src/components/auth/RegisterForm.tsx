@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
@@ -12,10 +12,41 @@ import Link from "next/link";
 import axios from "@/lib/axios";
 import { signIn } from "next-auth/react";
 
+interface CalendarData {
+  enrollmentStartDate: string | null;
+  enrollmentEndDate: string | null;
+  orientationDate: string | null;
+  firstClassDate: string | null;
+  lastClassDate: string | null;
+  isEnrollmentOpen: boolean;
+  enrollmentMessage: string;
+}
+
 export default function RegisterForm() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [calendarData, setCalendarData] = useState<CalendarData | null>(null);
+  const [isCheckingEnrollment, setIsCheckingEnrollment] = useState(true);
+
+  // Check enrollment status on mount
+  useEffect(() => {
+    const checkEnrollmentStatus = async () => {
+      try {
+        const response = await axios.get("/api/school/calendar");
+        if (response.data.success) {
+          setCalendarData(response.data.data);
+        }
+      } catch (error) {
+        console.error("Failed to check enrollment status:", error);
+        // If we can't check, assume enrollment is open to not block users
+        setCalendarData({ isEnrollmentOpen: true, enrollmentMessage: "" } as CalendarData);
+      } finally {
+        setIsCheckingEnrollment(false);
+      }
+    };
+    checkEnrollmentStatus();
+  }, []);
 
   const {
     register,
@@ -74,7 +105,76 @@ export default function RegisterForm() {
     }
   };
 
+  // Show loading while checking enrollment
+  if (isCheckingEnrollment) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 gap-4">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
+        <p className="text-gray-500 text-sm">Checking enrollment status...</p>
+      </div>
+    );
+  }
+
+  // Show enrollment closed message
+  if (calendarData && !calendarData.isEnrollmentOpen) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col items-center text-center py-8 px-4 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-200 dark:border-amber-800"
+      >
+        <span className="material-symbols-outlined text-5xl text-amber-600 mb-4">
+          event_busy
+        </span>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+          Enrollment is Currently Closed
+        </h2>
+        <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-md">
+          {calendarData.enrollmentMessage}
+        </p>
+        
+        {calendarData.orientationDate && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm border border-gray-100 dark:border-gray-700">
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Orientation Date</p>
+            <p className="font-bold text-primary">
+              {new Date(calendarData.orientationDate).toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+              })}
+            </p>
+          </div>
+        )}
+
+        {calendarData.firstClassDate && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm border border-gray-100 dark:border-gray-700">
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Classes Begin</p>
+            <p className="font-bold text-primary">
+              {new Date(calendarData.firstClassDate).toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+              })}
+            </p>
+          </div>
+        )}
+
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          Already have an account?
+        </p>
+        <Link href="/login">
+          <Button variant="outline" className="px-8">
+            Sign In
+          </Button>
+        </Link>
+      </motion.div>
+    );
+  }
+
   return (
+
     <div className="flex flex-col gap-6">
       <div className="w-full">
         <Button

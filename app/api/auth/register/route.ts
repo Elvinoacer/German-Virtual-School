@@ -25,6 +25,39 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check enrollment period for student registration
+    if (role === 'STUDENT') {
+      const settings = await prisma.systemSettings.findUnique({
+        where: { id: 'system-settings' },
+        select: {
+          enrollmentStartDate: true,
+          enrollmentEndDate: true,
+        }
+      });
+
+      if (settings) {
+        const now = new Date();
+        
+        if (settings.enrollmentStartDate && now < settings.enrollmentStartDate) {
+          return NextResponse.json(
+            { 
+              error: `Enrollment has not started yet. Registration opens on ${settings.enrollmentStartDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.`
+            },
+            { status: 403 }
+          );
+        }
+
+        if (settings.enrollmentEndDate && now > settings.enrollmentEndDate) {
+          return NextResponse.json(
+            { 
+              error: `Enrollment is closed. Registration ended on ${settings.enrollmentEndDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}. Please check back for the next enrollment period.`
+            },
+            { status: 403 }
+          );
+        }
+      }
+    }
+
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email },

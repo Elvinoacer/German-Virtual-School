@@ -4,6 +4,17 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import axiosInstance from "@/lib/axios";
 import { toast } from "sonner";
+import { format } from "date-fns";
+
+// Helper to format date for input
+const formatDateForInput = (date: string | null | undefined): string => {
+  if (!date) return "";
+  try {
+    return format(new Date(date), "yyyy-MM-dd");
+  } catch {
+    return "";
+  }
+};
 
 export default function AdminSettingsPage() {
   const [formData, setFormData] = useState({
@@ -19,7 +30,13 @@ export default function AdminSettingsPage() {
     integrations: {
       jitsiDomain: "meet.jit.si",
       intasendPublicKey: ""
-    }
+    },
+    // School Calendar Fields
+    enrollmentStartDate: "",
+    enrollmentEndDate: "",
+    orientationDate: "",
+    firstClassDate: "",
+    lastClassDate: ""
   });
 
   const { data: settingsData, isLoading } = useQuery({
@@ -45,10 +62,17 @@ export default function AdminSettingsPage() {
         integrations: (settingsData.integrations as any) || {
           jitsiDomain: "meet.jit.si",
           intasendPublicKey: ""
-        }
+        },
+        // School Calendar Fields
+        enrollmentStartDate: formatDateForInput(settingsData.enrollmentStartDate),
+        enrollmentEndDate: formatDateForInput(settingsData.enrollmentEndDate),
+        orientationDate: formatDateForInput(settingsData.orientationDate),
+        firstClassDate: formatDateForInput(settingsData.firstClassDate),
+        lastClassDate: formatDateForInput(settingsData.lastClassDate)
       });
     }
   }, [settingsData]);
+
 
   const saveSettingsMutation = useMutation({
     mutationFn: async (settings: any) => {
@@ -139,6 +163,135 @@ export default function AdminSettingsPage() {
               <option value="EUR">EUR - Euro</option>
               <option value="USD">USD - US Dollar</option>
             </select>
+          </div>
+        </div>
+      </div>
+
+      {/* School Calendar Settings */}
+      <div className="bg-white dark:bg-[#1a202c] rounded-xl border border-[#e7ebf3] dark:border-[#2d3748] shadow-sm p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="material-symbols-outlined text-primary">calendar_month</span>
+          <h2 className="text-lg font-bold text-[#0d121b] dark:text-white">
+            School Calendar
+          </h2>
+        </div>
+        <p className="text-[#4c669a] text-sm mb-6">
+          Set enrollment periods, orientation date, and class schedule. Student registrations will be blocked outside the enrollment period.
+        </p>
+
+        {/* Enrollment Status Indicator */}
+        {(() => {
+          const now = new Date();
+          const enrollmentStart = formData.enrollmentStartDate ? new Date(formData.enrollmentStartDate) : null;
+          const enrollmentEnd = formData.enrollmentEndDate ? new Date(formData.enrollmentEndDate) : null;
+          
+          let statusColor = "green";
+          let statusText = "Enrollment Open";
+          let statusDescription = "Students can register for the school.";
+          
+          if (enrollmentStart && now < enrollmentStart) {
+            statusColor = "amber";
+            statusText = "Enrollment Not Started";
+            statusDescription = `Registration opens on ${format(enrollmentStart, "MMM d, yyyy")}`;
+          } else if (enrollmentEnd && now > enrollmentEnd) {
+            statusColor = "red";
+            statusText = "Enrollment Closed";
+            statusDescription = `Registration ended on ${format(enrollmentEnd, "MMM d, yyyy")}`;
+          } else if (enrollmentEnd) {
+            statusDescription = `Registration closes on ${format(enrollmentEnd, "MMM d, yyyy")}`;
+          }
+
+          return (
+            <div className={`flex items-center gap-3 p-4 rounded-lg mb-6 ${
+              statusColor === "green" ? "bg-green-50 dark:bg-green-900/10" :
+              statusColor === "amber" ? "bg-amber-50 dark:bg-amber-900/10" :
+              "bg-red-50 dark:bg-red-900/10"
+            }`}>
+              <span className={`material-symbols-outlined ${
+                statusColor === "green" ? "text-green-600" :
+                statusColor === "amber" ? "text-amber-600" :
+                "text-red-600"
+              }`}>
+                {statusColor === "green" ? "check_circle" : statusColor === "amber" ? "schedule" : "cancel"}
+              </span>
+              <div>
+                <p className={`text-sm font-medium ${
+                  statusColor === "green" ? "text-green-700 dark:text-green-400" :
+                  statusColor === "amber" ? "text-amber-700 dark:text-amber-400" :
+                  "text-red-700 dark:text-red-400"
+                }`}>
+                  {statusText}
+                </p>
+                <p className="text-xs text-[#4c669a]">
+                  {statusDescription}
+                </p>
+              </div>
+            </div>
+          );
+        })()}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-[#4c669a] mb-2">
+              Enrollment Start Date
+            </label>
+            <input
+              type="date"
+              value={formData.enrollmentStartDate}
+              onChange={(e) => setFormData({ ...formData, enrollmentStartDate: e.target.value })}
+              className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
+            />
+            <p className="text-xs text-[#4c669a] mt-1">When registration opens</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#4c669a] mb-2">
+              Enrollment End Date
+            </label>
+            <input
+              type="date"
+              value={formData.enrollmentEndDate}
+              onChange={(e) => setFormData({ ...formData, enrollmentEndDate: e.target.value })}
+              className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
+            />
+            <p className="text-xs text-[#4c669a] mt-1">When registration closes</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#4c669a] mb-2">
+              Orientation Date
+            </label>
+            <input
+              type="date"
+              value={formData.orientationDate}
+              onChange={(e) => setFormData({ ...formData, orientationDate: e.target.value })}
+              className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
+            />
+            <p className="text-xs text-[#4c669a] mt-1">Student orientation day</p>
+          </div>
+          <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-[#e7ebf3] dark:border-[#2d3748]">
+            <div>
+              <label className="block text-sm font-medium text-[#4c669a] mb-2">
+                First Class Date
+              </label>
+              <input
+                type="date"
+                value={formData.firstClassDate}
+                onChange={(e) => setFormData({ ...formData, firstClassDate: e.target.value })}
+                className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
+              />
+              <p className="text-xs text-[#4c669a] mt-1">Classes begin</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#4c669a] mb-2">
+                Last Class Date
+              </label>
+              <input
+                type="date"
+                value={formData.lastClassDate}
+                onChange={(e) => setFormData({ ...formData, lastClassDate: e.target.value })}
+                className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
+              />
+              <p className="text-xs text-[#4c669a] mt-1">Classes end</p>
+            </div>
           </div>
         </div>
       </div>

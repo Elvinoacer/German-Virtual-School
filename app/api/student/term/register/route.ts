@@ -17,6 +17,27 @@ export async function POST(request: NextRequest) {
 
     const studentId = payload.id || (payload as any).userId;
 
+    // Check enrollment period before allowing registration
+    const systemSettings = await prisma.systemSettings.findUnique({
+      where: { id: 'system-settings' },
+      select: {
+        enrollmentStartDate: true,
+        enrollmentEndDate: true,
+      }
+    });
+
+    if (systemSettings) {
+      const now = new Date();
+      
+      if (systemSettings.enrollmentStartDate && now < systemSettings.enrollmentStartDate) {
+        return errors.forbidden(`Enrollment has not started yet. Registration opens on ${systemSettings.enrollmentStartDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.`);
+      }
+
+      if (systemSettings.enrollmentEndDate && now > systemSettings.enrollmentEndDate) {
+        return errors.forbidden(`Enrollment is closed. Registration ended on ${systemSettings.enrollmentEndDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}. Please check back for the next enrollment period.`);
+      }
+    }
+
     const [currentTerm, billingSettings] = await Promise.all([
       prisma.academicTerm.findFirst({ where: { isCurrent: true } }),
       prisma.globalBillingSettings.findFirst()
