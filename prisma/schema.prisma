@@ -153,9 +153,9 @@ model Evaluation {
   updatedAt             DateTime @updatedAt
 
   // Relations
-  student User   @relation("StudentEvaluations", fields: [studentId], references: [id])
-  teacher User   @relation("TeacherEvaluations", fields: [teacherId], references: [id])
-  course  Course @relation(fields: [courseId], references: [id])
+  student User   @relation("StudentEvaluations", fields: [studentId], references: [id], onDelete: Cascade)
+  teacher User   @relation("TeacherEvaluations", fields: [teacherId], references: [id], onDelete: Cascade)
+  course  Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 }
 
 model User {
@@ -278,8 +278,8 @@ model TeacherNote {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  student   User     @relation("StudentNotes", fields: [studentId], references: [id])
-  teacher   User     @relation("CreatedNotes", fields: [teacherId], references: [id])
+  student   User     @relation("StudentNotes", fields: [studentId], references: [id], onDelete: Cascade)
+  teacher   User     @relation("CreatedNotes", fields: [teacherId], references: [id], onDelete: Cascade)
 }
 
 // --------------------------------------------
@@ -303,7 +303,7 @@ model Course {
   updatedAt     DateTime     @updatedAt
 
   // Relations
-  teacher       User           @relation("TeacherCourses", fields: [teacherId], references: [id])
+  teacher       User           @relation("TeacherCourses", fields: [teacherId], references: [id], onDelete: Cascade)
   modules       Module[]
   enrollments   Enrollment[]
   classSessions ClassSession[]
@@ -365,7 +365,7 @@ model Enrollment {
   feePlanId          String?
 
   // Relations
-  student          User               @relation(fields: [studentId], references: [id])
+  student          User               @relation(fields: [studentId], references: [id], onDelete: Cascade)
   course           Course             @relation(fields: [courseId], references: [id])
   moduleProgress   ModuleProgress[]
   resourceProgress ResourceProgress[]
@@ -423,7 +423,7 @@ model ClassSession {
 
   // Relations
   course     Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  teacher    User               @relation("TeacherSessions", fields: [teacherId], references: [id])
+  teacher    User               @relation("TeacherSessions", fields: [teacherId], references: [id], onDelete: Cascade)
   attendance AttendanceRecord[]
 }
 
@@ -439,7 +439,7 @@ model AttendanceRecord {
 
   // Relations
   classSession ClassSession    @relation(fields: [classSessionId], references: [id], onDelete: Cascade)
-  student      User            @relation(fields: [studentId], references: [id])
+  student      User            @relation(fields: [studentId], references: [id], onDelete: Cascade)
   logs         AttendanceLog[]
 
   @@unique([classSessionId, studentId])
@@ -490,7 +490,7 @@ model Submission {
 
   // Relations
   assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-  student    User       @relation(fields: [studentId], references: [id])
+  student    User       @relation(fields: [studentId], references: [id], onDelete: Cascade)
   gradedBy   User?      @relation("TeacherGrading", fields: [gradedById], references: [id])
 
   @@unique([assignmentId, studentId])
@@ -524,7 +524,7 @@ model Invoice {
   createdAt    DateTime      @default(now())
 
   // Relations
-  student    User          @relation(fields: [studentId], references: [id])
+  student    User          @relation(fields: [studentId], references: [id], onDelete: Cascade)
   enrollment Enrollment?   @relation(fields: [enrollmentId], references: [id])
   term       AcademicTerm? @relation(fields: [termId], references: [id])
   payments   Payment[]
@@ -542,7 +542,7 @@ model Payment {
   processedAt          DateTime      @default(now())
 
   // Relations
-  invoice Invoice @relation(fields: [invoiceId], references: [id])
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 }
 
 
@@ -565,7 +565,7 @@ model ForumThread {
 
   // Relations
   course Course?     @relation(fields: [courseId], references: [id])
-  author User        @relation(fields: [authorId], references: [id])
+  author User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
   posts  ForumPost[]
 }
 
@@ -580,8 +580,8 @@ model ForumPost {
 
   // Relations
   thread   ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  author   User        @relation(fields: [authorId], references: [id])
-  parent   ForumPost?  @relation("ThreadReplies", fields: [parentId], references: [id])
+  author   User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent   ForumPost?  @relation("ThreadReplies", fields: [parentId], references: [id], onDelete: Cascade)
   children ForumPost[] @relation("ThreadReplies")
 }
 
@@ -610,7 +610,7 @@ model Broadcast {
   createdAt      DateTime @default(now())
 
   // Relations
-  sender User @relation(fields: [senderId], references: [id])
+  sender User @relation(fields: [senderId], references: [id], onDelete: Cascade)
 }
 
 model Message {
@@ -689,7 +689,7 @@ model TermRegistration {
   termId    String
   createdAt DateTime @default(now())
 
-  student User         @relation(fields: [studentId], references: [id])
+  student User         @relation(fields: [studentId], references: [id], onDelete: Cascade)
   term    AcademicTerm @relation(fields: [termId], references: [id])
 
   @@unique([studentId, termId])
@@ -735,7 +735,7 @@ model SystemReport {
   generatedAt DateTime @default(now())
 
   // Relations
-  generatedBy User @relation(fields: [generatedById], references: [id])
+  generatedBy User @relation(fields: [generatedById], references: [id], onDelete: Cascade)
 }
 
 model Testimonial {
@@ -748,7 +748,7 @@ model Testimonial {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  student     User     @relation(fields: [studentId], references: [id])
+  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 // --------------------------------------------
