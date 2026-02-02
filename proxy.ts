@@ -21,6 +21,7 @@ export default auth((req) => {
     nextUrl.pathname.startsWith("/courses") ||
     nextUrl.pathname.startsWith("/calendar") ||
     nextUrl.pathname.startsWith("/documentation") ||
+    nextUrl.pathname.startsWith("/school-info") ||
     nextUrl.pathname.startsWith("/verify-email") || 
     nextUrl.pathname.startsWith("/check-email");
 
@@ -32,7 +33,8 @@ export default auth((req) => {
   const isPublicApiRoute =
     (nextUrl.pathname.startsWith("/api/courses") && req.method === "GET") ||
     (nextUrl.pathname.startsWith("/api/testimonials") && req.method === "GET") ||
-    (nextUrl.pathname.startsWith("/api/stats/public") && req.method === "GET");
+    (nextUrl.pathname.startsWith("/api/stats/public") && req.method === "GET") ||
+    (nextUrl.pathname.startsWith("/api/school") && req.method === "GET"); // Public school info & calendar
 
   if (isApiAuthRoute) {
     return;

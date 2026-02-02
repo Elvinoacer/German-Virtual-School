@@ -48,6 +48,14 @@ export function PublicFooter() {
               </li>
               <li>
                 <Link
+                  href="/school-info"
+                  className="hover:text-primary transition-colors"
+                >
+                  School Information
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/about"
                   className="hover:text-primary transition-colors"
                 >
