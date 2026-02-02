@@ -8,6 +8,7 @@ import axiosInstance from "@/lib/axios";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import NotificationIcon from "@/components/shared/NotificationIcon";
+import SchoolCalendarCard from "@/components/shared/SchoolCalendarCard";
 
 interface DashboardData {
   stats: {
@@ -365,6 +366,9 @@ export default function StudentDashboard() {
             </div>
 
             <div className="flex flex-col gap-6">
+              {/* School Calendar */}
+              <SchoolCalendarCard />
+
               {/* Enrolled Courses */}
               <div>
                 <h3 className="text-lg font-bold mb-4">Enrolled Courses</h3>

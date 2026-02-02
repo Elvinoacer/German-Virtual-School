@@ -100,6 +100,9 @@ Expected response includes:
 | `app/api/student/term/register/route.ts` | Enrollment validation for term registration |
 | `app/admin/settings/page.tsx` | School Calendar UI section |
 | `src/components/auth/RegisterForm.tsx` | Enrollment status check & closed message |
+| `src/components/shared/SchoolCalendarCard.tsx` | **NEW** - Reusable calendar widget |
+| `app/student/(dashboard)/dashboard/page.tsx` | Added SchoolCalendarCard to sidebar |
+| `app/teacher/dashboard/page.tsx` | Added SchoolCalendarCard to sidebar |
 
 ---
 

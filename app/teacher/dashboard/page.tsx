@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import axiosInstance from "@/lib/axios";
 import { useAuth } from "@/hooks/useAuth";
+import SchoolCalendarCard from "@/components/shared/SchoolCalendarCard";
 
 interface TeacherDashboardData {
   stats: {
@@ -361,6 +362,8 @@ export default function TeacherDashboard() {
                   View all assignments
                 </Link>
               </div>
+              {/* School Calendar */}
+              <SchoolCalendarCard />
             </div>
             {/* Right Column: Analytics & Management (Takes 2/3) */}
             <div className="lg:col-span-2 flex flex-col gap-6">
