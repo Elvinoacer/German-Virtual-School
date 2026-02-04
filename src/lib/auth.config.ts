@@ -273,6 +273,35 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // without breaking Edge Middleware compatibility
         const { notifyAdminsOfNewUser } = await import("@/lib/auth-events");
         await notifyAdminsOfNewUser(user as any);
+        
+        // Create role-specific profile for OAuth users (credentials flow does this in register API)
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id as string },
+          select: { role: true }
+        });
+        
+        if (dbUser?.role === "STUDENT") {
+          // Check if profile already exists (upsert-like behavior)
+          const existingProfile = await prisma.studentProfile.findUnique({
+            where: { userId: user.id as string }
+          });
+          if (!existingProfile) {
+            await prisma.studentProfile.create({
+              data: { userId: user.id as string }
+            });
+            console.log("[Auth] Created StudentProfile for OAuth user:", user.id);
+          }
+        } else if (dbUser?.role === "TEACHER") {
+          const existingProfile = await prisma.teacherProfile.findUnique({
+            where: { userId: user.id as string }
+          });
+          if (!existingProfile) {
+            await prisma.teacherProfile.create({
+              data: { userId: user.id as string }
+            });
+            console.log("[Auth] Created TeacherProfile for OAuth user:", user.id);
+          }
+        }
       } catch (error) {
         console.error("Failed to process createUser event:", error);
       }
