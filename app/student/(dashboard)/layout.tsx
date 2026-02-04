@@ -37,6 +37,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     { href: '/student/reports', icon: 'description', label: 'Reports' },
     { href: '/messages', icon: 'chat', label: 'Messages' },
     { href: '/forum', icon: 'forum', label: 'Forum' },
+    { href: '/channels', icon: 'diversity_3', label: 'Channels' },
     { href: '/student/feedback', icon: 'reviews', label: 'Feedback' },
   ];
 

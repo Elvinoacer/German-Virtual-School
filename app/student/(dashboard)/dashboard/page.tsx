@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import NotificationIcon from "@/components/shared/NotificationIcon";
 import SchoolCalendarCard from "@/components/shared/SchoolCalendarCard";
+import BroadcastBanner from "@/components/shared/BroadcastBanner";
 
 interface DashboardData {
   stats: {
@@ -176,6 +177,9 @@ export default function StudentDashboard() {
         </header>
 
         <div className="p-4 md:p-8 max-w-[1400px] w-full mx-auto flex flex-col gap-6 md:gap-8">
+          {/* Broadcast Banner - Announcements & New Channels */}
+          <BroadcastBanner maxBroadcasts={3} />
+
           {/* Quick Stats Row */}
           <section className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
             <div className="bg-card-light dark:bg-card-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 flex items-center justify-between group hover:border-primary/30 transition-all">

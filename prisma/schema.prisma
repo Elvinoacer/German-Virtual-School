@@ -212,6 +212,7 @@ model User {
   // Admin Relations
   generatedReports  SystemReport[]
   testimonials      Testimonial[]
+  createdChannels   CommunicationChannel[] @relation("ChannelCreator")
 }
 
 // --------------------------------------------
@@ -770,4 +771,23 @@ model AuditLog {
   @@index([action])
   @@index([entity])
   @@index([createdAt])
+}
+
+// --------------------------------------------
+// Communication Channels (WhatsApp, Telegram, etc.)
+// --------------------------------------------
+
+model CommunicationChannel {
+  id          String   @id @default(uuid())
+  name        String   // e.g., "German Learners WhatsApp"
+  type        String   // WHATSAPP, TELEGRAM, DISCORD, FACEBOOK, INSTAGRAM, TWITTER, OTHER
+  link        String   // Invite/join link
+  description String?  @db.Text
+  iconUrl     String?  // Custom icon if needed
+  isActive    Boolean  @default(true)
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy   User     @relation("ChannelCreator", fields: [createdById], references: [id], onDelete: Cascade)
 }

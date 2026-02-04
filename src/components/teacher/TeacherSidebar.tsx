@@ -196,6 +196,22 @@ export default function TeacherSidebar({ mobileOpen, desktopCollapsed, onMobileC
         </Link>
         <Link
           className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative
+            ${isActive("/channels")
+              ? "bg-primary/10 text-primary"
+              : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"}
+               ${desktopCollapsed ? 'lg:justify-center' : ''}
+          `}
+          title={desktopCollapsed ? "Channels" : undefined}
+          href="/channels"
+          onClick={() => { if (window.innerWidth < 1024) onMobileClose(); }}
+        >
+          <span className="material-symbols-outlined shrink-0">diversity_3</span>
+          <span className={`text-sm font-medium transition-all duration-300 whitespace-nowrap ${desktopCollapsed ? 'lg:w-0 lg:opacity-0 lg:overflow-hidden' : 'w-auto opacity-100'}`}>
+            Channels
+          </span>
+        </Link>
+        <Link
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative
             ${isActive("/teacher/finance")
               ? "bg-primary/10 text-primary"
               : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"}

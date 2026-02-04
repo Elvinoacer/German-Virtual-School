@@ -20,6 +20,7 @@ export default auth((req) => {
     nextUrl.pathname.startsWith("/terms") ||
     nextUrl.pathname.startsWith("/courses") ||
     nextUrl.pathname.startsWith("/calendar") ||
+    nextUrl.pathname.startsWith("/channels") || // Public channels page
     nextUrl.pathname.startsWith("/documentation") ||
     nextUrl.pathname.startsWith("/school-info") ||
     nextUrl.pathname.startsWith("/verify-email") || 
@@ -34,6 +35,7 @@ export default auth((req) => {
     (nextUrl.pathname.startsWith("/api/courses") && req.method === "GET") ||
     (nextUrl.pathname.startsWith("/api/testimonials") && req.method === "GET") ||
     (nextUrl.pathname.startsWith("/api/stats/public") && req.method === "GET") ||
+    (nextUrl.pathname.startsWith("/api/channels") && req.method === "GET") || // Public channels
     (nextUrl.pathname.startsWith("/api/school") && req.method === "GET"); // Public school info & calendar
 
   if (isApiAuthRoute) {
