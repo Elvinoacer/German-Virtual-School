@@ -41,18 +41,18 @@ export default function StudentChannelsPage() {
   });
 
   return (
-    <div className="flex flex-col w-full min-h-full bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display transition-colors duration-200">
+    <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8">
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md px-6 py-4 border-b border-gray-200/50 dark:border-gray-800/50">
-        <h2 className="text-2xl font-black text-text-main dark:text-white tracking-tight">
-          Channels
-        </h2>
-        <p className="text-text-subtle text-sm">
+      <div className="mb-8">
+        <h1 className="text-3xl md:text-4xl font-bold text-text-main dark:text-white mb-2">
+          Communication Channels
+        </h1>
+        <p className="text-text-subtle">
           Connect with your classmates and join official groups
         </p>
-      </header>
+      </div>
 
-      <div className="p-4 md:p-8 max-w-[1400px] w-full mx-auto">
+      <div className="w-full">
         {isLoading ? (
           <div className="flex items-center justify-center py-24">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
