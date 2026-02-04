@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@/lib/axios";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 interface Teacher {
   id: string;
@@ -35,6 +36,13 @@ interface AdminTeachersData {
 
 export default function AdminTeachersPage() {
   const [search, setSearch] = useState("");
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  
+  const queryClient = useQueryClient();
 
   const { data, isLoading, isError } = useQuery<AdminTeachersData>({
     queryKey: ['admin-teachers', search],
@@ -46,6 +54,30 @@ export default function AdminTeachersPage() {
       return response.data.data;
     }
   });
+
+  const createTeacherMutation = useMutation({
+    mutationFn: async (data: { firstName: string; lastName: string; email: string; password: string }) => {
+      const response = await axiosInstance.post('/admin/teachers', data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-teachers'] });
+      toast.success("Teacher created successfully");
+      setIsAddModalOpen(false);
+      setFirstName("");
+      setLastName("");
+      setEmail("");
+      setPassword("");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.error?.message || "Failed to create teacher");
+    }
+  });
+
+  const handleCreateTeacher = (e: React.FormEvent) => {
+    e.preventDefault();
+    createTeacherMutation.mutate({ firstName, lastName, email, password });
+  };
 
   if (isLoading) {
     return (
@@ -68,6 +100,79 @@ export default function AdminTeachersPage() {
 
   return (
     <div className="p-4 md:p-6 lg:p-8 flex flex-col gap-6 md:gap-8 max-w-[1600px] mx-auto w-full">
+      {/* Add Teacher Modal */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-[#1a202c] rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-[#e7ebf3] dark:border-[#2d3748]">
+              <h2 className="text-xl font-bold text-[#0d121b] dark:text-white">Add New Teacher</h2>
+            </div>
+            <form onSubmit={handleCreateTeacher} className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-[#4c669a] uppercase tracking-wider mb-2">First Name</label>
+                  <input
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                    className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-[#f3f4f6] dark:bg-[#2d3748] dark:text-white focus:ring-2 focus:ring-primary/50 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[#4c669a] uppercase tracking-wider mb-2">Last Name</label>
+                  <input
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                    className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-[#f3f4f6] dark:bg-[#2d3748] dark:text-white focus:ring-2 focus:ring-primary/50 text-sm"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-[#4c669a] uppercase tracking-wider mb-2">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-[#f3f4f6] dark:bg-[#2d3748] dark:text-white focus:ring-2 focus:ring-primary/50 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-[#4c669a] uppercase tracking-wider mb-2">Initial Password</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={8}
+                  className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-[#f3f4f6] dark:bg-[#2d3748] dark:text-white focus:ring-2 focus:ring-primary/50 text-sm"
+                />
+                <p className="text-xs text-[#9ca3af] mt-1">Minimum 8 characters</p>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="flex-1 px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] text-[#4c669a] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={createTeacherMutation.isPending}
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-primary text-white font-bold hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  {createTeacherMutation.isPending ? "Creating..." : "Create Teacher"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -82,6 +187,13 @@ export default function AdminTeachersPage() {
           <span className="text-xs md:text-sm text-[#4c669a]">
             Total Teachers: <span className="font-bold text-[#0d121b] dark:text-white">{total}</span>
           </span>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="px-4 py-2 bg-primary text-white rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            Add Teacher
+          </button>
         </div>
       </div>
 

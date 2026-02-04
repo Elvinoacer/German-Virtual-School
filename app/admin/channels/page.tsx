@@ -286,7 +286,7 @@ export default function AdminChannelsPage() {
       {/* Create Modal */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-[#1a202c] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-[#1a202c] rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
              {/* ... (Header) ... */}
             <div className="p-6 border-b border-[#e7ebf3] dark:border-[#2d3748]">
               <h2 className="text-xl font-bold text-[#0d121b] dark:text-white">

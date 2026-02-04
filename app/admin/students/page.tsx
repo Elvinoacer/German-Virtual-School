@@ -276,7 +276,7 @@ export default function AdminStudentsPage() {
                         </button>
                       )}
                       <Link
-                        href={`/teacher/students/${student.id}`}
+                        href={`/admin/students/${student.id}`}
                         className="inline-flex items-center gap-1 text-primary hover:underline text-sm font-medium"
                       >
                         Details

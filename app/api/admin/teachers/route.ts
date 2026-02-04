@@ -122,3 +122,67 @@ export async function GET(request: NextRequest) {
     return errors.internal('Failed to fetch teachers');
   }
 }
+
+// POST - Create a new teacher account
+export async function POST(request: NextRequest) {
+  try {
+    const payload = await authenticate(request);
+    
+    if (payload.role !== 'ADMIN') {
+      return errors.forbidden('Access denied');
+    }
+
+    const body = await request.json();
+    const { firstName, lastName, email, password } = body;
+
+    // Validate required fields
+    if (!firstName || !lastName || !email || !password) {
+      return errors.badRequest('All fields are required: firstName, lastName, email, password');
+    }
+
+    // Check if email already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (existingUser) {
+      return errors.badRequest('A user with this email already exists');
+    }
+
+    // Hash password
+    const bcrypt = await import('bcryptjs');
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    // Create teacher
+    const teacher = await prisma.user.create({
+      data: {
+        firstName,
+        lastName,
+        email,
+        passwordHash: hashedPassword,
+        role: 'TEACHER',
+        isVerified: true, // Admin-created teachers are auto-verified
+        onboardingComplete: true,
+      }
+    });
+
+    // Create teacher profile
+    await prisma.teacherProfile.create({
+      data: { userId: teacher.id }
+    });
+
+    return successResponse({
+      message: 'Teacher created successfully',
+      teacher: {
+        id: teacher.id,
+        firstName: teacher.firstName,
+        lastName: teacher.lastName,
+        email: teacher.email,
+      }
+    }, undefined, 201);
+
+  } catch (error) {
+    console.error('Create teacher error:', error);
+    return errors.internal('Failed to create teacher');
+  }
+}
