@@ -170,6 +170,7 @@ model User {
   image         String?
   avatarUrl     String?
   isVerified    Boolean   @default(false)
+  onboardingComplete Boolean @default(false)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   fcmTokens     String[]
@@ -785,6 +786,7 @@ model CommunicationChannel {
   description String?  @db.Text
   iconUrl     String?  // Custom icon if needed
   isActive    Boolean  @default(true)
+  isPublic    Boolean  @default(true)
   createdById String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

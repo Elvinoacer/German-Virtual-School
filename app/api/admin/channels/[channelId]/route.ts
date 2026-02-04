@@ -50,7 +50,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     const { channelId } = await params;
     const body = await request.json();
-    const { name, link, description, iconUrl, isActive } = body;
+    const { name, link, description, iconUrl, isActive, isPublic } = body;
 
     const channel = await prisma.communicationChannel.findUnique({
       where: { id: channelId },
@@ -68,6 +68,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         ...(description !== undefined && { description }),
         ...(iconUrl !== undefined && { iconUrl }),
         ...(isActive !== undefined && { isActive }),
+        ...(isPublic !== undefined && { isPublic }),
       },
     });
 

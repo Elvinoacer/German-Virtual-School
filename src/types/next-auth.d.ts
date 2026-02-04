@@ -10,6 +10,7 @@ declare module "next-auth" {
       firstName: string;
       lastName: string;
       isVerified: boolean;
+      onboardingComplete: boolean;
     } & DefaultSession["user"];
   }
 
@@ -19,6 +20,7 @@ declare module "next-auth" {
     firstName: string;
     lastName: string;
     isVerified: boolean;
+    onboardingComplete: boolean;
   }
 }
 
@@ -30,5 +32,6 @@ declare module "next-auth/jwt" {
     firstName: string;
     lastName: string;
     isVerified: boolean;
+    onboardingComplete: boolean;
   }
 }

@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, type, link, description, iconUrl } = body;
+    const { name, type, link, description, iconUrl, isPublic } = body;
 
     if (!name || !type || !link) {
       return errors.badRequest("Name, type, and link are required");
@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
         link,
         description,
         iconUrl,
+        isPublic: isPublic !== undefined ? isPublic : true,
         createdById: payload.userId,
       },
     });

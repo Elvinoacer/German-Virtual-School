@@ -14,6 +14,7 @@ declare module "next-auth" {
       firstName: string;
       lastName: string;
       isVerified: boolean;
+      onboardingComplete: boolean;
       emailVerified: Date | null;
     } & DefaultSession["user"];
   }
@@ -24,6 +25,7 @@ declare module "next-auth" {
       firstName: string;
       lastName: string;
       isVerified: boolean;
+      onboardingComplete: boolean;
       emailVerified?: Date | null;
   }
 }
@@ -64,6 +66,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             role: true,
             avatarUrl: true,
             isVerified: true,
+            onboardingComplete: true,
             emailVerified: true,
           },
         });
@@ -91,6 +94,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           role: user.role,
           image: user.avatarUrl,
           isVerified: user.isVerified,
+          onboardingComplete: user.onboardingComplete,
           emailVerified: user.emailVerified,
         };
       },
@@ -117,10 +121,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: profile.email,
           name: profile.name,
           firstName: profile.given_name || profile.name?.split(" ")[0] || "Unknown",
-          lastName: profile.family_name || profile.name?.split(" ").slice(1).join(" ") || ".",  // Fallback to dot or empty string if allowed, likely we need something not empty if possible, but empty string is fine for string type
+          lastName: profile.family_name || profile.name?.split(" ").slice(1).join(" ") || ".",
           image: profile.picture,
-          role: "STUDENT" as UserRole, // Default role for OAuth
-          isVerified: false, // Default verification status
+          role: "STUDENT" as UserRole,
+          isVerified: false,
+          onboardingComplete: false,
           emailVerified: new Date(),
         };
       },
@@ -186,13 +191,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (needsDbFetch) {
           const dbUser = await prisma.user.findUnique({
             where: { id: user.id as string },
-            select: { firstName: true, lastName: true, role: true, isVerified: true, emailVerified: true }
+            select: { firstName: true, lastName: true, role: true, isVerified: true, onboardingComplete: true, emailVerified: true }
           });
           if (dbUser) {
             token.role = dbUser.role;
             token.firstName = dbUser.firstName;
             token.lastName = dbUser.lastName;
             token.isVerified = dbUser.isVerified;
+            token.onboardingComplete = dbUser.onboardingComplete;
             token.emailVerified = dbUser.emailVerified;
           }
         } else {
@@ -201,6 +207,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           token.firstName = userWithRole.firstName;
           token.lastName = userWithRole.lastName;
           token.isVerified = userWithRole.isVerified;
+          token.onboardingComplete = userWithRole.onboardingComplete;
           token.emailVerified = userWithRole.emailVerified;
         }
 
@@ -253,6 +260,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.firstName = token.firstName as string;
         session.user.lastName = token.lastName as string;
         session.user.isVerified = token.isVerified as boolean;
+        session.user.onboardingComplete = token.onboardingComplete as boolean;
         session.user.emailVerified = token.emailVerified as Date | null;
       }
       return session;

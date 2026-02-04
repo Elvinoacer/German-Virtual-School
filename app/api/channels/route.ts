@@ -6,7 +6,10 @@ import { successResponse, errors } from "@/lib/api-response";
 export async function GET(request: NextRequest) {
   try {
     const channels = await prisma.communicationChannel.findMany({
-      where: { isActive: true },
+      where: { 
+        isActive: true,
+        isPublic: true 
+      },
       orderBy: { createdAt: "desc" },
       select: {
         id: true,

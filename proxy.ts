@@ -87,9 +87,31 @@ export default auth((req) => {
       return NextResponse.redirect(new URL("/verify-email", nextUrl));
     }
 
+    // 1. Check for Onboarding Completion (after email verification, ONLY for unverified students)
+    // Verified students with incomplete profiles will see a soft prompt (modal) on their dashboard
+    const isOnboardingPage = nextUrl.pathname === "/student/complete-profile";
+    if (user?.role === "STUDENT" && !user?.isVerified && !user?.onboardingComplete) {
+      // If unverified student hasn't completed onboarding
+      if (!isOnboardingPage) {
+        return NextResponse.redirect(new URL("/student/complete-profile", nextUrl));
+      }
+      // If they are on the onboarding page, let them be
+      return;
+    }
+
+    // If onboarding complete but unverified student tries to access onboarding page, redirect to verification status
+    if (user?.role === "STUDENT" && !user?.isVerified && user?.onboardingComplete && isOnboardingPage) {
+      return NextResponse.redirect(new URL("/student/verification-status", nextUrl));
+    }
+
+    // If verified student accesses onboarding page, redirect to dashboard (they can update via profile settings)
+    if (user?.role === "STUDENT" && user?.isVerified && isOnboardingPage) {
+      return NextResponse.redirect(new URL("/student/dashboard", nextUrl));
+    }
+
     const isVerificationStatusPage = nextUrl.pathname === "/student/verification-status";
 
-    // 1. Check for Student Admin Verification (isVerified = admin approval)
+    // 2. Check for Student Admin Verification (isVerified = admin approval)
     // Email verification is now handled at login level - users can't login without verified email
     if (user?.role === "STUDENT" && !user.isVerified) {
        // If student is unverified by admin and trying to access anything but the verification status page

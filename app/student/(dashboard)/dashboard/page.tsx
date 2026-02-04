@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format, parseISO } from "date-fns";
 import axiosInstance from "@/lib/axios";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import NotificationIcon from "@/components/shared/NotificationIcon";
 import SchoolCalendarCard from "@/components/shared/SchoolCalendarCard";
 import BroadcastBanner from "@/components/shared/BroadcastBanner";
+import ProfileCompletionModal from "@/components/shared/ProfileCompletionModal";
 
 interface DashboardData {
   stats: {
@@ -90,6 +91,34 @@ export default function StudentDashboard() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [historyPage, setHistoryPage] = useState(1);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+
+  // Check if profile is complete for verified users
+  const { data: profileData } = useQuery({
+    queryKey: ['student-profile-check'],
+    queryFn: async () => {
+      const res = await axiosInstance.get('/api/student/profile');
+      return res.data.data;
+    },
+    enabled: !!user?.isVerified,
+  });
+
+  // Show modal for verified users with incomplete profile
+  useEffect(() => {
+    if (user?.isVerified && profileData) {
+      const isComplete = profileData.dateOfBirth && profileData.phoneNumber;
+      const dismissed = localStorage.getItem('profile-modal-dismissed');
+      if (!isComplete && !dismissed) {
+        setShowProfileModal(true);
+      }
+    }
+  }, [user?.isVerified, profileData]);
+
+  const handleCloseProfileModal = () => {
+    setShowProfileModal(false);
+    // Remember dismissal for this session
+    localStorage.setItem('profile-modal-dismissed', 'true');
+  };
 
   const { data, isLoading, isError } = useQuery<DashboardData>({
     queryKey: ['student-dashboard', historyPage],
@@ -145,6 +174,7 @@ export default function StudentDashboard() {
   const { stats, todaySessions, history, courses, assignments } = data;
 
   return (
+    <>
     <div className="flex flex-col w-full min-h-full bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display transition-colors duration-200">
       {/* Top Header */}
       <header className="sticky top-0 z-30 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md px-6 py-4 flex items-center justify-between border-b border-gray-200/50 dark:border-gray-800/50 transition-colors duration-200">
@@ -531,5 +561,9 @@ export default function StudentDashboard() {
           </div>
         </div>
     </div>
+
+      {/* Profile Completion Modal for verified users with incomplete profile */}
+      <ProfileCompletionModal isOpen={showProfileModal} onClose={handleCloseProfileModal} />
+    </>
   );
 }
