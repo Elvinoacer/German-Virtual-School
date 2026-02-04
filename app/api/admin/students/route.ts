@@ -75,7 +75,16 @@ export async function GET(request: NextRequest) {
         email: true,
         avatarUrl: true,
         isVerified: true,
+        onboardingComplete: true,
         createdAt: true,
+        studentProfile: {
+          select: {
+            dateOfBirth: true,
+            phoneNumber: true,
+            address: true,
+            emergencyContact: true,
+          }
+        },
         enrollments: {
           select: {
             id: true,
@@ -128,7 +137,14 @@ export async function GET(request: NextRequest) {
         email: student.email,
         avatarUrl: student.avatarUrl,
         isVerified: student.isVerified,
+        onboardingComplete: student.onboardingComplete,
         createdAt: student.createdAt,
+        profile: student.studentProfile ? {
+          dateOfBirth: student.studentProfile.dateOfBirth,
+          phoneNumber: student.studentProfile.phoneNumber,
+          address: student.studentProfile.address,
+          emergencyContact: student.studentProfile.emergencyContact,
+        } : null,
         stats: {
           activeEnrollments,
           completedEnrollments,

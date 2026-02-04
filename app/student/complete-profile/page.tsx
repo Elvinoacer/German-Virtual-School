@@ -30,7 +30,9 @@ export default function CompleteProfilePage() {
       router.push("/student/verification-status");
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || "Failed to complete profile");
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || "Failed to complete profile";
+      toast.error(errorMessage);
+      console.error("Profile completion error:", error.response?.data || error);
     },
   });
 
@@ -152,8 +154,8 @@ export default function CompleteProfilePage() {
         {/* Footer */}
         <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
           Need help? Contact us at{" "}
-          <a href="mailto:support@germanvirtual.school" className="text-primary hover:underline">
-            support@germanvirtual.school
+          <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@germanvirtualschool.com'}`} className="text-primary hover:underline">
+            {process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@germanvirtualschool.com'}
           </a>
         </p>
       </div>

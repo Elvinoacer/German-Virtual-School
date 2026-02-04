@@ -15,7 +15,14 @@ interface Student {
   email: string;
   avatarUrl: string | null;
   isVerified: boolean;
+  onboardingComplete?: boolean;
   createdAt: string;
+  profile?: {
+    dateOfBirth: string | null;
+    phoneNumber: string | null;
+    address: string | null;
+    emergencyContact: string | null;
+  } | null;
   stats: {
     activeEnrollments: number;
     completedEnrollments: number;
