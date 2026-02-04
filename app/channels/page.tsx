@@ -32,7 +32,7 @@ export default function ChannelsPage() {
   const { data: channels, isLoading } = useQuery<Channel[]>({
     queryKey: ["public-channels"],
     queryFn: async () => {
-      const res = await axiosInstance.get("/api/channels");
+      const res = await axiosInstance.get("/channels");
       return res.data.data.channels;
     },
   });

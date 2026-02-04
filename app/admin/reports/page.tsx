@@ -50,7 +50,7 @@ export default function ReportsOverviewPage() {
 
   const generateReportMutation = useMutation({
     mutationFn: async (reportData: { name: string; type: string; format: string }) => {
-      const response = await axiosInstance.post('/api/admin/reports/generate', reportData);
+      const response = await axiosInstance.post('/admin/reports/generate', reportData);
       return response.data;
     },
     onSuccess: () => {

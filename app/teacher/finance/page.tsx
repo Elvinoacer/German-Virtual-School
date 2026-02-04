@@ -37,7 +37,7 @@ export default function TeacherFinancePage() {
   const { data: feePlans, isLoading } = useQuery<FeePlan[]>({
     queryKey: ['fee-plans'],
     queryFn: async () => {
-      const res = await axiosInstance.get('/api/finance/fee-plans');
+      const res = await axiosInstance.get('/finance/fee-plans');
       return res.data?.data || [];
     }
   });
@@ -46,14 +46,14 @@ export default function TeacherFinancePage() {
       queryKey: ['teacher-courses-simple', user?.id],
       enabled: !!user?.id,
       queryFn: async () => {
-          const res = await axiosInstance.get(`/api/courses?status=ALL&teacherId=${user?.id}`); 
+          const res = await axiosInstance.get(`/courses?status=ALL&teacherId=${user?.id}`); 
           return res.data?.data?.data || [];
       }
   });
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
-      await axiosInstance.post('/api/finance/fee-plans', data);
+      await axiosInstance.post('/finance/fee-plans', data);
     },
     onSuccess: () => {
       setSuccess("Fee Plan created successfully");

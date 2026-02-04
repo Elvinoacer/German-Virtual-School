@@ -24,7 +24,7 @@ export default function ComposeNotificationPage() {
   const { data: courses } = useQuery<Course[]>({
     queryKey: ["courses"],
     queryFn: async () => {
-      const res = await axiosInstance.get("/api/admin/courses");
+      const res = await axiosInstance.get("/admin/courses");
       return res.data.data; // Assuming API returns { data: [...] }
     },
     enabled: target === "COURSE_STUDENTS",
@@ -32,7 +32,7 @@ export default function ComposeNotificationPage() {
 
   const broadcastMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await axiosInstance.post("/api/admin/notifications/broadcast", data);
+      const res = await axiosInstance.post("/admin/notifications/broadcast", data);
       return res.data;
     },
     onSuccess: (data) => {

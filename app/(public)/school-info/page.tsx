@@ -121,7 +121,7 @@ export default function SchoolInfoPage() {
   const { data, isLoading, isError } = useQuery<SchoolInfo>({
     queryKey: ["school-info"],
     queryFn: async () => {
-      const response = await axiosInstance.get("/api/school/info");
+      const response = await axiosInstance.get("/school/info");
       return response.data.data;
     },
     staleTime: 1000 * 60 * 5,

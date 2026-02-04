@@ -69,7 +69,7 @@ export default function StudentSchedulePage() {
   const { data, isLoading, isError } = useQuery<ScheduleData>({
     queryKey: ['student-schedule'],
     queryFn: async () => {
-      const res = await axiosInstance.get('/api/student/schedule');
+      const res = await axiosInstance.get('/student/schedule');
       return res.data.data;
     }
   });

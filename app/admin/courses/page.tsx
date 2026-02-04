@@ -42,7 +42,7 @@ export default function AdminCoursesPage() {
       if (search) params.append('search', search);
       if (levelFilter !== 'all') params.append('level', levelFilter);
       
-      const response = await axiosInstance.get(`/api/admin/courses?${params}`);
+      const response = await axiosInstance.get(`/admin/courses?${params}`);
       return response.data.data;
     }
   });

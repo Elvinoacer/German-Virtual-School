@@ -60,7 +60,7 @@ export default function SchoolCalendarCard() {
   const { data: calendar, isLoading } = useQuery<CalendarData>({
     queryKey: ['school-calendar'],
     queryFn: async () => {
-      const response = await axiosInstance.get('/api/school/calendar');
+      const response = await axiosInstance.get('/school/calendar');
       return response.data.data;
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes

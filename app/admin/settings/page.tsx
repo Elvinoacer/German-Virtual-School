@@ -42,7 +42,7 @@ export default function AdminSettingsPage() {
   const { data: settingsData, isLoading } = useQuery({
     queryKey: ['admin-settings'],
     queryFn: async () => {
-      const response = await axiosInstance.get('/api/admin/settings');
+      const response = await axiosInstance.get('/admin/settings');
       return response.data.data;
     }
   });
@@ -76,7 +76,7 @@ export default function AdminSettingsPage() {
 
   const saveSettingsMutation = useMutation({
     mutationFn: async (settings: any) => {
-      const response = await axiosInstance.patch('/api/admin/settings', settings);
+      const response = await axiosInstance.patch('/admin/settings', settings);
       return response.data;
     },
     onSuccess: () => {

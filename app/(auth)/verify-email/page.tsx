@@ -38,7 +38,7 @@ function VerifyEmailContent() {
     
     setIsResending(true);
     try {
-      await axiosInstance.post('/api/auth/resend-verification', {
+      await axiosInstance.post('/auth/resend-verification', {
         email: email
       });
       toast.success("Verification email sent! Check your inbox.");

@@ -30,7 +30,7 @@ export function useNotifications(options?: { isRead?: boolean; limit?: number })
       if (options?.isRead !== undefined) params.set("isRead", String(options.isRead));
       if (options?.limit) params.set("limit", String(options.limit));
       
-      const res = await axiosInstance.get(`/api/notifications/me?${params.toString()}`);
+      const res = await axiosInstance.get(`/notifications/me?${params.toString()}`);
       return res.data.data;
     },
     staleTime: 30 * 1000, // 30 seconds
@@ -56,7 +56,7 @@ export function useMarkAsRead() {
   
   return useMutation({
     mutationFn: async (notificationId: string) => {
-      const res = await axiosInstance.patch(`/api/notifications/${notificationId}`);
+      const res = await axiosInstance.patch(`/notifications/${notificationId}`);
       return res.data;
     },
     onSuccess: () => {
@@ -73,7 +73,7 @@ export function useMarkAllAsRead() {
   
   return useMutation({
     mutationFn: async () => {
-      const res = await axiosInstance.post("/api/notifications/mark-all-read");
+      const res = await axiosInstance.post("/notifications/mark-all-read");
       return res.data;
     },
     onSuccess: () => {
@@ -90,7 +90,7 @@ export function useDeleteNotification() {
   
   return useMutation({
     mutationFn: async (notificationId: string) => {
-      const res = await axiosInstance.delete(`/api/notifications/${notificationId}`);
+      const res = await axiosInstance.delete(`/notifications/${notificationId}`);
       return res.data;
     },
     onSuccess: () => {
@@ -107,7 +107,7 @@ export function useDeleteAllNotifications() {
   
   return useMutation({
     mutationFn: async () => {
-      const res = await axiosInstance.delete("/api/notifications/delete-all");
+      const res = await axiosInstance.delete("/notifications/delete-all");
       return res.data;
     },
     onSuccess: () => {

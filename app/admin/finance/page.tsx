@@ -61,7 +61,7 @@ export default function AdminFinancePage() {
   const { data: financeData, isLoading: isFinanceLoading } = useQuery<AdminFinanceData>({
     queryKey: ['admin-finance'],
     queryFn: async () => {
-      const response = await axiosInstance.get('/api/admin/finance');
+      const response = await axiosInstance.get('/admin/finance');
       return response.data.data;
     }
   });
@@ -69,7 +69,7 @@ export default function AdminFinancePage() {
   const { data: settings, isLoading: isSettingsLoading } = useQuery<BillingSettings>({
     queryKey: ['admin-billing-settings'],
     queryFn: async () => {
-      const response = await axiosInstance.get('/api/admin/finance/settings');
+      const response = await axiosInstance.get('/admin/finance/settings');
       return response.data.data;
     },
     enabled: activeTab === 'settings'
@@ -78,7 +78,7 @@ export default function AdminFinancePage() {
   const { data: terms, isLoading: isTermsLoading } = useQuery<Term[]>({
     queryKey: ['admin-terms'],
     queryFn: async () => {
-      const response = await axiosInstance.get('/api/admin/terms');
+      const response = await axiosInstance.get('/admin/terms');
       return response.data.data;
     },
     enabled: activeTab === 'terms'
@@ -87,7 +87,7 @@ export default function AdminFinancePage() {
   // Mutations
   const updateSettingsMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await axiosInstance.patch('/api/admin/finance/settings', data);
+      const response = await axiosInstance.patch('/admin/finance/settings', data);
       return response.data;
     },
     onSuccess: () => {
@@ -98,7 +98,7 @@ export default function AdminFinancePage() {
 
   const createTermMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await axiosInstance.post('/api/admin/terms', data);
+      const response = await axiosInstance.post('/admin/terms', data);
       return response.data;
     },
     onSuccess: () => {
@@ -109,7 +109,7 @@ export default function AdminFinancePage() {
 
   const setTermAsCurrentMutation = useMutation({
     mutationFn: async (termId: string) => {
-      const response = await axiosInstance.patch(`/api/admin/terms/${termId}`, { isCurrent: true });
+      const response = await axiosInstance.patch(`/admin/terms/${termId}`, { isCurrent: true });
       return response.data;
     },
     onSuccess: () => {
@@ -120,7 +120,7 @@ export default function AdminFinancePage() {
 
   const generateInvoicesMutation = useMutation({
     mutationFn: async () => {
-      const response = await axiosInstance.post('/api/admin/finance/generate');
+      const response = await axiosInstance.post('/admin/finance/generate');
       return response.data;
     },
     onSuccess: (data) => {

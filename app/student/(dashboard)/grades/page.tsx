@@ -54,7 +54,7 @@ export default function StudentGradesPage() {
   const { data, isLoading, isError } = useQuery<GradesData>({
     queryKey: ['student-grades'],
     queryFn: async () => {
-      const res = await axiosInstance.get('/api/student/grades');
+      const res = await axiosInstance.get('/student/grades');
       return res.data.data;
     }
   });

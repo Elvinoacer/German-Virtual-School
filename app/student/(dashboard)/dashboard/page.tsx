@@ -97,7 +97,7 @@ export default function StudentDashboard() {
   const { data: profileData } = useQuery({
     queryKey: ['student-profile-check'],
     queryFn: async () => {
-      const res = await axiosInstance.get('/api/student/profile');
+      const res = await axiosInstance.get('/student/profile');
       return res.data.data;
     },
     enabled: !!user?.isVerified,
@@ -123,14 +123,14 @@ export default function StudentDashboard() {
   const { data, isLoading, isError } = useQuery<DashboardData>({
     queryKey: ['student-dashboard', historyPage],
     queryFn: async () => {
-      const response = await axiosInstance.get(`/api/dashboard/student?historyPage=${historyPage}&historyLimit=5`);
+      const response = await axiosInstance.get(`/dashboard/student?historyPage=${historyPage}&historyLimit=5`);
       return response.data.data;
     }
   });
 
   const registerMutation = useMutation({
     mutationFn: async () => {
-      const response = await axiosInstance.post('/api/student/term/register');
+      const response = await axiosInstance.post('/student/term/register');
       return response.data;
     },
     onSuccess: () => {
@@ -492,7 +492,7 @@ export default function StudentDashboard() {
                   <button 
                     onClick={async () => {
                       try {
-                        const res = await axiosInstance.post('/api/finance/pay', {
+                        const res = await axiosInstance.post('/finance/pay', {
                           invoiceId: stats.oldestUnpaidInvoiceId,
                           amount: stats.balance // Or maybe just the oldest invoice's amount? For simplicity let's pay the balance or let billing handle it.
                         });

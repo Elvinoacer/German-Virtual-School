@@ -78,14 +78,14 @@ export default function AdminStudentsPage() {
       params.append('page', page.toString());
       params.append('limit', '10');
       
-      const response = await axiosInstance.get(`/api/admin/students?${params}`);
+      const response = await axiosInstance.get(`/admin/students?${params}`);
       return response.data.data;
     }
   });
 
   const verifyMutation = useMutation({
     mutationFn: async (studentId: string) => {
-      const response = await axiosInstance.patch(`/api/admin/students/${studentId}/verify`);
+      const response = await axiosInstance.patch(`/admin/students/${studentId}/verify`);
       return response.data;
     },
     onSuccess: () => {

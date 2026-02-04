@@ -57,7 +57,7 @@ export default function StudentEvaluationDetailsPage() {
   const { data, isLoading, isError } = useQuery<EvaluationDetailsData>({
     queryKey: ['student-evaluation', evaluationId],
     queryFn: async () => {
-      const response = await axiosInstance.get(`/api/student/evaluations/${evaluationId}`);
+      const response = await axiosInstance.get(`/student/evaluations/${evaluationId}`);
       return response.data.data;
     },
     enabled: !!evaluationId

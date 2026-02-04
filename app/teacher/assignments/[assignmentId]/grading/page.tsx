@@ -60,7 +60,7 @@ export default function AssignmentGradingPage() {
   const { data, isLoading, isError } = useQuery<GradingData>({
     queryKey: ['grading', assignmentId],
     queryFn: async () => {
-      const response = await axiosInstance.get(`/api/teacher/assignments/${assignmentId}/grading`);
+      const response = await axiosInstance.get(`/teacher/assignments/${assignmentId}/grading`);
       return response.data.data;
     },
     enabled: !!assignmentId
@@ -92,7 +92,7 @@ export default function AssignmentGradingPage() {
 
   const submitGradeMutation = useMutation({
     mutationFn: async (payload: { studentId: string, grade: number, feedback: string, rubricScores?: Record<string, number> }) => {
-      const response = await axiosInstance.post(`/api/teacher/assignments/${assignmentId}/grading`, payload);
+      const response = await axiosInstance.post(`/teacher/assignments/${assignmentId}/grading`, payload);
       return response.data;
     },
     onSuccess: () => {

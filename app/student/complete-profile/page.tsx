@@ -19,7 +19,8 @@ export default function CompleteProfilePage() {
 
   const completeMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const res = await axiosInstance.post("/api/student/complete-profile", data);
+      // Use relative path without /api prefix since baseURL may already include it
+      const res = await axiosInstance.post("/student/complete-profile", data);
       return res.data;
     },
     onSuccess: async () => {

@@ -21,7 +21,7 @@ export default function StudentCourseClassroomPage({ params }: { params: Promise
   const { data: course, isLoading, error } = useQuery({
     queryKey: ["course-classroom", courseId],
     queryFn: async () => {
-      const response = await axiosInstance.get(`/api/courses/${courseId}`);
+      const response = await axiosInstance.get(`/courses/${courseId}`);
       return response.data.data;
     },
     enabled: !!courseId,
@@ -31,7 +31,7 @@ export default function StudentCourseClassroomPage({ params }: { params: Promise
   const { data: progressData } = useQuery({
     queryKey: ["course-progress", courseId],
     queryFn: async () => {
-      const response = await axiosInstance.get(`/api/student/courses/${courseId}/progress`);
+      const response = await axiosInstance.get(`/student/courses/${courseId}/progress`);
       return response.data.data;
     },
     enabled: !!courseId,
@@ -40,7 +40,7 @@ export default function StudentCourseClassroomPage({ params }: { params: Promise
   // Mutation to update progress
   const updateProgressMutation = useMutation({
     mutationFn: async ({ resourceId, isCompleted, lastPosition }: { resourceId: string, isCompleted?: boolean, lastPosition?: number }) => {
-      const response = await axiosInstance.post(`/api/student/courses/${courseId}/resources/${resourceId}/progress`, {
+      const response = await axiosInstance.post(`/student/courses/${courseId}/resources/${resourceId}/progress`, {
         isCompleted,
         lastPosition
       });
@@ -61,7 +61,7 @@ export default function StudentCourseClassroomPage({ params }: { params: Promise
 
   const handleAction = async (resourceId: string, action: "view" | "download") => {
     try {
-      await axiosInstance.patch(`/api/courses/${courseId}/resources`, {
+      await axiosInstance.patch(`/courses/${courseId}/resources`, {
         id: resourceId,
         action,
       });
@@ -199,7 +199,7 @@ export default function StudentCourseClassroomPage({ params }: { params: Promise
             <button 
               onClick={async () => {
                 try {
-                  const res = await axiosInstance.post('/api/finance/pay', {
+                  const res = await axiosInstance.post('/finance/pay', {
                     invoiceId: course.unpaidInvoice.id,
                     amount: course.unpaidInvoice.amount
                   });

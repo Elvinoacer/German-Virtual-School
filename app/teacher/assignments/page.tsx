@@ -54,7 +54,7 @@ export default function TeacherAssignmentsPage() {
   const { data, isLoading, isError } = useQuery<TeacherAssignmentsData>({
     queryKey: ['teacher-assignments'],
     queryFn: async () => {
-      const response = await axiosInstance.get('/api/teacher/assignments');
+      const response = await axiosInstance.get('/teacher/assignments');
       return response.data.data;
     }
   });
@@ -126,7 +126,7 @@ export default function TeacherAssignmentsPage() {
           attachmentUrls: [...resources, ...fileUrls],
           rubric: rubricCriteria.length > 0 ? { criteria: rubricCriteria } : undefined
         };
-        const response = await axiosInstance.post('/api/assignments', payload);
+        const response = await axiosInstance.post('/assignments', payload);
         toast.success("Assignment published successfully!", { id: uploadToastId });
         return response.data;
       } catch (error: any) {

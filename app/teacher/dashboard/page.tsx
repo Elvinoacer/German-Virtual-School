@@ -61,7 +61,7 @@ export default function TeacherDashboard() {
   const { data, isLoading, isError } = useQuery<TeacherDashboardData>({
     queryKey: ["teacher-dashboard"],
     queryFn: async () => {
-      const response = await axiosInstance.get("/api/dashboard/teacher");
+      const response = await axiosInstance.get("/dashboard/teacher");
       return response.data.data;
     },
   });

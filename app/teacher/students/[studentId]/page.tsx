@@ -51,7 +51,7 @@ export default function TeacherStudentDetailPage({ params }: { params: Promise<{
   const { data: student, isLoading } = useQuery<studentData>({
     queryKey: ["student-full-detail", studentId],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/api/teacher/students/${studentId}`);
+      const res = await axiosInstance.get(`/teacher/students/${studentId}`);
       const data = res.data.data;
       
       // sync local state for editing (only editable fields)
@@ -75,14 +75,14 @@ export default function TeacherStudentDetailPage({ params }: { params: Promise<{
   const { data: evaluations } = useQuery({
     queryKey: ["student-evaluations", studentId],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/api/teacher/evaluations?studentId=${studentId}`);
+      const res = await axiosInstance.get(`/teacher/evaluations?studentId=${studentId}`);
       return res.data.data;
     },
   });
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await axiosInstance.patch(`/api/teacher/students/${studentId}`, data);
+      const res = await axiosInstance.patch(`/teacher/students/${studentId}`, data);
       return res.data;
     },
     onSuccess: () => {
@@ -96,9 +96,9 @@ export default function TeacherStudentDetailPage({ params }: { params: Promise<{
   const noteMutation = useMutation({
     mutationFn: async (data: any) => {
       if (editingNote) {
-        return axiosInstance.patch(`/api/teacher/notes/${editingNote.id}`, data);
+        return axiosInstance.patch(`/teacher/notes/${editingNote.id}`, data);
       }
-      return axiosInstance.post(`/api/teacher/students/${studentId}/notes`, data);
+      return axiosInstance.post(`/teacher/students/${studentId}/notes`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["student-full-detail", studentId] });
@@ -111,7 +111,7 @@ export default function TeacherStudentDetailPage({ params }: { params: Promise<{
 
   const deleteNoteMutation = useMutation({
     mutationFn: async (noteId: string) => {
-      await axiosInstance.delete(`/api/teacher/notes/${noteId}`);
+      await axiosInstance.delete(`/teacher/notes/${noteId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["student-full-detail", studentId] });

@@ -37,7 +37,7 @@ export default function ForumThreadListPage() {
   const { data: threads, isLoading } = useQuery({
     queryKey: ['forum-threads', filterAudience],
     queryFn: async () => {
-       const res = await axiosInstance.get('/api/forum/threads', {
+       const res = await axiosInstance.get('/forum/threads', {
          params: { audience: filterAudience || undefined }
        });
        // API returns { success, data: { data: threads[], pagination } }

@@ -43,7 +43,7 @@ export default function AdminDashboard() {
   const { data, isLoading, isError } = useQuery<AdminDashboardData>({
     queryKey: ['admin-dashboard'],
     queryFn: async () => {
-      const response = await axiosInstance.get('/api/dashboard/admin');
+      const response = await axiosInstance.get('/dashboard/admin');
       return response.data.data;
     }
   });

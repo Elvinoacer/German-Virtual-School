@@ -28,7 +28,7 @@ export function BillingAccessGuard({ children }: Props) {
   const { data, isLoading, isError } = useQuery<BillingAccessData>({
     queryKey: ['billing-access'],
     queryFn: async () => {
-      const response = await axiosInstance.get('/api/student/billing/access');
+      const response = await axiosInstance.get('/student/billing/access');
       return response.data.data;
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes

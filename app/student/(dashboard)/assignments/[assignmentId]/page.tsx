@@ -32,7 +32,7 @@ export default function AssignmentDetailsPage() {
 
   const submitMutation = useMutation({
     mutationFn: async (data: { content?: string, attachmentUrls?: string[] }) => {
-      await axiosInstance.post(`/api/assignments/${assignmentId}/submit`, data);
+      await axiosInstance.post(`/assignments/${assignmentId}/submit`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assignment', assignmentId] });

@@ -48,14 +48,14 @@ export default function AdminChannelsPage() {
   const { data: channels, isLoading } = useQuery<Channel[]>({
     queryKey: ["admin-channels"],
     queryFn: async () => {
-      const res = await axiosInstance.get("/api/admin/channels");
+      const res = await axiosInstance.get("/admin/channels");
       return res.data.data.channels;
     },
   });
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const res = await axiosInstance.post("/api/admin/channels", data);
+      const res = await axiosInstance.post("/admin/channels", data);
       return res.data;
     },
     onSuccess: (data) => {
@@ -73,7 +73,7 @@ export default function AdminChannelsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (channelId: string) => {
-      const res = await axiosInstance.delete(`/api/admin/channels/${channelId}`);
+      const res = await axiosInstance.delete(`/admin/channels/${channelId}`);
       return res.data;
     },
     onSuccess: () => {
@@ -87,7 +87,7 @@ export default function AdminChannelsPage() {
 
   const reactivateMutation = useMutation({
     mutationFn: async (channelId: string) => {
-      const res = await axiosInstance.patch(`/api/admin/channels/${channelId}`, { isActive: true });
+      const res = await axiosInstance.patch(`/admin/channels/${channelId}`, { isActive: true });
       return res.data;
     },
     onSuccess: () => {
@@ -101,7 +101,7 @@ export default function AdminChannelsPage() {
 
   const toggleVisibilityMutation = useMutation({
     mutationFn: async ({ id, isPublic }: { id: string; isPublic: boolean }) => {
-      const res = await axiosInstance.patch(`/api/admin/channels/${id}`, { isPublic });
+      const res = await axiosInstance.patch(`/admin/channels/${id}`, { isPublic });
       return res.data;
     },
     onSuccess: () => {

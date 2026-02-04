@@ -192,7 +192,7 @@ export default function StudentBillingPage() {
                                 <button 
                                     onClick={async () => {
                                         try {
-                                            const res = await axiosInstance.post(`/api/invoices/${invoice.id}/pay`, {
+                                            const res = await axiosInstance.post(`/invoices/${invoice.id}/pay`, {
                                                 invoiceId: invoice.id,
                                                 amount: remaining,
                                                 method: paymentMethod

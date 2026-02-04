@@ -42,7 +42,7 @@ export default function AdminTeachersPage() {
       const params = new URLSearchParams();
       if (search) params.append('search', search);
       
-      const response = await axiosInstance.get(`/api/admin/teachers?${params}`);
+      const response = await axiosInstance.get(`/admin/teachers?${params}`);
       return response.data.data;
     }
   });

@@ -47,7 +47,7 @@ export default function BroadcastBanner({ maxBroadcasts = 3 }: BroadcastBannerPr
   const { data: broadcasts } = useQuery<Broadcast[]>({
     queryKey: ["recent-broadcasts"],
     queryFn: async () => {
-      const res = await axiosInstance.get("/api/notifications?limit=5&onlyBroadcasts=true");
+      const res = await axiosInstance.get("/notifications?limit=5&onlyBroadcasts=true");
       return res.data.data?.notifications || [];
     },
     enabled: isLoaded,
@@ -58,7 +58,7 @@ export default function BroadcastBanner({ maxBroadcasts = 3 }: BroadcastBannerPr
   const { data: recentChannels } = useQuery<Channel[]>({
     queryKey: ["recent-channels-banner"],
     queryFn: async () => {
-      const res = await axiosInstance.get("/api/channels");
+      const res = await axiosInstance.get("/channels");
       const channels = res.data.data?.channels || [];
       // Only show channels created in last 7 days
       const weekAgo = new Date();

@@ -24,7 +24,7 @@ export default function AdminNotificationsPage() {
   const { data: broadcasts, isLoading } = useQuery<Broadcast[]>({
     queryKey: ["admin-broadcasts"],
     queryFn: async () => {
-      const res = await axiosInstance.get("/api/admin/notifications");
+      const res = await axiosInstance.get("/admin/notifications");
       return res.data.data;
     }
   });

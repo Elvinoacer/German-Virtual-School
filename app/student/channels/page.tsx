@@ -35,7 +35,7 @@ export default function StudentChannelsPage() {
   const { data: channels, isLoading } = useQuery<Channel[]>({
     queryKey: ["student-channels"],
     queryFn: async () => {
-      const res = await axiosInstance.get("/api/student/channels");
+      const res = await axiosInstance.get("/student/channels");
       return res.data.data.channels;
     },
   });

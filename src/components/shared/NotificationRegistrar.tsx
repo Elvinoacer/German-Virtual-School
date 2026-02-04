@@ -77,7 +77,7 @@ export default function NotificationRegistrar() {
       setIsRegistering(true);
       const token = await requestNotificationPermission();
       if (token) {
-        await axiosInstance.post("/api/notifications/register-push", { token });
+        await axiosInstance.post("/notifications/register-push", { token });
         console.log("[NotificationRegistrar] Token registered");
         // Ensure modal is closed if it was open
         setShowModal(false);

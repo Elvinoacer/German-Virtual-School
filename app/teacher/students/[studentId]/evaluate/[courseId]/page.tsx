@@ -89,8 +89,8 @@ export default function EvaluateStudentPage({ params }: { params: Promise<{ stud
     queryKey: ["evaluation-context", studentId, courseId],
     queryFn: async () => {
       const [studentRes, courseRes] = await Promise.all([
-        axiosInstance.get(`/api/teacher/students/${studentId}`),
-        axiosInstance.get(`/api/teacher/courses/${courseId}`)
+        axiosInstance.get(`/teacher/students/${studentId}`),
+        axiosInstance.get(`/teacher/courses/${courseId}`)
       ]);
       return {
         student: studentRes.data.data,
@@ -103,7 +103,7 @@ export default function EvaluateStudentPage({ params }: { params: Promise<{ stud
   const { data: statsData, isLoading: isStatsLoading } = useQuery({
     queryKey: ["evaluation-stats", studentId, courseId],
     queryFn: async () => {
-      const response = await axiosInstance.get(`/api/teacher/students/${studentId}/evaluate/${courseId}/stats`);
+      const response = await axiosInstance.get(`/teacher/students/${studentId}/evaluate/${courseId}/stats`);
       return response.data.data;
     },
   });
@@ -123,7 +123,7 @@ export default function EvaluateStudentPage({ params }: { params: Promise<{ stud
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
-      return axiosInstance.post("/api/teacher/evaluations", data);
+      return axiosInstance.post("/teacher/evaluations", data);
     },
     onSuccess: () => {
       toast.success("Evaluation submitted successfully!");

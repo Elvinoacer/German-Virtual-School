@@ -24,7 +24,7 @@ export default function ProfileCompletionModal({ isOpen, onClose }: ProfileCompl
 
   const completeMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const res = await axiosInstance.post("/api/student/complete-profile", data);
+      const res = await axiosInstance.post("/student/complete-profile", data);
       return res.data;
     },
     onSuccess: async () => {

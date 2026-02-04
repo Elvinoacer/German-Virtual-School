@@ -50,7 +50,7 @@ export default function StudentReportsPage() {
   const { data, isLoading, isError } = useQuery<StudentReportsData>({
     queryKey: ['student-reports'],
     queryFn: async () => {
-      const response = await axiosInstance.get('/api/student/reports');
+      const response = await axiosInstance.get('/student/reports');
       return response.data.data;
     }
   });

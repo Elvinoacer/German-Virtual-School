@@ -58,7 +58,7 @@ export default function StudentAttendancePage() {
   const { data, isLoading, isError } = useQuery<AttendanceData>({
     queryKey: ['student-attendance'],
     queryFn: async () => {
-      const response = await axiosInstance.get('/api/student/attendance');
+      const response = await axiosInstance.get('/student/attendance');
       return response.data.data;
     }
   });
