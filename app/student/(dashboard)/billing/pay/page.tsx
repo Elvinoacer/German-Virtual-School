@@ -30,7 +30,7 @@ export default function MakePaymentPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await axios.post(`/api/invoices/${selectedInvoice.id}/pay`, {
+      const response = await axios.post(`/invoices/${selectedInvoice.id}/pay`, {
         amount: parseFloat(amount),
         method,
       });

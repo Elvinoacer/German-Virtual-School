@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
-import axios from "axios";
+import axios from "@/lib/axios";
 
 export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -80,7 +80,7 @@ export default function ForgotPasswordPage() {
                 setMessage({ type: '', text: '' });
                 
                 try {
-                   await axios.post('/api/auth/forgot-password', { email });
+                   await axios.post('/auth/forgot-password', { email });
                    setMessage({ type: 'success', text: 'If an account exists with this email, you will receive a reset link shortly.' });
                 } catch (err) {
                    setMessage({ type: 'error', text: 'Something went wrong. Please try again.' });

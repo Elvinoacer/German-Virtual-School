@@ -15,7 +15,7 @@ export default function CourseResourcesPage({
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["resources", courseId, search],
     queryFn: async () => {
-      const res = await axios.get(`/api/courses/${courseId}/resources`);
+      const res = await axios.get(`/courses/${courseId}/resources`);
       return res.data.data; // Added .data because of successResponse wrapper
     },
     enabled: !!courseId,
@@ -23,7 +23,7 @@ export default function CourseResourcesPage({
 
   const handleAction = async (resourceId: string, action: "view" | "download") => {
     try {
-      await axios.patch(`/api/courses/${courseId}/resources`, {
+      await axios.patch(`/courses/${courseId}/resources`, {
         id: resourceId,
         action,
       });

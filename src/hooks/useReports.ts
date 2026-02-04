@@ -10,7 +10,7 @@ export function useStudentReport() {
   return useQuery({
     queryKey: ['report', 'student', user?.id],
     queryFn: async () => {
-      const { data } = await axios.get(`/api/reports/student/${user?.id}`);
+      const { data } = await axios.get(`/reports/student/${user?.id}`);
       return data;
     },
     enabled: !!user?.id,

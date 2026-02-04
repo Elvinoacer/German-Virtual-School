@@ -8,7 +8,7 @@ export function useAssignments(courseId?: string) {
     queryKey: ['assignments', courseId],
     queryFn: async () => {
       const params = courseId ? `?courseId=${courseId}` : '';
-      const { data } = await axios.get(`/api/assignments${params}`);
+      const { data } = await axios.get(`/assignments${params}`);
       return data.data || data; // Extract data from response wrapper
     },
   });
@@ -18,7 +18,7 @@ export function useAssignment(assignmentId: string) {
   return useQuery({
     queryKey: ['assignment', assignmentId],
     queryFn: async () => {
-      const { data } = await axios.get(`/api/assignments/${assignmentId}`);
+      const { data } = await axios.get(`/assignments/${assignmentId}`);
       return data.data;
     },
     enabled: !!assignmentId,

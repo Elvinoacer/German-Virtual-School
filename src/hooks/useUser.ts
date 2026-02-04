@@ -7,7 +7,7 @@ export function useUser() {
   return useQuery({
     queryKey: ['user', 'me'],
     queryFn: async () => {
-      const { data } = await axios.get('/api/users/me');
+      const { data } = await axios.get('/users/me');
       return data;
     },
     retry: false,

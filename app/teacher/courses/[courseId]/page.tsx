@@ -2,7 +2,7 @@
 
 import { use, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import axios from "@/lib/axios";
 import Link from "next/link";
 import { format } from "date-fns";
 import { 
@@ -41,7 +41,7 @@ export default function TeacherCourseDetailPage({ params }: { params: Promise<{ 
   const { data: course, isLoading, error } = useQuery({
     queryKey: ["teacher-course", courseId],
     queryFn: async () => {
-      const response = await axios.get(`/api/courses/${courseId}`);
+      const response = await axios.get(`/courses/${courseId}`);
       return response.data.data as CourseDetail;
     },
     enabled: !!courseId,

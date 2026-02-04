@@ -20,7 +20,7 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
 
   const enrollMutation = useMutation({
     mutationFn: async () => {
-      const { data } = await axios.post(`/api/courses/${courseId}/enroll`);
+      const { data } = await axios.post(`/courses/${courseId}/enroll`);
       return data;
     },
     onSuccess: () => {

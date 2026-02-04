@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "@/lib/axios";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import Image from "next/image";
@@ -27,7 +27,7 @@ export default function AdminFeedbackPage() {
 
   const fetchTestimonials = async () => {
     try {
-      const { data } = await axios.get("/api/testimonials");
+      const { data } = await axios.get("/testimonials");
       if (data.success) {
         setTestimonials(data.data);
       }
@@ -48,7 +48,7 @@ export default function AdminFeedbackPage() {
         // Optimistic update
         setTestimonials(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
         
-        await axios.patch(`/api/testimonials/${id}`, updates);
+        await axios.patch(`/testimonials/${id}`, updates);
         toast.success("Updated successfully");
     } catch (error) {
         console.error(error);
@@ -62,7 +62,7 @@ export default function AdminFeedbackPage() {
 
       try {
           setTestimonials(prev => prev.filter(t => t.id !== id));
-          await axios.delete(`/api/testimonials/${id}`);
+          await axios.delete(`/testimonials/${id}`);
           toast.success("Deleted successfully");
       } catch (error) {
           console.error(error);

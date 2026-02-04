@@ -7,7 +7,7 @@ export function useInvoices() {
   return useQuery({
     queryKey: ['invoices'],
     queryFn: async () => {
-      const { data } = await axios.get('/api/finance/invoices');
+      const { data } = await axios.get('/finance/invoices');
       return data.data; // Response is { success: true, data: [...] }
     },
   });

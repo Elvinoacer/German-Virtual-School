@@ -2,7 +2,7 @@
 
 import { use } from "react";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import axios from "@/lib/axios";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ChevronLeft, Clock, Users, Timer, TrendingUp, UserX, UserCheck } from "lucide-react";
@@ -13,7 +13,7 @@ export default function SessionAttendanceReportPage({ params }: { params: Promis
   const { data, isLoading, error } = useQuery({
     queryKey: ["session-attendance", sessionId],
     queryFn: async () => {
-      const response = await axios.get(`/api/sessions/${sessionId}/attendance`);
+      const response = await axios.get(`/sessions/${sessionId}/attendance`);
       return response.data.data;
     },
   });

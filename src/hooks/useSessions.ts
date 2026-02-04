@@ -11,7 +11,7 @@ export function useSessions(params?: { courseId?: string; status?: string }) {
       if (params?.courseId) searchParams.append('courseId', params.courseId);
       if (params?.status) searchParams.append('status', params.status);
       
-      const { data } = await axios.get(`/api/sessions?${searchParams.toString()}`);
+      const { data } = await axios.get(`/sessions?${searchParams.toString()}`);
       return data;
     },
   });
@@ -21,7 +21,7 @@ export function useSession(sessionId: string) {
   return useQuery({
     queryKey: ['session', sessionId],
     queryFn: async () => {
-      const { data } = await axios.get(`/api/sessions/${sessionId}`);
+      const { data } = await axios.get(`/sessions/${sessionId}`);
       return data;
     },
     enabled: !!sessionId,

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
+import axios from "@/lib/axios";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { CourseLevel, CourseStatus } from '@/generated/prisma/client';
@@ -29,7 +29,7 @@ export default function TeacherCoursesPage() {
   const { data: courses, isLoading } = useQuery({
     queryKey: ["teacher-courses", session?.user?.id],
     queryFn: async () => {
-      const response = await axios.get(`/api/courses?teacherId=${session?.user?.id}&status=ALL`);
+      const response = await axios.get(`/courses?teacherId=${session?.user?.id}&status=ALL`);
       return response.data.data.data as Course[];
     },
     enabled: !!session?.user?.id,
@@ -37,7 +37,7 @@ export default function TeacherCoursesPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (courseId: string) => {
-      await axios.delete(`/api/courses/${courseId}`);
+      await axios.delete(`/courses/${courseId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["teacher-courses"] });

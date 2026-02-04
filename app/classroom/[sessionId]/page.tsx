@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
-import axios from "axios";
+import axios from "@/lib/axios";
 import { toast } from "sonner";
 
 interface SessionData {
@@ -120,7 +120,7 @@ export default function LiveSessionPage() {
         // Event: Local user joins conference
         api.addEventListener('videoConferenceJoined', async () => {
           try {
-            await axios.post(`/api/sessions/${sessionId}/check-in`);
+            await axios.post(`/sessions/${sessionId}/check-in`);
           } catch (err) {
             console.error('Failed to log check-in:', err);
           }
@@ -129,7 +129,7 @@ export default function LiveSessionPage() {
         // Event: Local user leaves conference
         api.addEventListener('videoConferenceLeft', async () => {
           try {
-            await axios.post(`/api/sessions/${sessionId}/check-out`);
+            await axios.post(`/sessions/${sessionId}/check-out`);
           } catch (err) {
             console.error('Failed to log check-out:', err);
           }
@@ -138,7 +138,7 @@ export default function LiveSessionPage() {
         // Event: Session ready to close (backup for videoConferenceLeft)
         api.addEventListener('readyToClose', async () => {
           try {
-            await axios.post(`/api/sessions/${sessionId}/check-out`);
+            await axios.post(`/sessions/${sessionId}/check-out`);
           } catch (err) {
             console.error('Failed to log check-out on readyToClose:', err);
           }
@@ -147,7 +147,7 @@ export default function LiveSessionPage() {
         // Event: Recording link available
         api.addEventListener('recordingLinkAvailable', async (event: any) => {
           try {
-            await axios.patch(`/api/sessions/${sessionId}`, {
+            await axios.patch(`/sessions/${sessionId}`, {
               recordingUrl: event.link
             });
             toast.success("Meeting recording saved successfully!");
@@ -162,7 +162,7 @@ export default function LiveSessionPage() {
           // This logs when the current user becomes the dominant speaker
           if (event.id === sessionData.user.id) {
             try {
-              await axios.post(`/api/sessions/${sessionId}/engagement`, {
+              await axios.post(`/sessions/${sessionId}/engagement`, {
                 type: 'DOMINANT_SPEAKER',
                 timestamp: new Date().toISOString(),
               });

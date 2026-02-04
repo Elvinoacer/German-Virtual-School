@@ -16,7 +16,7 @@ import {
   formatDistanceToNow
 } from "date-fns";
 import { ChevronLeft, ChevronRight, Clock, Video, MoreVertical, X, Users } from "lucide-react";
-import axios from "axios";
+import axios from "@/lib/axios";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
@@ -65,7 +65,7 @@ export default function TeacherCalendarPage() {
   const { data: teacherCourses = [] } = useQuery({
     queryKey: ["teacher-courses-calendar", session?.user?.id],
     queryFn: async () => {
-      const response = await axios.get(`/api/courses?teacherId=${session?.user?.id}&status=ALL`);
+      const response = await axios.get(`/courses?teacherId=${session?.user?.id}&status=ALL`);
       return response.data.data.data;
     },
     enabled: !!session?.user?.id,
@@ -74,7 +74,7 @@ export default function TeacherCalendarPage() {
   const { data: events = [], isLoading } = useQuery({
     queryKey: ["teacher-calendar"],
     queryFn: async () => {
-      const response = await axios.get("/api/teacher/calendar");
+      const response = await axios.get("/teacher/calendar");
       const { sessions, assignments } = response.data.data;
 
       const sessionEvents: CalendarEvent[] = sessions.map((session: any) => ({
@@ -101,7 +101,7 @@ export default function TeacherCalendarPage() {
 
   const scheduleMutation = useMutation({
     mutationFn: async (payload: any) => {
-      await axios.post("/api/sessions", payload);
+      await axios.post("/sessions", payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["teacher-calendar"] });

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { useRouter, useParams } from "next/navigation";
-import axios from "axios";
+import axios from "@/lib/axios";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { CourseLevel } from '@/generated/prisma/client';
@@ -60,7 +60,7 @@ export default function EditCoursePage() {
   const { data: course, isLoading } = useQuery({
     queryKey: ["course", courseId],
     queryFn: async () => {
-      const response = await axios.get(`/api/courses/${courseId}`);
+      const response = await axios.get(`/courses/${courseId}`);
       return response.data.data;
     },
     enabled: !!courseId,
@@ -118,7 +118,7 @@ export default function EditCoursePage() {
         durationWeeks: Number(data.durationWeeks)
       };
 
-      await axios.patch(`/api/courses/${courseId}`, payload);
+      await axios.patch(`/courses/${courseId}`, payload);
       toast.success("Course updated successfully!");
       router.push("/teacher/courses");
     } catch (error: any) {

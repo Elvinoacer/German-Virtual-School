@@ -22,7 +22,7 @@ export function usePublicStats() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const { data } = await axios.get('/api/stats/public');
+        const { data } = await axios.get('/stats/public');
         if (data) {
           setStats(data);
         }

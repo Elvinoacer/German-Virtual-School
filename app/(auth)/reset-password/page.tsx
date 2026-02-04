@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useState, Suspense } from "react";
-import axios from "axios";
+import axios from "@/lib/axios";
 import { useSearchParams, useRouter } from "next/navigation";
 
 function ResetPasswordForm() {
@@ -75,7 +75,7 @@ function ResetPasswordForm() {
             setMessage({ type: '', text: '' });
             
             try {
-                await axios.post('/api/auth/reset-password', { token, password });
+                await axios.post('/auth/reset-password', { token, password });
                 setMessage({ type: 'success', text: 'Password reset successfully!' });
                 setTimeout(() => router.push('/login'), 2000);
             } catch (err: any) {

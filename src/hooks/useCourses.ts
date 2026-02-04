@@ -20,7 +20,7 @@ export function useCourses(params?: {
       if (params?.level) searchParams.append('level', params.level);
       if (params?.teacherId) searchParams.append('teacherId', params.teacherId);
       
-      const { data } = await axios.get(`/api/courses?${searchParams.toString()}`);
+      const { data } = await axios.get(`/courses?${searchParams.toString()}`);
       return data.data;
     },
   });
@@ -30,7 +30,7 @@ export function useCourse(courseId: string) {
   return useQuery({
     queryKey: ['course', courseId],
     queryFn: async () => {
-      const { data } = await axios.get(`/api/courses/${courseId}`);
+      const { data } = await axios.get(`/courses/${courseId}`);
       return data.data;
     },
     enabled: !!courseId,
