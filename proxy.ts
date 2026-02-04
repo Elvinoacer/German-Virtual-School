@@ -6,7 +6,7 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const user = req.auth?.user;
 
-  const isApiAuthRoute = nextUrl.pathname.startsWith("/api/auth");
+  const isApiRoute = nextUrl.pathname.startsWith("/api");
   const isAuthRoute =
     nextUrl.pathname.startsWith("/login") ||
     nextUrl.pathname.startsWith("/register") ||
@@ -38,7 +38,7 @@ export default auth((req) => {
     (nextUrl.pathname.startsWith("/api/channels") && req.method === "GET") || // Public channels
     (nextUrl.pathname.startsWith("/api/school") && req.method === "GET"); // Public school info & calendar
 
-  if (isApiAuthRoute) {
+  if (isApiRoute) {
     return;
   }
 
