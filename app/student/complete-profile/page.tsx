@@ -27,8 +27,9 @@ export default function CompleteProfilePage() {
       toast.success("Profile completed successfully!");
       // Update session to reflect onboardingComplete = true
       await updateSession({ onboardingComplete: true });
-      // Redirect to verification-status (admin needs to approve)
-      router.push("/student/verification-status");
+      // Use window.location.href to force full page reload
+      // This ensures the browser picks up the new session cookie
+      window.location.href = "/student/verification-status";
     },
     onError: (error: any) => {
       const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || "Failed to complete profile";
