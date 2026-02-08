@@ -112,7 +112,7 @@ export default function AboutPage() {
              <div className="size-32 rounded-full overflow-hidden mx-auto mb-8 bg-slate-300 dark:bg-slate-700">
                 <img src="https://lh3.googleusercontent.com/a/ACg8ocL_wR5o1fG9eW_n4fB_QGz_mGj_K_n_f_mGj_K_n_f_mGj_K_n_f_mGj_K_n_f_mGj_K_n_f_mGj_K_n_f_mGj_K_n_f_mGj_K_n_f_mGj_K_n_f_mGj_K_n_f_mGj_K_n_f_mGj_K_n_f_mGj_K_n_f_mGj_K_n_f_mGj_K_n_f_mGj_K" alt="Founder" className="w-full h-full object-cover grayscale opacity-50" />
              </div>
-             <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Dr. Harvey Gitonga</h3>
+             <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Frau Njiru</h3>
              <p className="text-primary font-sans font-semibold uppercase tracking-widest text-sm mb-6">Head of Academic Affairs</p>
              <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
               "Our goal is to create a seamless bridge between your current reality and your future in a German-speaking environment. We invite you to join our tradition of excellence."
