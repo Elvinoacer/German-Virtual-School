@@ -58,8 +58,15 @@ export default function AdminMeetingsPage() {
   const { data: users = [] } = useQuery<User[]>({
     queryKey: ["users-for-meeting", targetRole],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/admin/${targetRole === "STUDENT" ? "students" : "teachers"}`);
-      return res.data.data?.data || res.data.data || [];
+      const endpoint = targetRole === "STUDENT" ? "students" : "teachers";
+      const res = await axiosInstance.get(`/admin/${endpoint}`);
+      // APIs return { data: { students: [...] } } or { data: { teachers: [...] } }
+      const data = res.data.data;
+      if (targetRole === "STUDENT") {
+        return data?.students || [];
+      } else {
+        return data?.teachers || [];
+      }
     },
     enabled: !!targetRole,
   });
