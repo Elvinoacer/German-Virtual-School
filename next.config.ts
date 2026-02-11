@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '150mb',
     },
   },
+
   // Security headers for SEO trust signals
   async headers() {
     return [
@@ -51,6 +52,19 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  images: {
+    remotePatterns: [
+       {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+      // Keep existing or add others if needed
+      {
+        protocol: 'https',
+        hostname: '*.digitaloceanspaces.com', // Keep for backward compatibility if old images exist
+      }
+    ]
+  }
 };
 
 export default nextConfig;

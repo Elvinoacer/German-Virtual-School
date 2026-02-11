@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { uploadFile, getContentType } from '@/lib/do-spaces';
+import { uploadFile, getContentType } from '@/lib/cloudinary';
 import { authenticate } from '@/lib/auth-middleware';
 
 /**
  * POST /api/upload
  * 
- * Unified file upload endpoint using DigitalOcean Spaces.
- * All files are uploaded as public.
+ * Unified file upload endpoint using Cloudinary.
  * 
  * Form data:
  * - file: The file to upload
@@ -44,7 +43,7 @@ export async function POST(request: NextRequest) {
     // Get content type
     const contentType = file.type || getContentType(file.name);
 
-    // Upload to DO Spaces
+    // Upload to Cloudinary
     const result = await uploadFile(buffer, folder, file.name, contentType);
 
     return NextResponse.json({
