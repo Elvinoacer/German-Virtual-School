@@ -255,7 +255,7 @@ export default function TeacherCalendarPage() {
                   <div key={event.id} className="flex gap-4 p-3 rounded-lg border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
                     <div className={`
                       w-1 rounded-full h-full
-                      ${event.type === 'class' ? 'bg-blue-500' : 'bg-orange-500'}
+                      ${event.isAdminMeeting ? 'bg-amber-500' : event.type === 'class' ? 'bg-blue-500' : 'bg-orange-500'}
                     `}></div>
                     <div className="flex-1">
                       <div className="flex items-start justify-between">
@@ -269,7 +269,17 @@ export default function TeacherCalendarPage() {
                           <Clock className="w-3.5 h-3.5" />
                           {event.time}
                         </div>
-                        {event.type === 'class' && (
+                        {event.isAdminMeeting ? (
+                          <>
+                            <Link href={`/meeting/${event.id}`} className="text-primary hover:underline flex items-center gap-1 font-semibold">
+                              <Video className="w-3.5 h-3.5" />
+                              Join Meeting
+                            </Link>
+                            <span className="px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">
+                              Admin Meeting
+                            </span>
+                          </>
+                        ) : event.type === 'class' && (
                           <>
                             <div className="flex items-center gap-1">
                               <Video className="w-3.5 h-3.5" />
@@ -281,9 +291,11 @@ export default function TeacherCalendarPage() {
                             </Link>
                           </>
                         )}
-                        <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-                          {event.courseName}
-                        </span>
+                        {!event.isAdminMeeting && (
+                          <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                            {event.courseName}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>

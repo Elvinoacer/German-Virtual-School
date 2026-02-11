@@ -36,36 +36,39 @@ export async function GET(
     const userRole = payload.role;
     const userId = payload.userId || payload.id;
 
-    // Admin always has access
-    if (userRole === "ADMIN") {
-      return successResponse(meeting);
-    }
-
     let hasAccess = false;
 
-    switch (meeting.audience) {
-      case "ALL_USERS":
-        hasAccess = true;
-        break;
-      case "ALL_TEACHERS":
-        hasAccess = userRole === "TEACHER";
-        break;
-      case "ALL_STUDENTS":
-        hasAccess = userRole === "STUDENT";
-        break;
-      case "SPECIFIC_TEACHERS":
-      case "SPECIFIC_STUDENTS":
-        hasAccess = meeting.invitees.some((inv) => inv.userId === userId);
-        break;
+    // Admin always has access
+    if (userRole === "ADMIN") {
+      hasAccess = true;
+    } else {
+      switch (meeting.audience) {
+        case "ALL_USERS":
+          hasAccess = true;
+          break;
+        case "ALL_TEACHERS":
+          hasAccess = userRole === "TEACHER";
+          break;
+        case "ALL_STUDENTS":
+          hasAccess = userRole === "STUDENT";
+          break;
+        case "SPECIFIC_TEACHERS":
+        case "SPECIFIC_STUDENTS":
+          hasAccess = meeting.invitees.some((inv) => inv.userId === userId);
+          break;
+      }
     }
 
     if (!hasAccess) {
       return errors.forbidden("You do not have access to this meeting");
     }
 
-    return successResponse(meeting);
+    const isModerator = userRole === "ADMIN" || userId === meeting.createdById;
+
+    return successResponse({ ...meeting, isModerator });
   } catch (error) {
     console.error("Get meeting error:", error);
     return errors.internal("Failed to fetch meeting details");
   }
 }
+

@@ -1,22 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import axiosInstance from "@/lib/axios";
-
-declare global {
-  interface Window {
-    JitsiMeetExternalAPI: any;
-  }
-}
+import Link from "next/link";
 
 export default function MeetingRoom() {
   const { meetingId } = useParams();
   const router = useRouter();
   const { data: session, status } = useSession();
-  const jitsiContainerRef = useRef<HTMLDivElement>(null);
-  const apiRef = useRef<any>(null);
 
   const [meetingData, setMeetingData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -45,82 +38,41 @@ export default function MeetingRoom() {
     validateMeeting();
   }, [meetingId, session, status, router]);
 
-  // Initialize Jitsi
-  const initJitsi = useCallback(() => {
-    if (!jitsiContainerRef.current || !session?.user || !meetingData) return;
+  const user = session?.user as any;
+  const displayName = user
+    ? `${user.firstName || ""}${user.lastName ? " " + user.lastName : ""}`.trim() || user.name || "Participant"
+    : "Participant";
 
-    // Clean up previous instance
-    if (apiRef.current) {
-      apiRef.current.dispose();
-      apiRef.current = null;
-    }
+  // Build Jitsi direct URL with config params
+  const roomName = `gvs-meeting-${meetingId}`;
+  const jitsiParams = new URLSearchParams({
+    "config.startWithAudioMuted": "true",
+    "config.startWithVideoMuted": "false",
+    "config.prejoinPageEnabled": "true",
+    "config.disableDeepLinking": "true",
+    "config.hideConferenceSubject": "false",
+    "config.hideConferenceTimer": "false",
+    "config.enableInsecureRoomNameWarning": "false",
+    "interfaceConfig.SHOW_JITSI_WATERMARK": "false",
+    "interfaceConfig.SHOW_WATERMARK_FOR_GUESTS": "false",
+    "interfaceConfig.HIDE_INVITE_MORE_HEADER": "true",
+    "interfaceConfig.MOBILE_APP_PROMO": "false",
+    "userInfo.displayName": displayName,
+  });
 
-    const user = session.user as any;
-    const displayName = `${user.firstName || ""} ${user.lastName || ""}`.trim() || user.name || "Participant";
+  if (meetingData?.title) {
+    jitsiParams.set("config.subject", meetingData.title);
+  }
 
-    const api = new window.JitsiMeetExternalAPI("meet.jit.si", {
-      roomName: `gvs-meeting-${meetingId}`,
-      parentNode: jitsiContainerRef.current,
-      userInfo: {
-        displayName,
-        email: user.email || "",
-      },
-      configOverwrite: {
-        startWithAudioMuted: true,
-        startWithVideoMuted: false,
-        prejoinPageEnabled: false,
-        disableDeepLinking: true,
-        toolbarButtons: [
-          "microphone", "camera", "desktop", "chat",
-          "raisehand", "participants-pane", "tileview",
-          "fullscreen", "hangup", "settings",
-        ],
-        hideConferenceSubject: false,
-        hideConferenceTimer: false,
-      },
-      interfaceConfigOverwrite: {
-        SHOW_JITSI_WATERMARK: false,
-        SHOW_WATERMARK_FOR_GUESTS: false,
-        DEFAULT_BACKGROUND: "#0b0f1a",
-        TOOLBAR_ALWAYS_VISIBLE: true,
-        HIDE_INVITE_MORE_HEADER: true,
-        MOBILE_APP_PROMO: false,
-      },
-    });
-
-    apiRef.current = api;
-
-    api.addEventListener("readyToClose", () => {
-      router.back();
-    });
-  }, [session, meetingData, meetingId, router]);
-
-  // Load Jitsi script and initialize
-  useEffect(() => {
-    if (!meetingData) return;
-
-    const script = document.createElement("script");
-    script.src = "https://meet.jit.si/external_api.js";
-    script.async = true;
-    script.onload = () => initJitsi();
-    document.body.appendChild(script);
-
-    return () => {
-      if (apiRef.current) {
-        apiRef.current.dispose();
-        apiRef.current = null;
-      }
-      document.body.removeChild(script);
-    };
-  }, [meetingData, initJitsi]);
+  const jitsiUrl = `https://meet.jit.si/${roomName}#${jitsiParams.toString()}`;
 
   // Loading state
   if (loading || status === "loading") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#0b0f1a] text-white gap-6">
+      <div className="h-screen w-screen overflow-hidden flex flex-col items-center justify-center bg-[#0b0f1a] text-white gap-6">
         <div className="size-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
         <div className="text-center">
-          <h2 className="text-xl font-bold">Joining Meeting...</h2>
+          <h2 className="text-xl font-bold">Preparing Meeting...</h2>
           <p className="text-sm text-slate-400 mt-1">Validating your access</p>
         </div>
       </div>
@@ -130,9 +82,11 @@ export default function MeetingRoom() {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#0b0f1a] text-white gap-6 px-4">
+      <div className="h-screen w-screen overflow-hidden flex flex-col items-center justify-center bg-[#0b0f1a] text-white gap-6 px-4">
         <div className="size-20 bg-red-500/10 rounded-2xl flex items-center justify-center">
-          <span className="material-symbols-outlined text-4xl text-red-400">error</span>
+          <svg className="size-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
         </div>
         <div className="text-center max-w-md">
           <h2 className="text-2xl font-bold">Access Denied</h2>
@@ -148,36 +102,87 @@ export default function MeetingRoom() {
     );
   }
 
+  // Meeting launch page
   return (
-    <div className="min-h-screen bg-[#0b0f1a] flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-[#0b0f1a] border-b border-white/5">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.back()}
-            className="p-2 rounded-lg hover:bg-white/10 text-white/70 transition-colors"
-          >
-            <span className="material-symbols-outlined">arrow_back</span>
-          </button>
-          <div>
-            <h1 className="text-white font-bold text-lg leading-tight">
-              {meetingData?.title || "Meeting"}
-            </h1>
-            <p className="text-white/40 text-xs">
-              Hosted by {meetingData?.createdBy?.firstName} {meetingData?.createdBy?.lastName} • Admin Meeting
-            </p>
+    <div className="h-screen w-screen overflow-hidden flex flex-col items-center justify-center bg-[#0b0f1a] text-white px-4">
+      <div className="max-w-lg w-full space-y-8 text-center">
+        {/* Meeting icon */}
+        <div className="flex justify-center">
+          <div className="size-24 bg-primary/10 rounded-3xl flex items-center justify-center ring-4 ring-primary/20">
+            <svg className="size-12 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+            </svg>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-1 bg-red-500/20 text-red-400 text-xs font-bold rounded-full flex items-center gap-1.5">
-            <span className="size-2 bg-red-500 rounded-full animate-pulse" />
-            LIVE
-          </span>
-        </div>
-      </div>
 
-      {/* Jitsi Container */}
-      <div ref={jitsiContainerRef} className="flex-1 w-full" style={{ minHeight: "calc(100vh - 60px)" }} />
+        {/* Meeting details */}
+        <div>
+          <h1 className="text-3xl font-black tracking-tight">{meetingData?.title || "Meeting"}</h1>
+          {meetingData?.description && (
+            <p className="text-slate-400 mt-2 text-sm leading-relaxed">{meetingData.description}</p>
+          )}
+          <p className="text-slate-500 text-xs mt-3">
+            Hosted by{" "}
+            <span className="text-slate-300 font-semibold">
+              {meetingData?.createdBy?.firstName} {meetingData?.createdBy?.lastName}
+            </span>
+            {" "}• Admin Meeting
+          </p>
+        </div>
+
+        {/* Info card */}
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-3 text-left">
+          <div className="flex items-center gap-3 text-sm">
+            <div className="size-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+              <svg className="size-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              </svg>
+            </div>
+            <span className="text-slate-300">Joining as <strong className="text-white">{displayName}</strong></span>
+          </div>
+          <div className="flex items-center gap-3 text-sm">
+            <div className="size-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+              <svg className="size-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+              </svg>
+            </div>
+            <span className="text-slate-300">
+              {meetingData?.isModerator
+                ? <span className="text-amber-400 font-semibold">You have moderator access</span>
+                : "Secure meeting room"
+              }
+            </span>
+          </div>
+        </div>
+
+        {/* Join button */}
+        <a
+          href={jitsiUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center gap-3 w-full py-4 bg-primary text-white font-bold text-lg rounded-2xl hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-primary/20"
+        >
+          <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+          </svg>
+          Join Meeting
+          <svg className="size-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+          </svg>
+        </a>
+
+        <p className="text-slate-500 text-xs">
+          Meeting opens in a new tab on Jitsi Meet. The first person to join becomes the moderator.
+        </p>
+
+        {/* Back link */}
+        <button
+          onClick={() => router.back()}
+          className="text-slate-400 hover:text-white text-sm font-medium transition-colors"
+        >
+          ← Back to Dashboard
+        </button>
+      </div>
     </div>
   );
 }

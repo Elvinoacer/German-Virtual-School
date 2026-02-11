@@ -110,7 +110,7 @@ export default function AdminMeetingsPage() {
       setActiveTab("history");
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.error || "Failed to create meeting");
+      toast.error(err.response?.data?.error?.message || err.response?.data?.message || "Failed to create meeting");
     },
   });
 

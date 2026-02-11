@@ -341,12 +341,18 @@ export default function CalendarPage() {
                     {selectedDateEvents.map((event) => (
                       <div key={event.id} className="group p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-transparent hover:border-primary/20 hover:bg-white dark:hover:bg-slate-800 transition-all">
                         <div className="flex items-start justify-between gap-4 mb-4">
-                           <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors duration-300">
-                              <BookOpen className="size-5" />
+                           <div className={`size-10 rounded-xl flex items-center justify-center group-hover:text-white transition-colors duration-300 ${
+                             event.isAdminMeeting 
+                               ? 'bg-amber-500/10 text-amber-500 group-hover:bg-amber-500' 
+                               : 'bg-primary/10 text-primary group-hover:bg-primary'
+                           }`}>
+                              {event.isAdminMeeting ? <Video className="size-5" /> : <BookOpen className="size-5" />}
                            </div>
                            <div className="flex-1">
                              <h4 className="font-black text-slate-900 dark:text-white text-base leading-tight group-hover:text-primary transition-colors">{event.title}</h4>
-                              <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">{event.isAdminMeeting ? 'Admin Meeting' : event.course.title}</p>
+                              <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">
+                                {event.isAdminMeeting ? '📅 Admin Meeting' : event.course.title}
+                              </p>
                            </div>
                         </div>
                         
@@ -368,9 +374,19 @@ export default function CalendarPage() {
                               </div>
                               <span className="text-[10px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-400">{event.teacher.firstName}</span>
                            </div>
-                           <span className="px-2.5 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[9px] font-black uppercase tracking-widest rounded-lg">
-                              {event.status}
-                           </span>
+                           {event.isAdminMeeting ? (
+                             <Link
+                               href={`/meeting/${event.id}`}
+                               className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-1.5"
+                             >
+                               <Video className="size-3" />
+                               Join Meeting
+                             </Link>
+                           ) : (
+                             <span className="px-2.5 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[9px] font-black uppercase tracking-widest rounded-lg">
+                                {event.status}
+                             </span>
+                           )}
                         </div>
                       </div>
                     ))}
