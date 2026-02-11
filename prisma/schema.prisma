@@ -78,6 +78,7 @@ enum SubmissionStatus {
 enum PaymentCycle {
   MONTHLY
   QUARTERLY
+  SEMESTER
   BIANNUAL
   ANNUAL
   ONE_TIME

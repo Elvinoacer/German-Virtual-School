@@ -73,12 +73,27 @@ export async function POST(request: NextRequest) {
         // Check if student already has an invoice for this billing period
         let existingInvoice = null;
 
-        if (billingCycle === 'QUARTERLY') {
+        if (billingCycle === 'SEMESTER') {
+          // Check if invoice exists for THIS term
           existingInvoice = await prisma.invoice.findFirst({
             where: {
               studentId: reg.studentId,
               termId: currentTerm.id,
               description: { contains: 'Semester Fee' }
+            }
+          });
+        } else if (billingCycle === 'QUARTERLY') {
+           // Quarterly logic (Every 3 months)
+           // For now, let's treat it as a recurring 3-month cycle not tied strictly to term ID but date
+           // This might need refinement based on specific business rules for "Quarterly"
+           const startOfQuarter = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1);
+           const endOfQuarter = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3 + 3, 0, 23, 59, 59);
+           
+           existingInvoice = await prisma.invoice.findFirst({
+            where: {
+              studentId: reg.studentId,
+              createdAt: { gte: startOfQuarter, lte: endOfQuarter },
+              description: { contains: 'Quarterly Fee' }
             }
           });
         } else if (billingCycle === 'MONTHLY') {
@@ -87,7 +102,7 @@ export async function POST(request: NextRequest) {
           existingInvoice = await prisma.invoice.findFirst({
             where: {
               studentId: reg.studentId,
-              termId: currentTerm.id,
+              termId: currentTerm.id, // Optional: link monthly fees to term?
               createdAt: { gte: startOfMonth, lte: endOfMonth }
             }
           });
@@ -101,7 +116,11 @@ export async function POST(request: NextRequest) {
         // Calculate total amount (base fee + arrears if applicable)
         let totalAmount = feeAmount;
         const dueDate = addDays(now, 14); // 14 day grace period
-        const cycleLabel = billingCycle === 'MONTHLY' ? 'Monthly Fee' : 'Semester Fee';
+        
+        let cycleLabel = 'Fee';
+        if (billingCycle === 'MONTHLY') cycleLabel = 'Monthly Fee';
+        else if (billingCycle === 'SEMESTER') cycleLabel = 'Semester Fee';
+        else if (billingCycle === 'QUARTERLY') cycleLabel = 'Quarterly Fee';
         
         let newInvoiceData = null;
 

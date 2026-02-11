@@ -337,7 +337,8 @@ export default function AdminFinancePage() {
                       className="w-full h-14 px-5 rounded-2xl bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 font-bold text-sm focus:ring-2 focus:ring-primary outline-none transition-all"
                     >
                       <option value="MONTHLY">Monthly</option>
-                      <option value="QUARTERLY">Quarterly (Per Semester)</option>
+                      <option value="SEMESTER">Semester (Per Current Term)</option>
+                      <option value="QUARTERLY">Quarterly (3 Months)</option>
                       {/* <option value="BIANNUAL">Bi-Annual</option> */}
                       {/* <option value="ONE_TIME">One Time Payment</option> */}
                     </select>
