@@ -66,7 +66,7 @@ export default function TeacherCalendarPage() {
   const { data: teacherCourses = [] } = useQuery({
     queryKey: ["teacher-courses-calendar", session?.user?.id],
     queryFn: async () => {
-      const response = await axios.get(`/courses?teacherId=${session?.user?.id}&status=ALL`);
+      const response = await axios.get(`/courses?status=ALL`);
       return response.data.data.data;
     },
     enabled: !!session?.user?.id,

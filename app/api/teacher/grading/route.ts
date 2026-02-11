@@ -20,15 +20,7 @@ export async function GET(req: Request) {
     const teacherId = session.user.id;
 
     const where: any = {
-      AND: [
-        {
-          assignment: {
-            course: {
-              teacherId: teacherId,
-            },
-          },
-        },
-      ],
+      AND: [],
     };
 
     if (status !== "all") {
@@ -107,13 +99,7 @@ export async function GET(req: Request) {
     });
 
     // Fetch global stats for the teacher
-    const statsWhere = {
-      assignment: {
-        course: {
-          teacherId: teacherId,
-        },
-      },
-    };
+    const statsWhere = {};
 
     const [allSubmissionsCount, gradedCount, lateCount, pendingCount] = await Promise.all([
       prisma.submission.count({ where: statsWhere }),

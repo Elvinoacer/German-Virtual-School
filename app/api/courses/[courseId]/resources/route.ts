@@ -28,14 +28,7 @@ export async function GET(
     // Admins see everything
     if (user.role !== 'ADMIN') {
       // Teachers see their own courses
-      if (user.role === 'TEACHER') {
-        const course = await prisma.course.findUnique({
-          where: { id: courseId }
-        });
-        if (course?.teacherId !== user.id) {
-          return errors.forbidden('You do not have access to these resources');
-        }
-      } else if (user.role === 'STUDENT') {
+      if (user.role === 'STUDENT') {
         // Students must be enrolled
         const enrollment = await prisma.enrollment.findUnique({
           where: {
@@ -49,6 +42,7 @@ export async function GET(
           return errors.forbidden('You must be enrolled to access these resources');
         }
       }
+      // Teachers are allowed by default if not admin
     }
 
     const resources = await prisma.resource.findMany({
@@ -81,12 +75,7 @@ export async function POST(
       return errors.forbidden('Only teachers and admins can create resources');
     }
 
-    if (payload.role === 'TEACHER') {
-      const course = await prisma.course.findUnique({ where: { id: courseId } });
-      if (course?.teacherId !== payload.id) {
-        return errors.forbidden('You can only add resources to your own courses');
-      }
-    }
+
 
     const body = await request.json();
     const { title, url, type, description, moduleId, isDownloadable } = body;
@@ -136,12 +125,7 @@ export async function PUT(
       return errors.forbidden('Only teachers and admins can update resources');
     }
 
-    if (payload.role === 'TEACHER') {
-      const course = await prisma.course.findUnique({ where: { id: courseId } });
-      if (course?.teacherId !== payload.id) {
-        return errors.forbidden('You can only update resources in your own courses');
-      }
-    }
+
 
     const body = await request.json();
     const { id, ...updateData } = body;
@@ -199,11 +183,7 @@ export async function PATCH(
       if (!enrollment) {
         return errors.forbidden('You must be enrolled to track resources');
       }
-    } else if (payload.role === 'TEACHER') {
-      const course = await prisma.course.findUnique({ where: { id: courseId } });
-      if (course?.teacherId !== payload.id) {
-        return errors.forbidden('You can only track resources in your own courses');
-      }
+      // Teacher check removed
     } else if (payload.role !== 'ADMIN') {
       return errors.unauthorized();
     }
@@ -254,12 +234,7 @@ export async function DELETE(
       return errors.forbidden('Only teachers and admins can delete resources');
     }
 
-    if (payload.role === 'TEACHER') {
-      const course = await prisma.course.findUnique({ where: { id: courseId } });
-      if (course?.teacherId !== payload.id) {
-        return errors.forbidden('You can only delete resources in your own courses');
-      }
-    }
+
 
     const { id } = await request.json();
     if (!id) {

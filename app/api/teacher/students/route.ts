@@ -39,22 +39,6 @@ export async function GET(request: NextRequest) {
     // Let's restructure the 'where' clause to handle both cases
     const teacherStudentWhere: any = {
       role: 'STUDENT',
-      OR: [
-        // Case 1: Enrolled in teacher's courses
-        {
-          enrollments: {
-            some: {
-              course: courseFilter,
-            },
-          },
-        },
-        // Case 2: Assigned as mentee
-        {
-          studentProfile: {
-            mentorId: user.id
-          }
-        }
-      ]
     };
     
     // If search is present, we need to combine it with the above condition using AND
@@ -96,9 +80,7 @@ export async function GET(request: NextRequest) {
           // lastLogin: true, // Removed as it's not in schema
           enrollments: {
             where: {
-              course: {
-                teacherId: user.id,
-              },
+               // Show all enrollments or filter by status if needed, but not by teacherId
             },
             include: {
               course: {
@@ -113,9 +95,7 @@ export async function GET(request: NextRequest) {
           attendanceRecords: {
              where: {
                 classSession: {
-                    course: {
-                        teacherId: user.id
-                    }
+                    // Removed teacherId filter
                 }
              }
           }

@@ -14,11 +14,8 @@ export async function GET() {
     const teacherId = session.user.id;
 
     const [classSessions, assignments, adminMeetings] = await Promise.all([
-      // Fetch class sessions taught by the teacher
+      // Fetch all class sessions
       prisma.classSession.findMany({
-        where: {
-          teacherId: teacherId,
-        },
         include: {
           course: {
             select: {
@@ -30,13 +27,8 @@ export async function GET() {
           startTime: "asc",
         },
       }),
-      // Fetch assignments for courses taught by the teacher
+      // Fetch assignments for all courses
       prisma.assignment.findMany({
-        where: {
-          course: {
-            teacherId: teacherId,
-          },
-        },
         include: {
           course: {
             select: {

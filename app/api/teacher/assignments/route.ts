@@ -13,9 +13,8 @@ export async function GET(request: NextRequest) {
 
     const teacherId = payload.id;
 
-    // Fetch all courses taught by this teacher
+    // Fetch all courses
     const courses = await prisma.course.findMany({
-      where: { teacherId },
       select: { id: true, title: true }
     });
 
