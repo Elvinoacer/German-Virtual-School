@@ -13,6 +13,7 @@ interface SessionData {
   title: string;
   startTime: string;
   status: string;
+  isModerator: boolean;
   course: {
     title: string;
     level: string;
@@ -46,13 +47,8 @@ export default function LiveSessionPage() {
   const { data: session, isLoading, error } = useQuery<SessionData>({
     queryKey: ["session", sessionId],
     queryFn: async () => {
-      const res = await fetch(`/api/sessions/${sessionId}`);
-      if (!res.ok) {
-        const errJson = await res.json();
-        throw new Error(errJson.error?.message || "Failed to fetch session");
-      }
-      const json = await res.json();
-      return json.data;
+      const res = await axios.get(`/sessions/${sessionId}`);
+      return res.data.data;
     },
     retry: false,
   });
@@ -70,9 +66,9 @@ export default function LiveSessionPage() {
           width: "100%",
           height: "100%",
           parentNode: jitsiContainerRef.current,
-          lang: 'de', // German language for German Virtual School
+          lang: 'en', // English language requested by user
           userInfo: {
-            displayName: `${sessionData.user.firstName} ${sessionData.user.lastName}`,
+            displayName: `${sessionData.user.firstName || ""} ${sessionData.user.lastName || ""}`.trim() || sessionData.user.name || "Participant",
             email: sessionData.user.email,
           },
           configOverwrite: {
@@ -101,7 +97,7 @@ export default function LiveSessionPage() {
             APP_NAME: 'GVS Classroom',
             SHOW_JITSI_WATERMARK: false,
             SHOW_POWERED_BY: false,
-            DEFAULT_REMOTE_DISPLAY_NAME: 'Teilnehmer', // "Participant" in German
+            DEFAULT_REMOTE_DISPLAY_NAME: 'Participant',
             
             // Tile view optimization
             TILE_VIEW_MAX_COLUMNS: 5,
@@ -235,7 +231,7 @@ export default function LiveSessionPage() {
             <span>Secure</span>
           </div>
           <div className="h-6 w-px bg-[#232f48] hidden md:block"></div>
-          <Link href="/student/dashboard">
+          <Link href={currentUser?.role === 'TEACHER' ? '/teacher/calendar' : currentUser?.role === 'ADMIN' ? '/admin/dashboard' : '/student/dashboard'}>
             <button className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-2">
               <span className="material-symbols-outlined text-sm">logout</span>
               Exit

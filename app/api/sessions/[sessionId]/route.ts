@@ -57,12 +57,15 @@ export async function GET(
 
     // Authorization Check
     let authorized = false;
+    const isModerator = user.role === 'ADMIN' || session.teacherId === user.id;
+
     if (user.role === 'ADMIN') {
       authorized = true;
     } else if (user.role === 'TEACHER') {
-      authorized = (session.teacherId === user.id) || (await isTeacherOfCourse(user.id, session.courseId));
+      // Any teacher can access any session
+      authorized = true;
     } else if (user.role === 'STUDENT') {
-      // Must be enrolled AND assigned to the teacher (Mentor)
+      // Must be enrolled AND assigned to the session's teacher (Mentor)
       const isEnrolled = await isStudentEnrolled(user.id, session.courseId);
       
       if (isEnrolled) {
@@ -79,10 +82,10 @@ export async function GET(
     }
 
     if (!authorized) {
-      return errors.forbidden('You do not have access to this session');
+      return errors.forbidden('You do not have access to this session. You must be assigned to this teacher.');
     }
 
-    return successResponse(session);
+    return successResponse({ ...session, isModerator });
   } catch (error) {
     console.error('Get session error:', error);
     return errors.internal('Failed to fetch session details');

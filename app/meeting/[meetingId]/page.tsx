@@ -58,6 +58,7 @@ export default function MeetingRoom() {
     "interfaceConfig.HIDE_INVITE_MORE_HEADER": "true",
     "interfaceConfig.MOBILE_APP_PROMO": "false",
     "userInfo.displayName": displayName,
+    "lang": "en"
   });
 
   if (meetingData?.title) {

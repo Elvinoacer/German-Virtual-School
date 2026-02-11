@@ -12,8 +12,8 @@ export async function POST(
     const { sessionId } = await params;
     const studentId = payload.id || (payload as any).userId;
 
-    if (payload.role !== 'STUDENT' && payload.role !== 'TEACHER') {
-      return errors.forbidden('Only students and teachers can check in');
+    if (payload.role !== 'STUDENT' && payload.role !== 'TEACHER' && payload.role !== 'ADMIN') {
+      return errors.forbidden('Only students, teachers, and admins can check in');
     }
 
     // Get session
@@ -32,17 +32,24 @@ export async function POST(
     }
 
     // Verify enrollment/teacher status
-    // Students must be enrolled, teachers must be the instructor
     if (payload.role === 'STUDENT') {
+      // Students must be enrolled AND assigned to the session's teacher (mentor)
       const isEnrolled = await isStudentEnrolled(studentId, session.courseId);
       if (!isEnrolled) {
         return errors.forbidden('Not enrolled in this course');
       }
-    } else if (payload.role === 'TEACHER') {
-      if (session.teacherId !== studentId) {
-        return errors.forbidden('You are not the instructor for this session');
+
+      // Verify student is assigned to this teacher
+      const studentProfile = await prisma.studentProfile.findUnique({
+        where: { userId: studentId },
+        select: { mentorId: true }
+      });
+      
+      if (studentProfile?.mentorId !== session.teacherId) {
+        return errors.forbidden('You are not assigned to this teacher. Contact admin to be assigned.');
       }
     }
+    // Teachers and Admins bypass enrollment checks
 
     // Determine status (PRESENT vs LATE)
     // Late threshold: 15 minutes after start time
