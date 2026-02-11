@@ -214,6 +214,9 @@ model User {
   generatedReports  SystemReport[]
   testimonials      Testimonial[]
   createdChannels   CommunicationChannel[] @relation("ChannelCreator")
+  
+  // Mentorship
+  mentoredStudents  StudentProfile[]       @relation("StudentMentor")
 }
 
 // --------------------------------------------
@@ -252,6 +255,10 @@ model StudentProfile {
   emergencyContact String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Single Assigned Teacher / Mentor
+  mentorId String?
+  mentor   User?   @relation("StudentMentor", fields: [mentorId], references: [id])
 }
 
 model TeacherProfile {

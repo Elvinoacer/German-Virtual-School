@@ -7,6 +7,7 @@ import axiosInstance from "@/lib/axios";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import VerifyStudentModal from "@/components/admin/students/VerifyStudentModal";
+import AssignTeacherModal from "@/components/admin/students/AssignTeacherModal";
 
 interface Student {
   id: string;
@@ -22,6 +23,7 @@ interface Student {
     phoneNumber: string | null;
     address: string | null;
     emergencyContact: string | null;
+    mentorId?: string | null;
   } | null;
   stats: {
     activeEnrollments: number;
@@ -57,6 +59,7 @@ export default function AdminStudentsPage() {
 
   // Modal State
   const [verifyModalOpen, setVerifyModalOpen] = useState(false);
+  const [assignTeacherModalOpen, setAssignTeacherModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   // Debounce search input
@@ -104,6 +107,11 @@ export default function AdminStudentsPage() {
     setVerifyModalOpen(true);
   };
 
+  const handleAssignTeacherClick = (student: Student) => {
+    setSelectedStudent(student);
+    setAssignTeacherModalOpen(true);
+  };
+
   const confirmVerify = () => {
     if (selectedStudent) {
       verifyMutation.mutate(selectedStudent.id);
@@ -140,6 +148,11 @@ export default function AdminStudentsPage() {
         onConfirm={confirmVerify}
         student={selectedStudent}
         isProcessing={verifyMutation.isPending}
+      />
+      <AssignTeacherModal
+        isOpen={assignTeacherModalOpen}
+        onClose={() => setAssignTeacherModalOpen(false)}
+        student={selectedStudent}
       />
 
       {/* Header */}
@@ -275,6 +288,13 @@ export default function AdminStudentsPage() {
                           Verify
                         </button>
                       )}
+                      <button
+                        onClick={() => handleAssignTeacherClick(student)}
+                        className="px-3 py-1 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-lg text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors flex items-center gap-1"
+                      >
+                        <span className="material-symbols-outlined text-xs">person_add</span>
+                        {student.profile?.mentorId ? 'Reassign' : 'Assign'}
+                      </button>
                       <Link
                         href={`/admin/students/${student.id}`}
                         className="inline-flex items-center gap-1 text-primary hover:underline text-sm font-medium"

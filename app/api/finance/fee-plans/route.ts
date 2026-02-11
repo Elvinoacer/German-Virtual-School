@@ -7,9 +7,9 @@ export async function POST(request: NextRequest) {
   try {
     const payload = await authenticate(request);
     
-    // Only teachers/admins can create fee plans
-    if (payload.role === 'STUDENT') {
-      return errors.forbidden('Authorized access only');
+    // Only ADMINs can create fee plans now (Teachers restricted)
+    if (payload.role !== 'ADMIN') {
+      return errors.forbidden('Only administrators can create fee plans');
     }
 
     const body = await request.json();
@@ -20,16 +20,6 @@ export async function POST(request: NextRequest) {
       return errors.badRequest('Missing required fields');
     }
 
-    // Verify course ownership
-    if (payload.role === 'TEACHER') {
-        const course = await prisma.course.findUnique({
-            where: { id: courseId },
-            select: { teacherId: true }
-        });
-        if (!course || course.teacherId !== payload.id) {
-            return errors.forbidden('You do not own this course');
-        }
-    }
 
     const feePlan = await prisma.feePlan.create({
       data: {
@@ -54,6 +44,10 @@ export async function GET(request: NextRequest) {
       // Admin sees all? 
       // Simplified: Get all fee plans for courses owned by teacher
       
+      if (payload.role !== 'ADMIN') {
+          return errors.forbidden('Access denied');
+      }
+      
       const { searchParams } = new URL(request.url);
       const courseId = searchParams.get('courseId');
 
@@ -61,10 +55,6 @@ export async function GET(request: NextRequest) {
       
       if (courseId) {
           where.courseId = courseId;
-      }
-      
-      if (payload.role === 'TEACHER') {
-          where.course = { teacherId: payload.id };
       }
 
       const feePlans = await prisma.feePlan.findMany({

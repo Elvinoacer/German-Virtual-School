@@ -28,28 +28,62 @@ export async function GET(request: NextRequest) {
       courseFilter.level = level as CourseLevel;
     }
 
-    // Build where clause
-    const where: any = {
-      // Find students enrolled in courses taught by this teacher
-      enrollments: {
-        some: {
-          course: courseFilter,
-        },
-      },
-      role: 'STUDENT',
-    };
+    // [REMOVED STALE CODE]
 
+    // [MODIFIED] Include students assigned specifically to this teacher
+    // The previous `where` only checked for enrollments.
+    // We want: (enrolled IN courses) OR (mentorId == teacherId)
+    // Prisma doesn't support top-level OR with relation filters easily mixed with other top-level filters in a clean way 
+    // without restructuring the whole query, so we use OR condition at the top level.
+    
+    // Let's restructure the 'where' clause to handle both cases
+    const teacherStudentWhere: any = {
+      role: 'STUDENT',
+      OR: [
+        // Case 1: Enrolled in teacher's courses
+        {
+          enrollments: {
+            some: {
+              course: courseFilter,
+            },
+          },
+        },
+        // Case 2: Assigned as mentee
+        {
+          studentProfile: {
+            mentorId: user.id
+          }
+        }
+      ]
+    };
+    
+    // If search is present, we need to combine it with the above condition using AND
     if (search) {
-      where.OR = [
-        { firstName: { contains: search, mode: 'insensitive' } },
-        { lastName: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
+      teacherStudentWhere.AND = [
+         {
+            OR: [
+              { firstName: { contains: search, mode: 'insensitive' } },
+              { lastName: { contains: search, mode: 'insensitive' } },
+              { email: { contains: search, mode: 'insensitive' } },
+            ]
+         }
       ];
     }
+    
+    // Also apply level filter if needed (this only applies to Case 1 effectively, but technically strict filtering might be tricky)
+    // If a student is a mentee but not enrolled in a B2 course, should they show up when filtering for B2?
+    // User requirement: "Give admin ability to group students with their teacher". 
+    // Likely they want to see them regardless of course enrollment. 
+    // However, the `courseFilter` variable handles the level check.
+    // If we keep the OR, a mentee will appear even if they don't match the level filter (since the level filter is inside Case 1).
+    // This seems correct: "My Mentees" should probably always show up.
+    
+    // We replace the 'where' variable with our new one
+    // But wait, the previous code initialized `where` differently. Let's fully replace the logic block.
 
     const [students, total] = await Promise.all([
       prisma.user.findMany({
-        where,
+        where: teacherStudentWhere,
         skip,
         take: limit,
         select: {
@@ -88,7 +122,7 @@ export async function GET(request: NextRequest) {
         },
         orderBy: { lastName: 'asc' },
       }),
-      prisma.user.count({ where }),
+      prisma.user.count({ where: teacherStudentWhere }),
     ]);
 
     // Process students to add aggregated fields like average grade or attendance

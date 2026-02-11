@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     if (courseId) {
       where.courseId = courseId;
       
-      // Verify student is enrolled if they're a student
+    // Verify student is enrolled if they're a student
       if (payload.role === 'STUDENT') {
         const enrollment = await prisma.enrollment.findUnique({
           where: {
@@ -30,7 +30,44 @@ export async function GET(request: NextRequest) {
         if (!enrollment) {
           return errors.forbidden('Not enrolled in this course');
         }
+
+        // [RESTRICTION] Only show assignments if the course teacher is the student's mentor
+        const studentProfile = await prisma.studentProfile.findUnique({
+            where: { userId: payload.id },
+            select: { mentorId: true }
+        });
+
+        // We need to check if the course teacher is the mentor.
+        // We can do this by fetching the course teacherId
+        const course = await prisma.course.findUnique({
+            where: { id: courseId },
+            select: { teacherId: true }
+        });
+
+        if (course?.teacherId !== studentProfile?.mentorId) {
+             // If strict restriction is required, we return empty or error.
+             // Returning empty list is safer for UI.
+             return successResponse([]);
+        }
       }
+    } else {
+        // If courseId is NOT provided, and user is STUDENT, we must filter globally
+        if (payload.role === 'STUDENT') {
+            const studentProfile = await prisma.studentProfile.findUnique({
+                where: { userId: payload.id },
+                select: { mentorId: true }
+            });
+
+            if (studentProfile?.mentorId) {
+                where.course = {
+                    teacherId: studentProfile.mentorId
+                };
+            } else {
+                // No mentor => No assignments visible? Or just no filtering (which shows all)?
+                // Request says "only for those assigned". So if not assigned, see nothing.
+                return successResponse([]);
+            }
+        }
     }
 
     const assignments = await prisma.assignment.findMany({
@@ -98,9 +135,17 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Notify all enrolled students about the new assignment
+    // Notify all enrolled students who are ALSO assigned (Mentees)
     const enrollments = await prisma.enrollment.findMany({
-      where: { courseId, status: 'ACTIVE' },
+      where: { 
+        courseId, 
+        status: 'ACTIVE',
+        student: {
+            studentProfile: {
+                mentorId: payload.id
+            }
+        }
+      },
       select: { studentId: true, student: { select: { email: true, fcmTokens: true } } }
     });
 

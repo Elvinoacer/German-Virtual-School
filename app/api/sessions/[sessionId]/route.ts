@@ -62,7 +62,20 @@ export async function GET(
     } else if (user.role === 'TEACHER') {
       authorized = (session.teacherId === user.id) || (await isTeacherOfCourse(user.id, session.courseId));
     } else if (user.role === 'STUDENT') {
-      authorized = await isStudentEnrolled(user.id, session.courseId);
+      // Must be enrolled AND assigned to the teacher (Mentor)
+      const isEnrolled = await isStudentEnrolled(user.id, session.courseId);
+      
+      if (isEnrolled) {
+        // Check if student's mentor is the session teacher
+        const studentProfile = await prisma.studentProfile.findUnique({
+            where: { userId: user.id },
+            select: { mentorId: true }
+        });
+        
+        authorized = studentProfile?.mentorId === session.teacherId;
+      } else {
+        authorized = false;
+      }
     }
 
     if (!authorized) {

@@ -44,9 +44,17 @@ export async function POST(
       },
     });
 
-    // Notify enrolled students
+    // Notify enrolled students who are ALSO assigned to this teacher (Mentees)
     const enrollments = await prisma.enrollment.findMany({
-      where: { courseId, status: 'ACTIVE' },
+      where: { 
+        courseId, 
+        status: 'ACTIVE',
+        student: {
+          studentProfile: {
+            mentorId: payload.userId
+          }
+        }
+      },
       select: { studentId: true, student: { select: { email: true, fcmTokens: true } } }
     });
 
