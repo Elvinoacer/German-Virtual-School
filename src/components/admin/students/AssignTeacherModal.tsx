@@ -21,6 +21,12 @@ interface AssignTeacherModalProps {
     lastName: string;
     profile?: {
       mentorId?: string | null;
+      mentor?: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+      } | null;
     } | null;
   } | null;
 }

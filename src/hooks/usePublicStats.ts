@@ -23,9 +23,7 @@ export function usePublicStats() {
     const fetchStats = async () => {
       try {
         const { data } = await axios.get('/stats/public');
-        if (data) {
-          setStats(data);
-        }
+        setStats(prev => ({ ...prev, ...data }));
       } catch (err) {
         console.error('Failed to fetch statistics', err);
         setError(err);

@@ -118,6 +118,15 @@ export default function AdminFinancePage() {
     }
   });
 
+
+  // Initial State from Query
+  const [formData, setFormData] = useState({
+    defaultFee: settings?.defaultFee || 5000,
+    billingCycle: settings?.billingCycle || 'ONE_TIME',
+    lateFeeAction: settings?.lateFeeAction || 'ROLL_TO_NEXT',
+    applyToStudents: false
+  });
+
   const generateInvoicesMutation = useMutation({
     mutationFn: async () => {
       const response = await axiosInstance.post('/admin/finance/generate');
@@ -132,22 +141,6 @@ export default function AdminFinancePage() {
     }
   });
 
-  if (isFinanceLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  // Initial State from Query
-  const [formData, setFormData] = useState({
-    defaultFee: settings?.defaultFee || 5000,
-    billingCycle: settings?.billingCycle || 'ONE_TIME',
-    lateFeeAction: settings?.lateFeeAction || 'ROLL_TO_NEXT',
-    applyToStudents: false
-  });
-
   useEffect(() => {
     if (settings) {
       setFormData(prev => ({
@@ -158,6 +151,14 @@ export default function AdminFinancePage() {
       }));
     }
   }, [settings]);
+
+  if (isFinanceLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   const handleCreateTerm = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

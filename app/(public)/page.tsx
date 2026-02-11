@@ -120,7 +120,7 @@ export default function Home() {
             <div className="grid grid-cols-2 gap-4 md:gap-6 lg:gap-8 md:grid-cols-4">
               <div className="text-center">
                 <p className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-primary mb-1 md:mb-2 font-sans">
-                  {isLoadingStats ? <span className="text-lg">Loading...</span> : stats.studentsCount.toLocaleString()}
+                  {isLoadingStats ? <span className="text-lg">Loading...</span> : stats?.studentsCount?.toLocaleString() ?? 0}
                 </p>
                 <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 uppercase tracking-wider font-sans">
                   Enrolled Students
@@ -128,7 +128,7 @@ export default function Home() {
               </div>
               <div className="text-center">
                 <p className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-primary mb-1 md:mb-2 font-sans">
-                  {isLoadingStats ? <span className="text-lg">Loading...</span> : stats.instructorsCount.toLocaleString()}
+                  {isLoadingStats ? <span className="text-lg">Loading...</span> : stats?.instructorsCount?.toLocaleString() ?? 0}
                 </p>
                 <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 uppercase tracking-wider font-sans">
                   Qualified Instructors
@@ -136,7 +136,7 @@ export default function Home() {
               </div>
               <div className="text-center">
                 <p className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-primary mb-1 md:mb-2 font-sans">
-                  {isLoadingStats ? <span className="text-lg">Loading...</span> : `${stats.successRate}%`}
+                  {isLoadingStats ? <span className="text-lg">Loading...</span> : `${stats?.successRate ?? 0}%`}
                 </p>
                 <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 uppercase tracking-wider font-sans">
                   Success Rate
@@ -144,7 +144,7 @@ export default function Home() {
               </div>
               <div className="text-center">
                 <p className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-primary mb-1 md:mb-2 font-sans">
-                  {isLoadingStats ? <span className="text-lg">Loading...</span> : stats.levelsCount}
+                  {isLoadingStats ? <span className="text-lg">Loading...</span> : stats?.levelsCount ?? 6}
                 </p>
                 <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 uppercase tracking-wider font-sans">
                   CEFR Levels

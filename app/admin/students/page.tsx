@@ -24,6 +24,12 @@ interface Student {
     address: string | null;
     emergencyContact: string | null;
     mentorId?: string | null;
+    mentor?: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+    } | null;
   } | null;
   stats: {
     activeEnrollments: number;
@@ -53,6 +59,7 @@ interface AdminStudentsData {
 export default function AdminStudentsPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [teacherFilter, setTeacherFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
   const queryClient = useQueryClient();
@@ -71,13 +78,23 @@ export default function AdminStudentsPage() {
     return () => clearTimeout(timer);
   }, [search]);
 
+  // Fetch all teachers for filter
+  const { data: teachers } = useQuery({
+    queryKey: ['admin-teachers-list'],
+    queryFn: async () => {
+      const response = await axiosInstance.get('/admin/teachers');
+      return response.data.data?.teachers || [];
+    }
+  });
+
   const { data, isLoading, isFetching, isError } = useQuery<AdminStudentsData>({
-    queryKey: ['admin-students', debouncedSearch, statusFilter, page],
+    queryKey: ['admin-students', debouncedSearch, statusFilter, teacherFilter, page],
     placeholderData: keepPreviousData,
     queryFn: async () => {
       const params = new URLSearchParams();
       if (debouncedSearch) params.append('search', debouncedSearch);
       if (statusFilter !== 'all') params.append('status', statusFilter);
+      if (teacherFilter) params.append('teacherId', teacherFilter);
       params.append('page', page.toString());
       params.append('limit', '10');
       
@@ -140,6 +157,9 @@ export default function AdminStudentsPage() {
     setPage(1);
   };
 
+  /* Stats Section */
+  const stats = (data as any)?.assignmentStats;
+
   return (
     <div className={`p-4 md:p-6 lg:p-8 flex flex-col gap-6 md:gap-8 max-w-[1600px] mx-auto w-full transition-opacity duration-300 ${(isLoading && !data) ? 'opacity-50' : 'opacity-100'}`}>
       <VerifyStudentModal
@@ -172,9 +192,31 @@ export default function AdminStudentsPage() {
         </div>
       </div>
 
+      {/* Stats Cards */}
+      {stats && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white dark:bg-[#1a202c] p-4 rounded-xl border border-[#e7ebf3] dark:border-[#2d3748] shadow-sm">
+            <p className="text-sm text-[#4c669a]">Total Students</p>
+            <p className="text-2xl font-bold text-[#0d121b] dark:text-white">{stats.totalStudents}</p>
+          </div>
+          <div className="bg-white dark:bg-[#1a202c] p-4 rounded-xl border border-[#e7ebf3] dark:border-[#2d3748] shadow-sm">
+            <p className="text-sm text-[#4c669a]">Assigned</p>
+            <p className="text-2xl font-bold text-green-600">{stats.assigned}</p>
+          </div>
+          <div className="bg-white dark:bg-[#1a202c] p-4 rounded-xl border border-[#e7ebf3] dark:border-[#2d3748] shadow-sm">
+            <p className="text-sm text-[#4c669a]">Unassigned</p>
+            <p className="text-2xl font-bold text-amber-600">{stats.unassigned}</p>
+          </div>
+          <div className="bg-white dark:bg-[#1a202c] p-4 rounded-xl border border-[#e7ebf3] dark:border-[#2d3748] shadow-sm">
+            <p className="text-sm text-[#4c669a]">Active Teachers</p>
+            <p className="text-2xl font-bold text-blue-600">{Object.keys(stats.byTeacher).length}</p>
+          </div>
+        </div>
+      )}
+
       {/* Filters */}
       <div className="bg-white dark:bg-[#1a202c] rounded-xl p-6 border border-[#e7ebf3] dark:border-[#2d3748] shadow-sm">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search */}
           <div className="relative">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#9ca3af]">
@@ -194,11 +236,28 @@ export default function AdminStudentsPage() {
             onChange={(e) => handleStatusChange(e.target.value)}
             className="px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-[#f3f4f6] dark:bg-[#2d3748] dark:text-white text-sm outline-none focus:ring-2 focus:ring-primary/50"
           >
-            <option value="all">All Students</option>
+            <option value="all">All Statuses</option>
             <option value="active">Active Enrollments</option>
             <option value="overdue">Payment Overdue</option>
             <option value="verified">Verified Status</option>
             <option value="unverified">Unverified Status</option>
+          </select>
+           {/* Teacher Filter */}
+           <select
+            value={teacherFilter}
+            onChange={(e) => {
+              setTeacherFilter(e.target.value);
+              setPage(1);
+            }}
+            className="px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-[#f3f4f6] dark:bg-[#2d3748] dark:text-white text-sm outline-none focus:ring-2 focus:ring-primary/50"
+          >
+            <option value="">All Teachers</option>
+            <option value="unassigned">Unassigned Students</option>
+            {teachers?.map((teacher: any) => (
+              <option key={teacher.id} value={teacher.id}>
+                {teacher.firstName} {teacher.lastName} {stats?.byTeacher[teacher.id] ? `(${stats.byTeacher[teacher.id]})` : ''}
+              </option>
+            ))}
           </select>
         </div>
       </div>
@@ -211,6 +270,9 @@ export default function AdminStudentsPage() {
               <tr>
                 <th className="px-6 py-4 text-xs font-semibold text-[#4c669a] uppercase">
                   Student
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold text-[#4c669a] uppercase">
+                  Teacher
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-[#4c669a] uppercase">
                   Enrollments
@@ -253,6 +315,20 @@ export default function AdminStudentsPage() {
                         <p className="text-xs text-[#4c669a]">{student.email}</p>
                       </div>
                     </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    {student.profile?.mentor ? (
+                      <div className="flex items-center gap-2">
+                         <div className="size-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                            {student.profile.mentor.firstName[0]}
+                         </div>
+                         <span className="text-sm text-[#0d121b] dark:text-white">
+                           {student.profile.mentor.firstName} {student.profile.mentor.lastName}
+                         </span>
+                      </div>
+                    ) : (
+                      <span className="text-sm text-[#9ca3af] italic">Unassigned</span>
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col gap-1">
@@ -307,7 +383,7 @@ export default function AdminStudentsPage() {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-sm text-[#4c669a]">
+                  <td colSpan={6} className="px-6 py-8 text-center text-sm text-[#4c669a]">
                     No students found
                   </td>
                 </tr>

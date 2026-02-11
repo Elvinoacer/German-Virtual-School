@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
     const status = searchParams.get('status') || 'all';
+    const teacherId = searchParams.get('teacherId');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const skip = (page - 1) * limit;
@@ -32,6 +33,17 @@ export async function GET(request: NextRequest) {
         { lastName: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } }
       ];
+    }
+
+    if (teacherId === 'unassigned') {
+      whereClause.OR = [
+        { studentProfile: null },
+        { studentProfile: { mentorId: null } }
+      ];
+    } else if (teacherId) {
+      whereClause.studentProfile = {
+        mentorId: teacherId
+      };
     }
 
     // Status Filters
@@ -65,6 +77,35 @@ export async function GET(request: NextRequest) {
     // Fetch total count for pagination
     const totalCount = await prisma.user.count({ where: whereClause });
 
+    // Fetch Assignment Stats (Global)
+    const totalStudentsMetric = await prisma.user.count({ where: { role: 'STUDENT' } });
+    
+    const assignedCount = await prisma.studentProfile.count({
+      where: {
+        mentorId: { not: null },
+        user: { role: 'STUDENT' }
+      }
+    });
+
+    const teacherStats = await prisma.studentProfile.groupBy({
+      by: ['mentorId'],
+      _count: {
+        userId: true
+      },
+      where: {
+        mentorId: { not: null },
+        user: { role: 'STUDENT' }
+      }
+    });
+
+    // Format teacher stats logic
+    const teacherCounts = teacherStats.reduce((acc, curr) => {
+      if (curr.mentorId) {
+        acc[curr.mentorId] = curr._count.userId;
+      }
+      return acc;
+    }, {} as Record<string, number>);
+
     // Fetch students with enrollment and invoice data
     const students = await prisma.user.findMany({
       where: whereClause,
@@ -83,6 +124,14 @@ export async function GET(request: NextRequest) {
             phoneNumber: true,
             address: true,
             emergencyContact: true,
+            mentor: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true
+              }
+            }
           }
         },
         enrollments: {
@@ -144,6 +193,7 @@ export async function GET(request: NextRequest) {
           phoneNumber: student.studentProfile.phoneNumber,
           address: student.studentProfile.address,
           emergencyContact: student.studentProfile.emergencyContact,
+          mentor: student.studentProfile.mentor
         } : null,
         stats: {
           activeEnrollments,
@@ -168,7 +218,13 @@ export async function GET(request: NextRequest) {
       total: totalCount,
       page,
       limit,
-      totalPages: Math.ceil(totalCount / limit)
+      totalPages: Math.ceil(totalCount / limit),
+      assignmentStats: {
+        totalStudents: totalStudentsMetric,
+        assigned: assignedCount,
+        unassigned: totalStudentsMetric - assignedCount,
+        byTeacher: teacherCounts
+      }
     });
 
   } catch (error) {
