@@ -29,6 +29,7 @@ interface CalendarEvent {
   time: string;
   type: "class" | "deadline";
   courseName: string;
+  isAdminMeeting?: boolean;
 }
 
 export default function TeacherCalendarPage() {
@@ -84,6 +85,7 @@ export default function TeacherCalendarPage() {
         time: format(parseISO(session.startTime), "h:mm a"),
         type: "class",
         courseName: session.course.title,
+        isAdminMeeting: session.isAdminMeeting || false,
       }));
 
       const assignmentEvents: CalendarEvent[] = assignments.map((assignment: any) => ({
@@ -304,7 +306,7 @@ export default function TeacherCalendarPage() {
                 <p className="text-blue-100 text-sm mb-6">
                   {upcomingClass.title} starts {formatDistanceToNow(upcomingClass.date, { addSuffix: true })}.
                 </p>
-                <Link href={`/classroom/${upcomingClass.id}`} className="block w-full py-2.5 bg-white text-center text-primary font-bold rounded-lg hover:bg-blue-50 transition-colors shadow-sm">
+                <Link href={upcomingClass?.isAdminMeeting ? `/meeting/${upcomingClass.id}` : `/classroom/${upcomingClass.id}`} className="block w-full py-2.5 bg-white text-center text-primary font-bold rounded-lg hover:bg-blue-50 transition-colors shadow-sm">
                   Join Now
                 </Link>
               </>

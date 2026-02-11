@@ -21,6 +21,14 @@ interface Channel {
   link: string;
 }
 
+interface MeetingInvite {
+  id: string;
+  title: string;
+  startTime: string;
+  endTime: string;
+  status: string;
+}
+
 interface BroadcastBannerProps {
   maxBroadcasts?: number;
 }
@@ -69,6 +77,27 @@ export default function BroadcastBanner({ maxBroadcasts = 3 }: BroadcastBannerPr
     staleTime: 1000 * 60 * 5,
   });
 
+  // Fetch upcoming meeting invites from notifications
+  const { data: meetingInvites = [] } = useQuery<MeetingInvite[]>({
+    queryKey: ["meeting-invites-banner"],
+    queryFn: async () => {
+      const res = await axiosInstance.get("/notifications?limit=5&type=MEETING_INVITE");
+      const notifications = res.data.data?.notifications || [];
+      return notifications
+        .filter((n: any) => n.data?.meetingId)
+        .map((n: any) => ({
+          id: n.data.meetingId,
+          title: n.title?.replace('📅 Meeting: ', '') || 'Meeting',
+          startTime: '',
+          endTime: '',
+          status: 'SCHEDULED',
+          link: n.data.link || `/meeting/${n.data.meetingId}`,
+        }));
+    },
+    enabled: isLoaded,
+    staleTime: 1000 * 60 * 2,
+  });
+
   const dismissBroadcast = (id: string) => {
     const newDismissed = [...dismissedIds, id];
     setDismissedIds(newDismissed);
@@ -79,6 +108,7 @@ export default function BroadcastBanner({ maxBroadcasts = 3 }: BroadcastBannerPr
     const allIds = [
       ...(broadcasts?.map((b) => b.id) || []),
       ...(recentChannels?.map((c) => `channel-${c.id}`) || []),
+      ...(meetingInvites?.map((m) => `meeting-${m.id}`) || []),
     ];
     setDismissedIds((prev) => [...prev, ...allIds]);
     localStorage.setItem("gvs_dismissed_broadcasts", JSON.stringify([...dismissedIds, ...allIds]));
@@ -89,8 +119,10 @@ export default function BroadcastBanner({ maxBroadcasts = 3 }: BroadcastBannerPr
     broadcasts?.filter((b) => !dismissedIds.includes(b.id)).slice(0, maxBroadcasts) || [];
   const visibleChannels =
     recentChannels?.filter((c) => !dismissedIds.includes(`channel-${c.id}`)) || [];
+  const visibleMeetings =
+    meetingInvites?.filter((m) => !dismissedIds.includes(`meeting-${m.id}`)) || [];
 
-  const hasAnyVisible = visibleBroadcasts.length > 0 || visibleChannels.length > 0;
+  const hasAnyVisible = visibleBroadcasts.length > 0 || visibleChannels.length > 0 || visibleMeetings.length > 0;
 
   if (!isLoaded || !hasAnyVisible) {
     return null;
@@ -180,6 +212,45 @@ export default function BroadcastBanner({ maxBroadcasts = 3 }: BroadcastBannerPr
                 </button>
               </Link>
             )}
+
+            {/* Meeting Invites */}
+            {visibleMeetings.map((meeting) => (
+              <Link
+                key={`meeting-${meeting.id}`}
+                href={`/meeting/${meeting.id}`}
+                className="flex items-start gap-3 p-3 rounded-xl bg-white/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 transition-colors group relative"
+              >
+                <div className="size-10 rounded-xl bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-white">video_call</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                      Meeting Invite
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold animate-pulse">
+                      JOIN
+                    </span>
+                  </div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white mt-1">
+                    {meeting.title}
+                  </p>
+                </div>
+                <span className="material-symbols-outlined text-gray-400 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all shrink-0">
+                  arrow_forward
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dismissBroadcast(`meeting-${meeting.id}`);
+                  }}
+                  className="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 opacity-0 group-hover:opacity-100 transition-all"
+                >
+                  <span className="material-symbols-outlined text-[14px] text-gray-500">close</span>
+                </button>
+              </Link>
+            ))}
 
             {/* Broadcasts */}
             {visibleBroadcasts.map((broadcast) => (

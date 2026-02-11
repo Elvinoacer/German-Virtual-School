@@ -3,6 +3,7 @@ import { authenticate } from '@/lib/auth-middleware';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errors } from '@/lib/api-response';
 import { startOfMonth, endOfMonth, subMonths, startOfDay, endOfDay, subDays } from 'date-fns';
+import { MeetingAudience } from '@/generated/prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
     const todayEnd = endOfDay(now);
 
     // Group 1: Critical Activity & Schedule
-    const [todaySchedule, activeCoursesCount, pendingSubmissions, urgentSubmissions] = await Promise.all([
+    const [todaySchedule, activeCoursesCount, pendingSubmissions, urgentSubmissions, todayAdminMeetings] = await Promise.all([
       // Today's Schedule
       prisma.classSession.findMany({
         where: {
@@ -64,6 +65,21 @@ export async function GET(request: NextRequest) {
             dueDate: { lte: new Date(now.getTime() + 48 * 60 * 60 * 1000) }
           },
           status: 'SUBMITTED'
+        }
+      }),
+      // Today's Admin Meetings (audience-based)
+      prisma.adminMeeting.findMany({
+        where: {
+          startTime: { gte: todayStart, lte: todayEnd },
+          OR: [
+            { audience: MeetingAudience.ALL_USERS },
+            { audience: MeetingAudience.ALL_TEACHERS },
+            { audience: MeetingAudience.SPECIFIC_TEACHERS, invitees: { some: { userId: teacherId } } },
+          ]
+        },
+        orderBy: { startTime: 'asc' },
+        include: {
+          createdBy: { select: { firstName: true, lastName: true } }
         }
       })
     ]);
@@ -229,16 +245,29 @@ export async function GET(request: NextRequest) {
         monthlyRevenue: currentRevenue,
         revenueTrend
       },
-      todaySchedule: todaySchedule.map(session => ({
-        id: session.id,
-        title: session.title,
-        courseName: session.course.title,
-        level: session.course.level,
-        startTime: session.startTime,
-        endTime: session.endTime,
-        status: session.status,
-        description: session.description
-      })),
+      todaySchedule: [
+        ...todaySchedule.map(session => ({
+          id: session.id,
+          title: session.title,
+          courseName: session.course.title,
+          level: session.course.level,
+          startTime: session.startTime,
+          endTime: session.endTime,
+          status: session.status,
+          description: session.description
+        })),
+        ...todayAdminMeetings.map(m => ({
+          id: m.id,
+          title: m.title,
+          courseName: 'Admin Meeting',
+          level: '',
+          startTime: m.startTime,
+          endTime: m.endTime,
+          status: m.status,
+          description: m.description,
+          isAdminMeeting: true
+        }))
+      ],
       gradingQueue: gradingQueue.map(assignment => ({
         id: assignment.id,
         title: assignment.title,

@@ -3,6 +3,7 @@ import { authenticate } from '@/lib/auth-middleware';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errors } from '@/lib/api-response';
 import { startOfDay, endOfDay } from 'date-fns';
+import { MeetingAudience } from '@/generated/prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -57,10 +58,9 @@ export async function GET(request: NextRequest) {
         availableCourses,
         resourceProgress,
         currentTerm,
-        termRegistration
+        termRegistration,
+        todayAdminMeetings
     ] = await Promise.all([
-        // Previous fetches...
-        // ... (I'll need to keep the others)
         // Today's Sessions
         prisma.classSession.findMany({
             where: {
@@ -158,6 +158,21 @@ export async function GET(request: NextRequest) {
                 studentId,
                 term: { isCurrent: true }
             }
+        }),
+        // Today's Admin Meetings (audience-based)
+        prisma.adminMeeting.findMany({
+            where: {
+                startTime: { gte: todayStart, lte: todayEnd },
+                OR: [
+                    { audience: MeetingAudience.ALL_USERS },
+                    { audience: MeetingAudience.ALL_STUDENTS },
+                    { audience: MeetingAudience.SPECIFIC_STUDENTS, invitees: { some: { userId: studentId } } },
+                ]
+            },
+            orderBy: { startTime: 'asc' },
+            include: {
+                createdBy: { select: { firstName: true, lastName: true, avatarUrl: true, image: true } }
+            }
         })
     ]);
 
@@ -200,14 +215,33 @@ export async function GET(request: NextRequest) {
                 new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
             )[0]?.id || null
         },
-        todaySessions: todaySessions.map(session => ({
-            ...session,
-            attendeeCount: session._count.attendance,
-            teacher: {
-                ...session.teacher,
-                image: session.teacher.image || session.teacher.avatarUrl
-            }
-        })),
+        todaySessions: [
+            ...todaySessions.map(session => ({
+                ...session,
+                attendeeCount: session._count.attendance,
+                teacher: {
+                    ...session.teacher,
+                    image: session.teacher.image || session.teacher.avatarUrl
+                }
+            })),
+            ...todayAdminMeetings.map(m => ({
+                id: m.id,
+                title: m.title,
+                description: m.description,
+                startTime: m.startTime,
+                endTime: m.endTime,
+                status: m.status,
+                isAdminMeeting: true,
+                course: { title: 'Admin Meeting' },
+                teacher: {
+                    firstName: m.createdBy.firstName,
+                    lastName: m.createdBy.lastName,
+                    image: m.createdBy.image || m.createdBy.avatarUrl,
+                    avatarUrl: m.createdBy.avatarUrl
+                },
+                attendeeCount: 0
+            }))
+        ],
         history: {
             data: pastSessions.map(session => ({
                 id: session.id,

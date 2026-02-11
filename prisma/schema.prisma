@@ -112,6 +112,15 @@ enum NotificationType {
   ASSIGNMENT_GRADED
   PAYMENT_DUE
   FORUM_REPLY
+  MEETING_INVITE
+}
+
+enum MeetingAudience {
+  ALL_USERS
+  ALL_TEACHERS
+  ALL_STUDENTS
+  SPECIFIC_TEACHERS
+  SPECIFIC_STUDENTS
 }
 
 enum ThreadAudience {
@@ -204,6 +213,8 @@ model User {
   forumPosts        ForumPost[]
   notifications     Notification[]
   broadcasts        Broadcast[]
+  adminMeetings     AdminMeeting[]        @relation("AdminMeetings")
+  meetingInvitations AdminMeetingInvitee[] @relation("MeetingInvitees")
   sentMessages      Message[]       @relation("SentMessages")
   receivedMessages  Message[]       @relation("ReceivedMessages")
   
@@ -800,4 +811,36 @@ model CommunicationChannel {
   updatedAt   DateTime @updatedAt
 
   createdBy   User     @relation("ChannelCreator", fields: [createdById], references: [id], onDelete: Cascade)
+}
+
+// --------------------------------------------
+// Admin Meetings
+// --------------------------------------------
+
+model AdminMeeting {
+  id          String          @id @default(uuid())
+  title       String
+  description String?         @db.Text
+  startTime   DateTime
+  endTime     DateTime
+  audience    MeetingAudience
+  meetingLink String?
+  status      ClassStatus     @default(SCHEDULED)
+  createdById String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  createdBy   User            @relation("AdminMeetings", fields: [createdById], references: [id], onDelete: Cascade)
+  invitees    AdminMeetingInvitee[]
+}
+
+model AdminMeetingInvitee {
+  id        String       @id @default(uuid())
+  meetingId String
+  userId    String
+
+  meeting   AdminMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  user      User         @relation("MeetingInvitees", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([meetingId, userId])
 }

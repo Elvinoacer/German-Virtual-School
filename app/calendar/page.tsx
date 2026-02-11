@@ -37,6 +37,7 @@ interface CalendarEvent {
   startTime: string;
   endTime: string;
   status: string;
+  isAdminMeeting?: boolean;
   course: {
     id: string;
     title: string;
@@ -345,7 +346,7 @@ export default function CalendarPage() {
                            </div>
                            <div className="flex-1">
                              <h4 className="font-black text-slate-900 dark:text-white text-base leading-tight group-hover:text-primary transition-colors">{event.title}</h4>
-                             <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">{event.course.title}</p>
+                              <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">{event.isAdminMeeting ? 'Admin Meeting' : event.course.title}</p>
                            </div>
                         </div>
                         

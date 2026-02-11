@@ -278,7 +278,7 @@ export default function TeacherDashboard() {
                               </span>
                             </div>
                             <h4 className="font-bold text-slate-900 dark:text-white text-lg">
-                              {session.courseName}
+                              {(session as any).isAdminMeeting ? session.title : session.courseName}
                             </h4>
                             <p
                               className={`text-sm ${
@@ -287,17 +287,17 @@ export default function TeacherDashboard() {
                                   : "text-slate-500 dark:text-slate-400"
                               }`}
                             >
-                              {session.description || session.level}
+                              {(session as any).isAdminMeeting ? 'Admin Meeting' : (session.description || session.level)}
                             </p>
                             {isLive && (
                               <Link
-                                href={`/classroom/${session.id}`}
+                                href={(session as any).isAdminMeeting ? `/meeting/${session.id}` : `/classroom/${session.id}`}
                                 className="w-full bg-primary hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition-colors"
                               >
                                 <span className="material-symbols-outlined text-[18px]">
-                                  video_camera_front
+                                  {(session as any).isAdminMeeting ? 'groups' : 'video_camera_front'}
                                 </span>
-                                Join Class
+                                {(session as any).isAdminMeeting ? 'Join Meeting' : 'Join Class'}
                               </Link>
                             )}
                           </div>

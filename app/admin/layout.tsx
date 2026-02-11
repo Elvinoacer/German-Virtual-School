@@ -47,6 +47,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin/teachers", label: "Teachers", icon: "person_search" },
     { href: "/admin/courses", label: "Courses", icon: "menu_book" },
     { href: "/admin/notifications/compose", label: "Broadcast", icon: "campaign" },
+    { href: "/admin/meetings/new", label: "Meetings", icon: "video_call" },
     { href: "/admin/finance", label: "Finance", icon: "payments" },
     { href: "/admin/reports", label: "Reports", icon: "monitoring" },
     { href: "/messages", label: "Messages", icon: "chat" },

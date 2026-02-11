@@ -292,22 +292,23 @@ export default function StudentDashboard() {
               <div>
                 <h3 className="text-xl font-bold text-text-main dark:text-white mb-4">Today's Classes</h3>
                 <div className="flex flex-col gap-4">
-                  {todaySessions.length > 0 ? todaySessions.map((session) => (
+                    {todaySessions.length > 0 ? todaySessions.map((session) => (
                     <div key={session.id} className="bg-card-light dark:bg-card-dark rounded-2xl p-5 border border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row gap-6 relative overflow-hidden group hover:shadow-lg transition-all">
                       <div className="w-full sm:w-48 aspect-video bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center relative shrink-0">
-                        <span className="material-symbols-outlined text-4xl sm:text-5xl text-gray-300">videocam</span>
+                        <span className="material-symbols-outlined text-4xl sm:text-5xl text-gray-300">{(session as any).isAdminMeeting ? 'groups' : 'videocam'}</span>
                         {session.status === 'LIVE' && <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded uppercase animate-pulse">Live Now</div>}
+                        {(session as any).isAdminMeeting && <div className="absolute top-2 right-2 bg-indigo-500 text-white text-[10px] font-bold px-2 py-1 rounded">Meeting</div>}
                       </div>
                       <div className="flex flex-col justify-between flex-1 gap-4">
                         <div>
                           <div className="text-primary text-sm font-bold mb-1">{format(parseISO(session.startTime), "HH:mm")} - {format(parseISO(session.endTime), "HH:mm")}</div>
-                          <h4 className="text-xl font-bold">{session.course.title}: {session.title}</h4>
-                          <p className="text-text-subtle text-sm">Instructor: {session.teacher.firstName} {session.teacher.lastName}</p>
+                          <h4 className="text-xl font-bold">{(session as any).isAdminMeeting ? session.title : `${session.course.title}: ${session.title}`}</h4>
+                          <p className="text-text-subtle text-sm">{(session as any).isAdminMeeting ? 'Admin Meeting' : `Instructor: ${session.teacher.firstName} ${session.teacher.lastName}`}</p>
                         </div>
                         <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100 dark:border-gray-800">
-                          <span className="text-xs text-text-subtle">{session.attendeeCount} students attending</span>
+                          <span className="text-xs text-text-subtle">{(session as any).isAdminMeeting ? 'Broadcast Meeting' : `${session.attendeeCount} students attending`}</span>
                           {new Date(session.endTime) > new Date() ? (
-                            <Link href={`/classroom/${session.id}`} className="bg-primary hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg text-sm font-bold transition-all">Join Class</Link>
+                            <Link href={(session as any).isAdminMeeting ? `/meeting/${session.id}` : `/classroom/${session.id}`} className="bg-primary hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg text-sm font-bold transition-all">{(session as any).isAdminMeeting ? 'Join Meeting' : 'Join Class'}</Link>
                           ) : (
                             session.recordingUrl ? (
                               <a href={session.recordingUrl} target="_blank" className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-lg text-sm font-bold transition-all">Watch Recording</a>
