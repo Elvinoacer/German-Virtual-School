@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@/lib/axios";
 import { format } from "date-fns";
@@ -140,15 +140,24 @@ export default function AdminFinancePage() {
     );
   }
 
-  const handleUpdateSettings = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    updateSettingsMutation.mutate({
-      defaultFee: formData.get("defaultFee"),
-      billingCycle: formData.get("billingCycle"),
-      lateFeeAction: formData.get("lateFeeAction"),
-    });
-  };
+  // Initial State from Query
+  const [formData, setFormData] = useState({
+    defaultFee: settings?.defaultFee || 5000,
+    billingCycle: settings?.billingCycle || 'ONE_TIME',
+    lateFeeAction: settings?.lateFeeAction || 'ROLL_TO_NEXT',
+    applyToStudents: false
+  });
+
+  useEffect(() => {
+    if (settings) {
+      setFormData(prev => ({
+        ...prev,
+        defaultFee: settings.defaultFee,
+        billingCycle: settings.billingCycle,
+        lateFeeAction: settings.lateFeeAction || 'ROLL_TO_NEXT',
+      }));
+    }
+  }, [settings]);
 
   const handleCreateTerm = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -160,6 +169,24 @@ export default function AdminFinancePage() {
       isCurrent: formData.get("isCurrent") === "on",
     });
     e.currentTarget.reset();
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+    }));
+  };
+
+  const handleUpdateSettings = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    updateSettingsMutation.mutate({
+      defaultFee: formData.defaultFee,
+      billingCycle: formData.billingCycle,
+      lateFeeAction: formData.lateFeeAction,
+      applyToStudents: formData.applyToStudents
+    });
   };
 
   return (
@@ -324,7 +351,8 @@ export default function AdminFinancePage() {
                     <Input 
                       name="defaultFee" 
                       type="number" 
-                      defaultValue={settings?.defaultFee} 
+                      value={formData.defaultFee} 
+                      onChange={handleInputChange}
                       className="h-14 rounded-2xl bg-slate-50 border-slate-200 dark:bg-slate-900 dark:border-slate-800 font-black text-lg"
                       placeholder="5,000"
                     />
@@ -333,7 +361,8 @@ export default function AdminFinancePage() {
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] pl-1">Recurring Billing Cycle</label>
                     <select 
                       name="billingCycle" 
-                      defaultValue={settings?.billingCycle}
+                      value={formData.billingCycle}
+                      onChange={handleInputChange}
                       className="w-full h-14 px-5 rounded-2xl bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 font-bold text-sm focus:ring-2 focus:ring-primary outline-none transition-all"
                     >
                       <option value="MONTHLY">Monthly</option>
@@ -343,11 +372,31 @@ export default function AdminFinancePage() {
                       {/* <option value="ONE_TIME">One Time Payment</option> */}
                     </select>
                  </div>
+
+                 {/* Bulk Apply Checkbox */}
+                 <div className="flex items-start gap-3 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-800/50">
+                    <input 
+                      type="checkbox" 
+                      name="applyToStudents" 
+                      id="applyToStudents" 
+                      checked={formData.applyToStudents}
+                      onChange={handleInputChange}
+                      className="mt-1 size-5 rounded border-blue-300 text-primary focus:ring-primary transition-all" 
+                    />
+                    <div>
+                      <label htmlFor="applyToStudents" className="text-sm font-bold text-blue-900 dark:text-blue-100 block">Apply to all active enrollments?</label>
+                      <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
+                        If checked, this will update the billing cycle for ALL currently active students to <strong>{formData.billingCycle}</strong> immediately.
+                      </p>
+                    </div>
+                 </div>
+
                  <div className="space-y-3">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] pl-1">Late Payment Action</label>
                     <select 
                       name="lateFeeAction" 
-                      defaultValue={settings?.lateFeeAction || "ROLL_TO_NEXT"}
+                      value={formData.lateFeeAction}
+                      onChange={handleInputChange}
                       className="w-full h-14 px-5 rounded-2xl bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 font-bold text-sm focus:ring-2 focus:ring-primary outline-none transition-all"
                     >
                       <option value="ROLL_TO_NEXT">Automatically roll arrears to next cycle</option>

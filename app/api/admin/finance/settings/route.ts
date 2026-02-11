@@ -39,7 +39,7 @@ export async function PATCH(request: NextRequest) {
     if (payload.role !== 'ADMIN') return errors.forbidden('Access denied');
 
     const body = await request.json();
-    const { defaultFee, currency, billingCycle, lateFeeAction, taxRate } = body;
+    const { defaultFee, currency, billingCycle, lateFeeAction, taxRate, applyToStudents } = body;
 
     const settings = await prisma.globalBillingSettings.upsert({
       where: { id: 'global-settings' },
@@ -60,7 +60,21 @@ export async function PATCH(request: NextRequest) {
       }
     });
 
-    return successResponse(settings, 'Billing settings updated successfully');
+    // If applyToStudents is true, update all ACTIVE enrollments
+    let updatedCount = 0;
+    if (applyToStudents && billingCycle) {
+      const result = await prisma.enrollment.updateMany({
+        where: {
+          status: 'ACTIVE'
+        },
+        data: {
+          billingCycle: billingCycle
+        }
+      });
+      updatedCount = result.count;
+    }
+
+    return successResponse({ ...settings, updatedEnrollments: updatedCount }, 'Billing settings updated successfully');
   } catch (error) {
     console.error('Update billing settings error:', error);
     return errors.internal('Failed to update billing settings');
