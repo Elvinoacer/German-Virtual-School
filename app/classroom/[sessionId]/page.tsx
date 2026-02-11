@@ -1,197 +1,116 @@
 "use client";
 
-import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
-import axios from "@/lib/axios";
-import { toast } from "sonner";
+import axiosInstance from "@/lib/axios";
+import Link from "next/link";
 
-interface SessionData {
-  id: string;
-  title: string;
-  startTime: string;
-  status: string;
-  isModerator: boolean;
-  course: {
-    title: string;
-    level: string;
-  };
-  teacher: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    image: string | null;
-  };
-  attendance: {
-    status: string;
-    student: {
-      id: string;
-      firstName: string;
-      lastName: string;
-      image: string | null;
-    };
-  }[];
-}
-
-export default function LiveSessionPage() {
-  const params = useParams();
-  const sessionId = params.sessionId as string;
+export default function ClassroomPage() {
+  const { sessionId } = useParams();
   const router = useRouter();
-  const { data: sessionData } = useSession();
-  const [showJoiningModal, setShowJoiningModal] = useState(true);
-  const [jitsiApi, setJitsiApi] = useState<any>(null);
-  const jitsiContainerRef = useRef<HTMLDivElement>(null);
+  const { data: authSession, status } = useSession();
 
-  const { data: session, isLoading, error } = useQuery<SessionData>({
-    queryKey: ["session", sessionId],
-    queryFn: async () => {
-      const res = await axios.get(`/sessions/${sessionId}`);
-      return res.data.data;
-    },
-    retry: false,
+  const [sessionData, setSessionData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Validate session access
+  useEffect(() => {
+    if (status === "loading") return;
+    if (!authSession) {
+      router.push("/login");
+      return;
+    }
+
+    const validateSession = async () => {
+      try {
+        const res = await axiosInstance.get(`/sessions/${sessionId}`);
+        setSessionData(res.data.data);
+      } catch (err: any) {
+        const msg = err.response?.data?.error?.message || err.response?.data?.error || "Failed to load session";
+        setError(msg);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    validateSession();
+  }, [sessionId, authSession, status, router]);
+
+  const user = authSession?.user as any;
+  const displayName = user
+    ? `${user.firstName || ""}${user.lastName ? " " + user.lastName : ""}`.trim() || user.name || "Participant"
+    : "Participant";
+
+  // Determine exit route based on role
+  const exitRoute = user?.role === "TEACHER"
+    ? "/teacher/calendar"
+    : user?.role === "ADMIN"
+    ? "/admin/dashboard"
+    : "/student/dashboard";
+
+  // Build Jitsi direct URL with config params
+  const courseTitle = sessionData?.course?.title?.replace(/\s+/g, "-") || "class";
+  const roomName = `gvsv2-${courseTitle}-${sessionId}`;
+  const jitsiDomain = process.env.NEXT_PUBLIC_JITSI_DOMAIN || "meet.jit.si";
+
+  const jitsiParams = new URLSearchParams({
+    "config.startWithAudioMuted": "true",
+    "config.startWithVideoMuted": "true",
+    "config.prejoinPageEnabled": "true",
+    "config.disableDeepLinking": "true",
+    "config.hideConferenceSubject": "false",
+    "config.hideConferenceTimer": "false",
+    "config.enableInsecureRoomNameWarning": "false",
+    "config.p2p.enabled": "false",
+    "config.disableInviteFunctions": "true",
+    "config.channelLastN": "5",
+    "config.resolution": "480",
+    "interfaceConfig.SHOW_JITSI_WATERMARK": "false",
+    "interfaceConfig.SHOW_WATERMARK_FOR_GUESTS": "false",
+    "interfaceConfig.HIDE_INVITE_MORE_HEADER": "true",
+    "interfaceConfig.MOBILE_APP_PROMO": "false",
+    "interfaceConfig.APP_NAME": "GVS Classroom",
+    "userInfo.displayName": displayName,
+    "lang": "en",
   });
 
-  useEffect(() => {
-    if (session && sessionData?.user && !jitsiApi && jitsiContainerRef.current) {
-      // Load Jitsi script from configured domain
-      const jitsiDomain = process.env.NEXT_PUBLIC_JITSI_DOMAIN || "meet.jit.si";
-      const script = document.createElement("script");
-      script.src = `https://${jitsiDomain}/external_api.js`;
-      script.async = true;
-      script.onload = () => {
-        const options = {
-          roomName: `gvsv2-${session.course.title.replace(/\s+/g, '-')}-${session.id}`,
-          width: "100%",
-          height: "100%",
-          parentNode: jitsiContainerRef.current,
-          lang: 'en', // English language requested by user
-          userInfo: {
-            displayName: `${sessionData.user.firstName || ""} ${sessionData.user.lastName || ""}`.trim() || sessionData.user.name || "Participant",
-            email: sessionData.user.email,
-          },
-          configOverwrite: {
-            // Privacy & Start Settings
-            startWithAudioMuted: true,
-            startWithVideoMuted: true, // Respect student privacy
-            prejoinPageEnabled: false,
-            
-            // Performance Optimizations (per jitsi-integration.md)
-            channelLastN: 5, // Limit video feeds for better performance
-            enableLayerSuspension: true, // Save CPU/bandwidth on unused layers
-            resolution: 480, // Balanced quality/performance for classrooms
-            
-            // Classroom Control
-            disableModeratorIndicator: false,
-            enableEmailInStats: false,
-            p2p: {
-              enabled: false, // Disable P2P for better teacher control
-            },
-            
-            // Disable invite functions for controlled access
-            disableInviteFunctions: true,
-          },
-          interfaceConfigOverwrite: {
-            // White-label branding
-            APP_NAME: 'GVS Classroom',
-            SHOW_JITSI_WATERMARK: false,
-            SHOW_POWERED_BY: false,
-            DEFAULT_REMOTE_DISPLAY_NAME: 'Participant',
-            
-            // Tile view optimization
-            TILE_VIEW_MAX_COLUMNS: 5,
-            
-            // Toolbar customization - keep essential buttons for education
-            TOOLBAR_BUTTONS: [
-              'microphone', 'camera', 'desktop', 'fullscreen',
-              'fodeviceselection', 'hangup', 'chat', 'raisehand',
-              'videoquality', 'tileview', 'participants-pane',
-            ],
-          },
-        };
-        const api = new (window as any).JitsiMeetExternalAPI(jitsiDomain, options);
-        setJitsiApi(api);
+  if (sessionData?.title) {
+    jitsiParams.set("config.subject", sessionData.title);
+  }
 
-        // Event: Local user joins conference
-        api.addEventListener('videoConferenceJoined', async () => {
-          try {
-            await axios.post(`/sessions/${sessionId}/check-in`);
-          } catch (err) {
-            console.error('Failed to log check-in:', err);
-          }
-        });
+  const jitsiUrl = `https://${jitsiDomain}/${roomName}#${jitsiParams.toString()}`;
 
-        // Event: Local user leaves conference
-        api.addEventListener('videoConferenceLeft', async () => {
-          try {
-            await axios.post(`/sessions/${sessionId}/check-out`);
-          } catch (err) {
-            console.error('Failed to log check-out:', err);
-          }
-        });
+  // Loading state
+  if (loading || status === "loading") {
+    return (
+      <div className="h-screen w-screen overflow-hidden flex flex-col items-center justify-center bg-[#0b0f1a] text-white gap-6">
+        <div className="size-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+        <div className="text-center">
+          <h2 className="text-xl font-bold">Preparing Classroom...</h2>
+          <p className="text-sm text-slate-400 mt-1">Validating your access</p>
+        </div>
+      </div>
+    );
+  }
 
-        // Event: Session ready to close (backup for videoConferenceLeft)
-        api.addEventListener('readyToClose', async () => {
-          try {
-            await axios.post(`/sessions/${sessionId}/check-out`);
-          } catch (err) {
-            console.error('Failed to log check-out on readyToClose:', err);
-          }
-        });
-
-        // Event: Recording link available
-        api.addEventListener('recordingLinkAvailable', async (event: any) => {
-          try {
-            await axios.patch(`/sessions/${sessionId}`, {
-              recordingUrl: event.link
-            });
-            toast.success("Meeting recording saved successfully!");
-          } catch (err) {
-            console.error('Failed to save recording link:', err);
-          }
-        });
-
-        // Event: Dominant speaker changed (engagement tracking)
-        api.addEventListener('dominantSpeakerChanged', async (event: any) => {
-          // Track engagement - useful for teacher evaluations
-          // This logs when the current user becomes the dominant speaker
-          if (event.id === sessionData.user.id) {
-            try {
-              await axios.post(`/sessions/${sessionId}/engagement`, {
-                type: 'DOMINANT_SPEAKER',
-                timestamp: new Date().toISOString(),
-              });
-            } catch (err) {
-              // Silent fail - engagement tracking is supplementary
-              console.debug('Engagement tracking:', err);
-            }
-          }
-        });
-        
-        // Mark as joined after Jitsi is ready
-        setTimeout(() => setShowJoiningModal(false), 2000);
-      };
-      document.body.appendChild(script);
-
-      return () => {
-        if (jitsiApi) jitsiApi.dispose();
-        if (document.body.contains(script)) {
-          document.body.removeChild(script);
-        }
-      };
-    }
-  }, [session, sessionData]);
-
+  // Error state
   if (error) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#111722] text-white flex-col gap-4 text-center p-6">
-        <span className="material-symbols-outlined text-6xl text-red-500">error</span>
-        <h2 className="text-2xl font-bold">Access Denied</h2>
-        <p className="text-[#92a4c9] max-w-md">{(error as Error).message || "You do not have permission to join this session."}</p>
-        <button 
+      <div className="h-screen w-screen overflow-hidden flex flex-col items-center justify-center bg-[#0b0f1a] text-white gap-6 px-4">
+        <div className="size-20 bg-red-500/10 rounded-2xl flex items-center justify-center">
+          <svg className="size-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+        </div>
+        <div className="text-center max-w-md">
+          <h2 className="text-2xl font-bold">Access Denied</h2>
+          <p className="text-sm text-slate-400 mt-2">{error}</p>
+        </div>
+        <button
           onClick={() => router.back()}
-          className="mt-4 px-8 py-3 bg-primary text-white font-bold rounded-xl hover:bg-blue-700 transition-all"
+          className="px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all"
         >
           Go Back
         </button>
@@ -199,102 +118,101 @@ export default function LiveSessionPage() {
     );
   }
 
-  const participants = session?.attendance.map(a => a.student) || [];
-  const teacher = session?.teacher;
-  const currentUser = sessionData?.user;
+  const teacher = sessionData?.teacher;
 
+  // Classroom launch page
   return (
-    <div className="bg-background-dark text-white font-display overflow-hidden h-screen flex flex-col">
-      {/* Header */}
-      <header className="flex items-center justify-between border-b border-[#232f48] bg-[#111722] px-4 md:px-6 py-3 shrink-0 h-14 md:h-16 z-20">
-        <div className="flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex items-center justify-center size-8 bg-primary rounded-lg text-white">
-              <span className="material-symbols-outlined">school</span>
+    <div className="h-screen w-screen overflow-hidden flex flex-col items-center justify-center bg-[#0b0f1a] text-white px-4">
+      <div className="max-w-lg w-full space-y-8 text-center">
+        {/* Classroom icon */}
+        <div className="flex justify-center">
+          <div className="size-24 bg-primary/10 rounded-3xl flex items-center justify-center ring-4 ring-primary/20">
+            <svg className="size-12 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Session details */}
+        <div>
+          <h1 className="text-3xl font-black tracking-tight">{sessionData?.title || "Classroom"}</h1>
+          <p className="text-slate-400 mt-2 text-sm leading-relaxed">
+            {sessionData?.course?.title} • {sessionData?.course?.level} Level
+          </p>
+          <p className="text-slate-500 text-xs mt-3">
+            Hosted by{" "}
+            <span className="text-slate-300 font-semibold">
+              {teacher?.firstName} {teacher?.lastName}
+            </span>
+            {" "}• Class Session
+          </p>
+        </div>
+
+        {/* Info card */}
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-3 text-left">
+          <div className="flex items-center gap-3 text-sm">
+            <div className="size-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+              <svg className="size-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              </svg>
             </div>
-            <h2 className="text-white text-lg font-bold tracking-tight hidden sm:block">
-              GVS Classroom
-            </h2>
-          </Link>
-        </div>
-        
-        <div className="flex items-center gap-3 bg-[#232f48] px-4 py-1.5 rounded-full border border-white/5">
-          <span className={`w-2 h-2 rounded-full ${session?.status === 'LIVE' ? 'bg-red-500 animate-pulse' : 'bg-yellow-500'}`}></span>
-          <span className="text-sm font-medium text-white/90 truncate max-w-[200px]">
-            {session?.title || "Connecting..."}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="hidden md:flex items-center gap-2 text-[#92a4c9] text-xs">
-            <span className="material-symbols-outlined text-green-500 text-[18px]">wifi</span>
-            <span>Secure</span>
+            <span className="text-slate-300">Joining as <strong className="text-white">{displayName}</strong></span>
           </div>
-          <div className="h-6 w-px bg-[#232f48] hidden md:block"></div>
-          <Link href={currentUser?.role === 'TEACHER' ? '/teacher/calendar' : currentUser?.role === 'ADMIN' ? '/admin/dashboard' : '/student/dashboard'}>
-            <button className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-2">
-              <span className="material-symbols-outlined text-sm">logout</span>
-              Exit
-            </button>
-          </Link>
-        </div>
-      </header>
-
-      {/* Main Content Grid */}
-      <main className="flex flex-1 overflow-hidden relative">
-        {/* Stage Area */}
-        <div className="flex-1 flex flex-col relative bg-black">
-          <div ref={jitsiContainerRef} className="w-full h-full" />
-        </div>
-
-        {/* Sidebar (Optional info) */}
-        <aside className="w-80 bg-[#111722] border-l border-[#232f48] flex flex-col shrink-0 z-10 hidden xl:flex">
-          <div className="p-6 border-b border-[#232f48]">
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Course Info</h3>
-            <p className="text-lg font-bold text-white mb-1">{session?.course.title}</p>
-            <p className="text-sm text-primary font-medium">{session?.course.level} Level</p>
+          <div className="flex items-center gap-3 text-sm">
+            <div className="size-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+              <svg className="size-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+              </svg>
+            </div>
+            <span className="text-slate-300">
+              {sessionData?.isModerator
+                ? <span className="text-amber-400 font-semibold">You have moderator access</span>
+                : "Secure classroom"
+              }
+            </span>
           </div>
-          <div className="p-6">
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Instructor</h3>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                {teacher?.firstName[0]}{teacher?.lastName[0]}
+          {sessionData?.attendance?.length > 0 && (
+            <div className="flex items-center gap-3 text-sm">
+              <div className="size-8 rounded-lg bg-violet-500/10 flex items-center justify-center">
+                <svg className="size-4 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+                </svg>
               </div>
-              <div>
-                <p className="text-sm font-bold text-white">{teacher?.firstName} {teacher?.lastName}</p>
-                <p className="text-xs text-slate-500">Host</p>
-              </div>
+              <span className="text-slate-300">
+                {sessionData.attendance.length} student{sessionData.attendance.length !== 1 ? "s" : ""} enrolled
+              </span>
             </div>
-          </div>
-        </aside>
-      </main>
-
-      {/* Session Validation Loader Modal */}
-      {(showJoiningModal || isLoading) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0f1520] backdrop-blur-md">
-          <div className="w-full max-w-md flex flex-col items-center gap-8 animate-in fade-in zoom-in duration-300">
-            <div className="relative">
-              <div className="size-24 rounded-3xl bg-primary/10 flex items-center justify-center relative">
-                <span className="material-symbols-outlined text-primary text-5xl animate-pulse">security</span>
-              </div>
-              <div className="absolute -inset-4 border-2 border-primary/20 rounded-[2.5rem] animate-[spin_10s_linear_infinite]" />
-            </div>
-            <div className="text-center space-y-3">
-              <h3 className="text-white text-2xl font-bold tracking-tight">
-                {isLoading ? "Validating Session..." : "Initializing Jitsi..."}
-              </h3>
-              <p className="text-slate-400 text-sm max-w-[280px] mx-auto leading-relaxed">
-                We're setting up your secure encrypted connection to the classroom.
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <div className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
-              <div className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
-              <div className="w-2 h-2 rounded-full bg-primary animate-bounce" />
-            </div>
-          </div>
+          )}
         </div>
-      )}
+
+        {/* Join button */}
+        <a
+          href={jitsiUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center gap-3 w-full py-4 bg-primary text-white font-bold text-lg rounded-2xl hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-primary/20"
+        >
+          <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+          </svg>
+          Join Classroom
+          <svg className="size-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+          </svg>
+        </a>
+
+        <p className="text-slate-500 text-xs">
+          Classroom opens in a new tab on Jitsi Meet. The teacher who created the session is the moderator.
+        </p>
+
+        {/* Back link */}
+        <button
+          onClick={() => router.push(exitRoute)}
+          className="text-slate-400 hover:text-white text-sm font-medium transition-colors"
+        >
+          ← Back to Dashboard
+        </button>
+      </div>
     </div>
   );
 }
