@@ -88,16 +88,15 @@ export async function POST(request: NextRequest) {
       return errors.badRequest('Missing required fields');
     }
 
-    // Verify teacher owns the course
-    const course = await prisma.course.findFirst({
+    // Verify course exists
+    const course = await prisma.course.findUnique({
       where: {
         id: courseId,
-        teacherId: payload.id || (payload as any).userId,
       },
     });
 
     if (!course) {
-      return errors.forbidden('You do not own this course');
+      return errors.notFound('Course not found');
     }
 
     const session = await prisma.classSession.create({
