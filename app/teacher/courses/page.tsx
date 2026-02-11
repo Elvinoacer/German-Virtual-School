@@ -27,9 +27,9 @@ export default function TeacherCoursesPage() {
   const queryClient = useQueryClient();
 
   const { data: courses, isLoading } = useQuery({
-    queryKey: ["teacher-courses", session?.user?.id],
+    queryKey: ["teacher-courses", "ALL"],
     queryFn: async () => {
-      const response = await axios.get(`/courses?teacherId=${session?.user?.id}&status=ALL`);
+      const response = await axios.get(`/courses?status=ALL`);
       return response.data.data.data as Course[];
     },
     enabled: !!session?.user?.id,
@@ -60,7 +60,7 @@ export default function TeacherCoursesPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
-              My Courses
+              Courses
             </h1>
             <p className="text-slate-500 dark:text-slate-400 text-base">
               Manage your courses and curriculum.

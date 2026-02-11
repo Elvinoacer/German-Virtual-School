@@ -91,7 +91,9 @@ export async function GET(
     }
 
     // Security: If not enrolled, strip resource URLs to prevent unauthorized access to materials
-    if (!formattedCourse.isEnrolled) {
+    const isStaff = session?.user?.role === 'TEACHER' || session?.user?.role === 'ADMIN';
+
+    if (!formattedCourse.isEnrolled && !isStaff) {
       formattedCourse.modules = formattedCourse.modules.map((module: any) => ({
         ...module,
         resources: module.resources.map((resource: any) => ({
@@ -129,9 +131,9 @@ export async function PATCH(
       return errors.notFound('Course');
     }
 
-    if (course.teacherId !== payload.id) {
-      return errors.forbidden('You can only update your own courses');
-    }
+    // if (course.teacherId !== payload.id) {
+    //   return errors.forbidden('You can only update your own courses');
+    // }
 
     const body = await request.json();
     const { 
@@ -216,9 +218,9 @@ export async function DELETE(
       return errors.notFound('Course');
     }
 
-    if (course.teacherId !== payload.id) {
-      return errors.forbidden('You can only delete your own courses');
-    }
+    // if (course.teacherId !== payload.id) {
+    //   return errors.forbidden('You can only delete your own courses');
+    // }
 
     await prisma.course.delete({
       where: { id: courseId },
