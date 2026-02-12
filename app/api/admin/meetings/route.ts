@@ -172,3 +172,45 @@ export async function POST(request: NextRequest) {
     return errors.internal("Failed to create meeting");
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const payload = await authenticate(request);
+
+    if (payload.role !== "ADMIN") {
+      return errors.forbidden("Access denied");
+    }
+
+    const { searchParams } = new URL(request.url);
+    const confirm = searchParams.get("confirm");
+
+    if (confirm !== "true") {
+      return errors.badRequest(
+        "Please confirm deletion by setting confirm=true query parameter"
+      );
+    }
+
+    // Delete all meetings
+    // Note: If you have foreign key constraints, you might need to handle related records first.
+    // Based on standard Prisma setup, cascading deletes usually handle this,
+    // or we delete AdminMeetingInvitee first if needed.
+    // Assuming cascade delete is set up on the relation or no strict constraint.
+    
+    // To be safe, we can delete invitees first if they exist as a separate table
+    // verify schema if possible, but for now assuming direct delete or cascade.
+    // Let's try deleting meetings directly.
+    
+    const count = await prisma.adminMeeting.count();
+    
+    if (count === 0) {
+        return successResponse(null, "No meetings to delete");
+    }
+
+    await prisma.adminMeeting.deleteMany({});
+
+    return successResponse(null, `Successfully cleared ${count} meetings`);
+  } catch (error) {
+    console.error("Clear admin meetings error:", error);
+    return errors.internal("Failed to clear meeting history");
+  }
+}

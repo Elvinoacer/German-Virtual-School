@@ -114,6 +114,34 @@ export default function AdminMeetingsPage() {
     },
   });
 
+  const deleteMeetingMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await axiosInstance.delete(`/admin/meetings/${id}`);
+      return res.data;
+    },
+    onSuccess: (data) => {
+      toast.success(data.message || "Meeting deleted successfully");
+      refetchMeetings();
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.error?.message || err.response?.data?.message || "Failed to delete meeting");
+    },
+  });
+
+  const clearHistoryMutation = useMutation({
+    mutationFn: async () => {
+      const res = await axiosInstance.delete(`/admin/meetings?confirm=true`);
+      return res.data;
+    },
+    onSuccess: (data) => {
+      toast.success(data.message || "Meeting history cleared");
+      refetchMeetings();
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.error?.message || err.response?.data?.message || "Failed to clear history");
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !audience || !startTime || !endTime) {
@@ -368,6 +396,27 @@ export default function AdminMeetingsPage() {
       {/* Meeting History */}
       {activeTab === "history" && (
         <div className="space-y-4">
+            <div className="flex justify-end mb-4">
+             {meetings.length > 0 && (
+                <button
+                  onClick={() => {
+                    if (confirm("Are you sure you want to clear ALL meeting history? This cannot be undone.")) {
+                      clearHistoryMutation.mutate();
+                    }
+                  }}
+                  disabled={clearHistoryMutation.isPending}
+                  className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/10 dark:text-red-400 dark:hover:bg-red-900/20 text-sm font-bold rounded-lg transition-colors flex items-center gap-2"
+                >
+                  {clearHistoryMutation.isPending ? (
+                     <span className="size-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <span className="material-symbols-outlined text-lg">delete_sweep</span>
+                  )}
+                  Clear History
+                </button>
+             )}
+            </div>
+
           {meetings.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
               <div className="size-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-4">
@@ -410,13 +459,31 @@ export default function AdminMeetingsPage() {
                     </span>
                   </div>
                 </div>
-                <Link
-                  href={`/meeting/${meeting.id}`}
-                  className="px-4 py-2 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 transition-colors flex items-center gap-1.5 shrink-0"
-                >
-                  <span className="material-symbols-outlined text-lg">videocam</span>
-                  Join
-                </Link>
+                <div className="flex items-center gap-2">
+                    <Link
+                    href={`/meeting/${meeting.id}`}
+                    className="px-4 py-2 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 transition-colors flex items-center gap-1.5 shrink-0"
+                    >
+                    <span className="material-symbols-outlined text-lg">videocam</span>
+                    Join
+                    </Link>
+                    <button
+                        onClick={() => {
+                            if (confirm("Are you sure you want to delete this meeting?")) {
+                                deleteMeetingMutation.mutate(meeting.id);
+                            }
+                        }}
+                        disabled={deleteMeetingMutation.isPending}
+                        className="size-10 flex items-center justify-center rounded-xl bg-slate-100 hover:bg-red-50 text-slate-500 hover:text-red-500 transition-colors dark:bg-slate-800 dark:hover:bg-red-900/20"
+                        title="Delete Meeting"
+                    >
+                         {deleteMeetingMutation.isPending && deleteMeetingMutation.variables === meeting.id ? ( // This check might need adjustment if react-query doesn't expose variables easily in map, but usually isPending is global for mutation. Better to track deleting Id separately or acceptable UX for now to disable all or just look spinning.
+                            <span className="size-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                         ) : (
+                            <span className="material-symbols-outlined">delete</span>
+                         )}
+                    </button>
+                </div>
               </div>
             ))
           )}
