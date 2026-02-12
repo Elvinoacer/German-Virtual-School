@@ -29,6 +29,7 @@ interface CalendarEvent {
   time: string;
   type: "class" | "deadline";
   courseName: string;
+  teacherId?: string;
   isAdminMeeting?: boolean;
 }
 
@@ -85,6 +86,7 @@ export default function TeacherCalendarPage() {
         time: format(parseISO(session.startTime), "h:mm a"),
         type: "class",
         courseName: session.course.title,
+        teacherId: session.teacher.id,
         isAdminMeeting: session.isAdminMeeting || false,
       }));
 
@@ -116,9 +118,40 @@ export default function TeacherCalendarPage() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (sessionId: string) => {
+      await axios.delete(`/sessions/${sessionId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["teacher-calendar"] });
+      toast.success("Class deleted successfully");
+    },
+    onError: () => {
+      toast.error("Failed to delete class");
+    },
+  });
+
+  const handleDelete = (sessionId: string) => {
+    if (confirm("Are you sure you want to delete this class? This action cannot be undone.")) {
+      deleteMutation.mutate(sessionId);
+    }
+  };
+
+
+
   const handleSchedule = (e: React.FormEvent) => {
     e.preventDefault();
-    scheduleMutation.mutate(newSession);
+    
+    // Create date objects from the local input strings (which browsers treat as local time)
+    // and convert to ISO strings to ensure the backend receives the exact intended time in UTC
+    const startDate = new Date(newSession.startTime);
+    const endDate = new Date(newSession.endTime);
+
+    scheduleMutation.mutate({
+        ...newSession,
+        startTime: startDate.toISOString(),
+        endTime: endDate.toISOString()
+    });
   };
 
   const selectedDateEvents = events.filter((event) => isSameDay(event.date, selectedDate));
@@ -260,9 +293,16 @@ export default function TeacherCalendarPage() {
                     <div className="flex-1">
                       <div className="flex items-start justify-between">
                         <h4 className="text-sm font-semibold text-slate-900 dark:text-white">{event.title}</h4>
-                        <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
+                        {/* More options dropdown would go here, for now just a delete button if it's a class */}
+                        {!event.isAdminMeeting && event.type === 'class' && (event as any).teacherId === session?.user?.id && (
+                           <button 
+                             onClick={() => handleDelete(event.id)}
+                             className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1"
+                             title="Delete Class"
+                           >
+                             <span className="material-symbols-outlined text-sm">delete</span>
+                           </button>
+                        )}
                       </div>
                       <div className="flex items-center gap-4 mt-2 text-xs text-slate-500 dark:text-slate-400">
                         <div className="flex items-center gap-1">

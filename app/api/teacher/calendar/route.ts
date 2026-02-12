@@ -22,6 +22,11 @@ export async function GET() {
               title: true,
             },
           },
+          teacher: {
+            select: {
+              id: true,
+            }
+          }
         },
         orderBy: {
           startTime: "asc",
