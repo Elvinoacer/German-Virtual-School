@@ -134,3 +134,36 @@ export async function PATCH(
     return errors.internal('Failed to update session');
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ sessionId: string }> }
+) {
+  try {
+    const user = await authenticate(request);
+    const { sessionId } = await params;
+
+    const session = await prisma.classSession.findUnique({
+      where: { id: sessionId },
+    });
+
+    if (!session) {
+      return errors.notFound('Session');
+    }
+
+    // Only teacher of the course or admin can delete
+    const teacherId = user.id || (user as any).userId;
+    if (user.role !== 'ADMIN' && session.teacherId !== teacherId) {
+      return errors.forbidden('Not authorized to delete this session');
+    }
+
+    await prisma.classSession.delete({
+      where: { id: sessionId },
+    });
+
+    return successResponse(null, 'Session deleted successfully');
+  } catch (error) {
+    console.error('Delete session error:', error);
+    return errors.internal('Failed to delete session');
+  }
+}
