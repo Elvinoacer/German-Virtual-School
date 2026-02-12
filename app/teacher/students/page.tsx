@@ -51,8 +51,9 @@ export default function TeacherStudentListPage() {
   const pagination = studentData?.pagination;
 
   const stats = {
-      totalStudents: pagination?.totalItems || 0,
-      activeNow: Math.floor((pagination?.totalItems || 0) * 0.1) || 0,
+      assignedStudents: pagination?.totalItems || 0,
+      totalSchoolStudents: pagination?.totalSchoolStudents || 0,
+      activeNow: Math.floor((pagination?.totalItems || 0) * 0.1) || 0, // Mock active calculation
       avgAttendance: 85
   };
 
@@ -67,14 +68,23 @@ export default function TeacherStudentListPage() {
               Students Directory
             </h1>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="bg-surface-light dark:bg-surface-dark p-4 md:p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between transition-colors duration-200">
                 <div>
-                  <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Total Students</p>
-                  <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{stats.totalStudents}</p>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Assigned Students</p>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{stats.assignedStudents}</p>
                 </div>
                 <div className="p-3 bg-blue-500/10 rounded-lg text-blue-600 dark:text-blue-400">
-                  <span className="material-symbols-outlined">groups</span>
+                  <span className="material-symbols-outlined">supervisor_account</span>
+                </div>
+              </div>
+              <div className="bg-surface-light dark:bg-surface-dark p-4 md:p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between transition-colors duration-200">
+                <div>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Total School Students</p>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{stats.totalSchoolStudents}</p>
+                </div>
+                <div className="p-3 bg-purple-500/10 rounded-lg text-purple-600 dark:text-purple-400">
+                  <span className="material-symbols-outlined">school</span>
                 </div>
               </div>
               <div className="bg-surface-light dark:bg-surface-dark p-4 md:p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between transition-colors duration-200">

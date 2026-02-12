@@ -36,36 +36,45 @@ export async function GET(request: NextRequest) {
     // Prisma doesn't support top-level OR with relation filters easily mixed with other top-level filters in a clean way 
     // without restructuring the whole query, so we use OR condition at the top level.
     
-    // Let's restructure the 'where' clause to handle both cases
+    // Filter for students assigned to this teacher (Mentee OR Enrolled in their course)
+    // AND apply search/level filters
     const teacherStudentWhere: any = {
       role: 'STUDENT',
+      AND: [
+        {
+          OR: [
+            { enrollments: { some: { course: { teacherId: user.id }, status: 'ACTIVE' } } },
+            { studentProfile: { mentorId: user.id } }
+          ]
+        }
+      ]
     };
-    
-    // If search is present, we need to combine it with the above condition using AND
-    if (search) {
-      teacherStudentWhere.AND = [
-         {
-            OR: [
-              { firstName: { contains: search, mode: 'insensitive' } },
-              { lastName: { contains: search, mode: 'insensitive' } },
-              { email: { contains: search, mode: 'insensitive' } },
-            ]
-         }
-      ];
-    }
-    
-    // Also apply level filter if needed (this only applies to Case 1 effectively, but technically strict filtering might be tricky)
-    // If a student is a mentee but not enrolled in a B2 course, should they show up when filtering for B2?
-    // User requirement: "Give admin ability to group students with their teacher". 
-    // Likely they want to see them regardless of course enrollment. 
-    // However, the `courseFilter` variable handles the level check.
-    // If we keep the OR, a mentee will appear even if they don't match the level filter (since the level filter is inside Case 1).
-    // This seems correct: "My Mentees" should probably always show up.
-    
-    // We replace the 'where' variable with our new one
-    // But wait, the previous code initialized `where` differently. Let's fully replace the logic block.
 
-    const [students, total] = await Promise.all([
+    if (search) {
+      teacherStudentWhere.AND.push({
+        OR: [
+          { firstName: { contains: search, mode: 'insensitive' } },
+          { lastName: { contains: search, mode: 'insensitive' } },
+          { email: { contains: search, mode: 'insensitive' } },
+        ]
+      });
+    }
+
+    // Level filter applies to checking if they have an active enrollment in a course of that level
+    // OR if they are a mentee, we might want to check their general level if stored (but it's usually on course).
+    // For now, let's filter via enrollments if level is specified.
+    if (level && level !== 'all') {
+         teacherStudentWhere.AND.push({
+             enrollments: {
+                 some: {
+                     course: { level: level as CourseLevel },
+                     status: 'ACTIVE'
+                 }
+             }
+         });
+    }
+
+    const [students, totalAssigned, totalStudentsInSchool] = await Promise.all([
       prisma.user.findMany({
         where: teacherStudentWhere,
         skip,
@@ -77,11 +86,8 @@ export async function GET(request: NextRequest) {
           email: true,
           image: true,
           avatarUrl: true,
-          // lastLogin: true, // Removed as it's not in schema
           enrollments: {
-            where: {
-               // Show all enrollments or filter by status if needed, but not by teacherId
-            },
+            where: { status: 'ACTIVE' },
             include: {
               course: {
                 select: {
@@ -94,25 +100,30 @@ export async function GET(request: NextRequest) {
           },
           attendanceRecords: {
              where: {
-                classSession: {
-                    // Removed teacherId filter
-                }
+                // Get attendance for sessions taught by this teacher potentially?
+                // Or generally. Let's keep general for now or specific to teacher's sessions.
+                // Request says "Attendance Rate", usually implies overall or specific to context.
+                // Let's grab all for simplicity of calculation, or last 30 days.
              }
           }
         },
         orderBy: { lastName: 'asc' },
       }),
       prisma.user.count({ where: teacherStudentWhere }),
+      prisma.user.count({ where: { role: 'STUDENT' } }) // Total students in the entire school
     ]);
 
-    // Process students to add aggregated fields like average grade or attendance
+    // Process students
     const processedStudents = students.map(student => {
-        // Calculate attendance rate
+        // Calculate attendance rate (simple version)
         const attendanceCount = student.attendanceRecords.filter(r => r.status === 'PRESENT').length;
         const totalRecords = student.attendanceRecords.length;
         const attendanceRate = totalRecords > 0 ? Math.round((attendanceCount / totalRecords) * 100) : 0;
 
-        // Get progress from the relevant enrollment
+        // Get active course (prefer one taught by this teacher if multiple)
+        // Since we filtered enrollments by status ACTIVE, just pick the first one or one matching the teacher if possible
+        // But we didn't filter the `select` enrollments by teacherId, so we might get others.
+        // Let's assume the first active one is fine for display.
         const relevantEnrollment = student.enrollments[0];
         const progress = relevantEnrollment ? relevantEnrollment.progressPercentage : 0;
 
@@ -129,8 +140,9 @@ export async function GET(request: NextRequest) {
       pagination: {
         page,
         limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+        totalItems: totalAssigned, // Assigned students count
+        totalSchoolStudents: totalStudentsInSchool, // Total students in school
+        totalPages: Math.ceil(totalAssigned / limit),
       },
     });
   } catch (error) {

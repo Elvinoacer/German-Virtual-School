@@ -41,10 +41,9 @@ export async function GET(request: NextRequest) {
         },
         orderBy: { startTime: 'asc' }
       }),
-      // Active courses count
+      // Active courses count (All published courses in school)
       prisma.course.count({
         where: {
-          teacherId,
           status: 'PUBLISHED'
         }
       }),
@@ -84,14 +83,16 @@ export async function GET(request: NextRequest) {
       })
     ]);
 
-    // Group 2: Financials & Student Stats (Filtered by Teacher Relation directly)
-    const [enrollmentsData, currentMonthInvoices, lastMonthInvoices] = await Promise.all([
-      // Distinct students count
-      prisma.enrollment.groupBy({
-        by: ['studentId'],
+    // Group 2: Financials & Student Stats
+    const [assignedStudentsCount, currentMonthInvoices, lastMonthInvoices] = await Promise.all([
+      // Count students assigned to this teacher (Enrolled OR Mentee)
+      prisma.user.count({
         where: {
-          course: { teacherId },
-          status: 'ACTIVE'
+            role: 'STUDENT',
+            OR: [
+                { enrollments: { some: { course: { teacherId }, status: 'ACTIVE' } } },
+                { studentProfile: { mentorId: teacherId } }
+            ]
         }
       }),
       // Current month revenue
@@ -140,10 +141,9 @@ export async function GET(request: NextRequest) {
           }
         }
       }),
-      // Course details for table
+      // Course details for table (Show all published courses since teacher has access to all)
       prisma.course.findMany({
         where: {
-          teacherId,
           status: 'PUBLISHED'
         },
         include: {
@@ -183,7 +183,7 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Calculate stats
-    const totalStudents = enrollmentsData.length;
+    const totalStudents = assignedStudentsCount;
     const currentRevenue = currentMonthInvoices.reduce((sum, inv) => sum + Number(inv.amount), 0);
     const lastRevenue = lastMonthInvoices.reduce((sum, inv) => sum + Number(inv.amount), 0);
     
