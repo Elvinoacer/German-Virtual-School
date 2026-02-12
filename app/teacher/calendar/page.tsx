@@ -321,10 +321,10 @@ export default function TeacherCalendarPage() {
                           </>
                         ) : event.type === 'class' && (
                           <>
-                            <div className="flex items-center gap-1">
+                            <Link href={`/classroom/${event.id}`} className="flex items-center gap-1 text-primary hover:underline font-medium">
                               <Video className="w-3.5 h-3.5" />
-                              Jitsi
-                            </div>
+                              Join Classroom
+                            </Link>
                             <Link href={`/teacher/sessions/${event.id}/attendance`} className="text-primary hover:underline flex items-center gap-1">
                               <Users className="w-3.5 h-3.5" />
                               Report
