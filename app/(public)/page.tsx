@@ -117,7 +117,9 @@ export default function Home() {
         {/* Institutional Stats */}
         <section className="py-8 md:py-12 lg:py-16 bg-white dark:bg-slate-900 border-y border-slate-200 dark:border-slate-700">
           <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-            <div className="grid grid-cols-2 gap-4 md:gap-6 lg:gap-8 md:grid-cols-4">
+            <div className={`grid grid-cols-2 gap-4 md:gap-6 lg:gap-8 ${
+              !isLoadingStats && (stats?.successRate ?? 0) >= 60 ? 'md:grid-cols-4' : 'md:grid-cols-3'
+            }`}>
               <div className="text-center">
                 <p className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-primary mb-1 md:mb-2 font-sans">
                   {isLoadingStats ? <span className="text-lg">Loading...</span> : stats?.studentsCount?.toLocaleString() ?? 0}
@@ -134,14 +136,16 @@ export default function Home() {
                   Qualified Instructors
                 </p>
               </div>
-              <div className="text-center">
-                <p className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-primary mb-1 md:mb-2 font-sans">
-                  {isLoadingStats ? <span className="text-lg">Loading...</span> : `${stats?.successRate ?? 0}%`}
-                </p>
-                <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 uppercase tracking-wider font-sans">
-                  Success Rate
-                </p>
-              </div>
+              {!isLoadingStats && (stats?.successRate ?? 0) >= 60 && (
+                <div className="text-center">
+                  <p className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-primary mb-1 md:mb-2 font-sans">
+                    {`${stats?.successRate}%`}
+                  </p>
+                  <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 uppercase tracking-wider font-sans">
+                    Success Rate
+                  </p>
+                </div>
+              )}
               <div className="text-center">
                 <p className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-primary mb-1 md:mb-2 font-sans">
                   {isLoadingStats ? <span className="text-lg">Loading...</span> : stats?.levelsCount ?? 6}
