@@ -1,4 +1,6 @@
 "use client";
+import { Suspense } from "react";
+
 
 import RegisterForm from "@/components/auth/RegisterForm";
 import Link from "next/link";
@@ -58,7 +60,11 @@ export default function RegisterPage() {
             </div>
 
             {/* The Form Component */}
-            <RegisterForm />
+            <Suspense fallback={<div>Loading...</div>}>
+              <RegisterForm />
+            </Suspense>
+
+
 
             <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-4 leading-relaxed font-sans">
               By creating an account, you agree to our{" "}

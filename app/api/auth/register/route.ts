@@ -8,7 +8,8 @@ import { sendEmailNotification } from '@/lib/notifications/channels/email';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password, firstName, lastName, role } = body;
+    const { email, password, firstName, lastName, role, interestedProgram } = body;
+
 
     // Validation
     if (!email || !password || !firstName || !lastName || !role) {
@@ -97,8 +98,12 @@ export async function POST(request: NextRequest) {
     // Create role-specific profile
     if (role === 'STUDENT') {
       await prisma.studentProfile.create({
-        data: { userId: user.id },
+        data: { 
+          userId: user.id,
+          interestedProgram: interestedProgram ? (interestedProgram as any) : undefined 
+        },
       });
+
     } else if (role === 'TEACHER') {
       await prisma.teacherProfile.create({
         data: { userId: user.id },

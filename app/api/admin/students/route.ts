@@ -131,9 +131,11 @@ export async function GET(request: NextRequest) {
                 lastName: true,
                 email: true
               }
-            }
+            },
+            interestedProgram: true
           }
         },
+
         enrollments: {
           select: {
             id: true,
@@ -193,8 +195,10 @@ export async function GET(request: NextRequest) {
           phoneNumber: student.studentProfile.phoneNumber,
           address: student.studentProfile.address,
           emergencyContact: student.studentProfile.emergencyContact,
-          mentor: student.studentProfile.mentor
+          mentor: student.studentProfile.mentor,
+          interestedProgram: student.studentProfile.interestedProgram
         } : null,
+
         stats: {
           activeEnrollments,
           completedEnrollments,

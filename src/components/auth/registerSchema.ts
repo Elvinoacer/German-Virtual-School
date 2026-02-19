@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { CourseLevel } from '@/generated/prisma/client';
+
 
 export const registerSchema = z
   .object({
@@ -15,6 +17,8 @@ export const registerSchema = z
     terms: z.boolean().refine((val) => val === true, {
       message: 'You must agree to the Terms and Privacy Policy',
     }),
+    interestedProgram: z.string().optional(),
+
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",

@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+
 import { Button } from "@/components/ui";
 import { registerSchema, type RegisterFormData } from "./registerSchema";
 import Link from "next/link";
@@ -24,6 +25,9 @@ interface CalendarData {
 
 export default function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const program = searchParams.get('program');
+
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [calendarData, setCalendarData] = useState<CalendarData | null>(null);
@@ -83,7 +87,9 @@ export default function RegisterForm() {
         firstName: data.firstName,
         lastName: data.lastName,
         role: "STUDENT", // Default to student, can be changed based on form selection
+        interestedProgram: program,
       });
+
 
       if (response.data.success) {
         toast.success(
@@ -223,6 +229,15 @@ export default function RegisterForm() {
         onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col gap-5"
       >
+        {program && (
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 flex items-center gap-3 text-sm text-primary mb-2">
+                <span className="material-symbols-outlined text-[20px]">school</span>
+                <span>
+                    You are registering for: <strong>{program}</strong>
+                </span>
+            </div>
+        )}
+
         {/* Name Fields */}
         <div className="flex flex-col sm:flex-row gap-4">
           <label className="flex flex-col flex-1 gap-2">

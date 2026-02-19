@@ -18,12 +18,14 @@ interface Student {
   isVerified: boolean;
   onboardingComplete?: boolean;
   createdAt: string;
+
   profile?: {
     dateOfBirth: string | null;
     phoneNumber: string | null;
     address: string | null;
     emergencyContact: string | null;
     mentorId?: string | null;
+    interestedProgram?: string | null;
     mentor?: {
       id: string;
       firstName: string;
@@ -31,6 +33,7 @@ interface Student {
       email: string;
     } | null;
   } | null;
+
   stats: {
     activeEnrollments: number;
     completedEnrollments: number;
@@ -275,8 +278,12 @@ export default function AdminStudentsPage() {
                   Teacher
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-[#4c669a] uppercase">
+                   Program Interest
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold text-[#4c669a] uppercase">
                   Enrollments
                 </th>
+
                 <th className="px-6 py-4 text-xs font-semibold text-[#4c669a] uppercase">
                   Payment Status
                 </th>
@@ -330,7 +337,18 @@ export default function AdminStudentsPage() {
                       <span className="text-sm text-[#9ca3af] italic">Unassigned</span>
                     )}
                   </td>
+
                   <td className="px-6 py-4">
+                    {student.profile?.interestedProgram ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                            {student.profile.interestedProgram}
+                        </span>
+                    ) : (
+                        <span className="text-gray-400 text-xs">-</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+
                     <div className="flex flex-col gap-1">
                       <span className="text-sm font-medium text-[#0d121b] dark:text-white">
                         {student.stats.activeEnrollments} Active
@@ -383,7 +401,8 @@ export default function AdminStudentsPage() {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-sm text-[#4c669a]">
+                  <td colSpan={7} className="px-6 py-8 text-center text-sm text-[#4c669a]">
+
                     No students found
                   </td>
                 </tr>

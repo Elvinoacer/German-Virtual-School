@@ -31,6 +31,8 @@ enum CourseLevel {
   B2
   C1
   C2
+  REFRESHER
+  KINDERKURSE
 }
 
 enum CourseStatus {
@@ -265,6 +267,7 @@ model StudentProfile {
   phoneNumber      String?
   address          String?
   emergencyContact String?
+  interestedProgram CourseLevel?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

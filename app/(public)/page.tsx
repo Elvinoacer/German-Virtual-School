@@ -384,27 +384,47 @@ export default function Home() {
                   title: "Advanced II",
                   desc: "Near-native proficiency with nuanced understanding and expression",
                 },
+                {
+                  level: "REFRESHER",
+                  title: "Refresher Course",
+                  desc: "Brush up on your skills and regain confidence in German communication",
+                },
+                {
+                  level: "KINDERKURSE",
+                  title: "Kinderkurse",
+                  desc: "Fun and interactive German lessons designed specifically for children",
+                },
+
               ].map((course, idx) => (
                 <div
                   key={idx}
                   className="bg-slate-50 dark:bg-slate-800 p-6 border-l-4 border-primary hover:shadow-lg transition-shadow"
                 >
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-primary text-white flex items-center justify-center font-bold text-lg font-sans">
-                      {course.level}
+                    <div className="min-w-[3rem] px-2 h-12 bg-primary text-white flex items-center justify-center font-bold font-sans shrink-0 rounded-sm">
+                      <span className={course.level.length > 3 ? "text-[10px] sm:text-xs tracking-wider uppercase" : "text-lg"}>
+                        {course.level}
+                      </span>
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white font-sans">
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white font-sans leading-tight">
                       {course.title}
                     </h3>
                   </div>
-                  <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                  <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-4">
                     {course.desc}
                   </p>
-                  <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <div className="mt-auto pt-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
                     <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">
                       Duration: 120 contact hours
                     </p>
+                    <Link
+                      href={`/register?program=${course.level}`}
+                      className="text-xs font-bold text-primary hover:underline"
+                    >
+                      Enroll Now
+                    </Link>
                   </div>
+
                 </div>
               ))}
             </div>
