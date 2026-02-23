@@ -60,11 +60,11 @@ export async function GET(request: NextRequest) {
       return {
         id: record.id,
         date: session.startTime,
-        course: {
+        course: session.course ? {
           id: session.course.id,
           title: session.course.title,
           level: session.course.level
-        },
+        } : null,
         session: {
           id: session.id,
           title: session.title,

@@ -32,7 +32,7 @@ declare module "next-auth" {
 
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma) as any,
+  adapter: PrismaAdapter(prisma as any) as any,
   trustHost: true, // Trust localhost in development
   session: {
     strategy: "jwt",

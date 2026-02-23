@@ -249,8 +249,8 @@ export async function GET(request: NextRequest) {
         ...todaySchedule.map(session => ({
           id: session.id,
           title: session.title,
-          courseName: session.course.title,
-          level: session.course.level,
+          courseName: session.course?.title || 'General Session',
+          level: session.course?.level || '',
           startTime: session.startTime,
           endTime: session.endTime,
           status: session.status,

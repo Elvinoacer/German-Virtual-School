@@ -81,11 +81,11 @@ export default function TeacherCalendarPage() {
 
       const sessionEvents: CalendarEvent[] = sessions.map((session: any) => ({
         id: session.id,
-        title: session.title || session.course.title,
+        title: session.title || session.course?.title || 'General Session',
         date: parseISO(session.startTime),
         time: format(parseISO(session.startTime), "h:mm a"),
         type: "class",
-        courseName: session.course.title,
+        courseName: session.course?.title || 'General Session',
         teacherId: session.teacher.id,
         isAdminMeeting: session.isAdminMeeting || false,
       }));
@@ -384,7 +384,6 @@ export default function TeacherCalendarPage() {
               <div>
                 <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Select Course</label>
                 <select 
-                  required
                   className="w-full rounded-lg border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white text-sm"
                   value={newSession.courseId}
                   onChange={(e) => setNewSession({...newSession, courseId: e.target.value})}

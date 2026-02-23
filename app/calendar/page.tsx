@@ -351,7 +351,7 @@ export default function CalendarPage() {
                            <div className="flex-1">
                              <h4 className="font-black text-slate-900 dark:text-white text-base leading-tight group-hover:text-primary transition-colors">{event.title}</h4>
                               <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">
-                                {event.isAdminMeeting ? '📅 Admin Meeting' : event.course.title}
+                                {event.isAdminMeeting ? '📅 Admin Meeting' : event.course?.title || 'General Session'}
                               </p>
                            </div>
                         </div>

@@ -65,11 +65,8 @@ export async function GET(
       // Any teacher can access any session
       authorized = true;
     } else if (user.role === 'STUDENT') {
-      // Must be enrolled AND assigned to the session's teacher (Mentor)
-      const isEnrolled = await isStudentEnrolled(user.id, session.courseId);
-      
-      if (isEnrolled) {
-        // Check if student's mentor is the session teacher
+      if (!session.courseId) {
+        // Course-less session. Just check if student's mentor is the session teacher.
         const studentProfile = await prisma.studentProfile.findUnique({
             where: { userId: user.id },
             select: { mentorId: true }
@@ -77,7 +74,20 @@ export async function GET(
         
         authorized = studentProfile?.mentorId === session.teacherId;
       } else {
-        authorized = false;
+        // Must be enrolled AND assigned to the session's teacher (Mentor)
+        const isEnrolled = await isStudentEnrolled(user.id, session.courseId);
+        
+        if (isEnrolled) {
+          // Check if student's mentor is the session teacher
+          const studentProfile = await prisma.studentProfile.findUnique({
+              where: { userId: user.id },
+              select: { mentorId: true }
+          });
+          
+          authorized = studentProfile?.mentorId === session.teacherId;
+        } else {
+          authorized = false;
+        }
       }
     }
 

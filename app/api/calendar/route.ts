@@ -36,7 +36,10 @@ export async function GET(request: NextRequest) {
           select: { courseId: true },
         });
         const courseIds = enrollments.map(e => e.courseId);
-        where.courseId = { in: courseIds };
+        where.OR = [
+          { courseId: { in: courseIds } },
+          { courseId: null }
+        ];
 
         // Student sees ALL_USERS, ALL_STUDENTS, and specific invites
         meetingWhere.OR = [
@@ -56,10 +59,11 @@ export async function GET(request: NextRequest) {
       }
       // Admin sees all meetings (no extra filter needed)
     } else {
-      // Public access: Show all sessions for published courses, no meetings
-      where.course = {
-        status: 'PUBLISHED'
-      };
+      // Public access: Show all sessions for published courses, plus general sessions
+      where.OR = [
+        { course: { status: 'PUBLISHED' } },
+        { courseId: null }
+      ];
     }
 
     const [sessions, adminMeetings] = await Promise.all([

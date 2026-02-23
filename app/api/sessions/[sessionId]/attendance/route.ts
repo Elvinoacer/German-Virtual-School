@@ -38,7 +38,7 @@ export async function GET(
     // Use a 30 min buffer after end time before marking absent to be safe
     const isSessionEnded = session.endTime < now;
     
-    if (isSessionEnded) {
+    if (isSessionEnded && session.courseId) {
        // 1. Get all enrolled students
        const enrollments = await prisma.enrollment.findMany({
           where: { 

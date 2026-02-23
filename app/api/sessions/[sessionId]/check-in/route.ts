@@ -33,10 +33,11 @@ export async function POST(
 
     // Verify enrollment/teacher status
     if (payload.role === 'STUDENT') {
-      // Students must be enrolled AND assigned to the session's teacher (mentor)
-      const isEnrolled = await isStudentEnrolled(studentId, session.courseId);
-      if (!isEnrolled) {
-        return errors.forbidden('Not enrolled in this course');
+      if (session.courseId) {
+        const isEnrolled = await isStudentEnrolled(studentId, session.courseId);
+        if (!isEnrolled) {
+          return errors.forbidden('Not enrolled in this course');
+        }
       }
 
       // Verify student is assigned to this teacher

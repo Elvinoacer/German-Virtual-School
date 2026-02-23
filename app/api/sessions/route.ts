@@ -43,7 +43,11 @@ export async function GET(request: NextRequest) {
         return successResponse([]);
       }
 
-      where.courseId = { in: enrolledCourseIds };
+      // Also include general sessions (courseId = null)
+      where.OR = [
+        { courseId: { in: enrolledCourseIds } },
+        { courseId: null }
+      ];
     }
 
     const sessions = await prisma.classSession.findMany({
@@ -84,24 +88,24 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { courseId, title, description, startTime, endTime } = body;
 
-    if (!courseId || !title || !startTime || !endTime) {
+    if (!title || !startTime || !endTime) {
       return errors.badRequest('Missing required fields');
     }
 
-    // Verify course exists
-    const course = await prisma.course.findUnique({
-      where: {
-        id: courseId,
-      },
-    });
+    // Verify course exists if courseId is provided
+    if (courseId) {
+      const course = await prisma.course.findUnique({
+        where: { id: courseId },
+      });
 
-    if (!course) {
-      return errors.notFound('Course not found');
+      if (!course) {
+        return errors.notFound('Course not found');
+      }
     }
 
     const session = await prisma.classSession.create({
       data: {
-        courseId,
+        courseId: courseId || null,
         teacherId: payload.id || (payload as any).userId,
         title,
         description,

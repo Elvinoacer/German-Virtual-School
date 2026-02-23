@@ -246,7 +246,7 @@ export async function GET(request: NextRequest) {
             data: pastSessions.map(session => ({
                 id: session.id,
                 title: session.title,
-                courseName: session.course.title,
+                courseName: session.course?.title || 'General Session',
                 startTime: session.startTime,
                 endTime: session.endTime,
                 recordingUrl: session.recordingUrl,

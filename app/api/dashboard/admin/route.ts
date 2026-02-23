@@ -175,8 +175,8 @@ export async function GET(request: NextRequest) {
     // Format Active Sessions
     const formattedSessions = activeSessions.map(session => ({
       id: session.id,
-      className: session.course.title,
-      level: session.course.level,
+      className: session.course?.title || 'General Session',
+      level: session.course?.level || '',
       teacher: `${session.teacher.firstName} ${session.teacher.lastName}`,
       studentCount: session.attendance.length,
       maxStudents: systemSettings?.maxStudentsPerClass || 25,

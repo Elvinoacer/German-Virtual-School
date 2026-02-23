@@ -433,7 +433,7 @@ model ModuleProgress {
 
 model ClassSession {
   id          String      @id @default(uuid())
-  courseId    String
+  courseId    String?
   teacherId   String
   title       String
   description String?
@@ -446,7 +446,7 @@ model ClassSession {
   homework    String?
 
   // Relations
-  course     Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  course     Course?            @relation(fields: [courseId], references: [id], onDelete: Cascade)
   teacher    User               @relation("TeacherSessions", fields: [teacherId], references: [id], onDelete: Cascade)
   attendance AttendanceRecord[]
 }
