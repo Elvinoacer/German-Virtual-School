@@ -2,7 +2,8 @@ import { NextRequest } from 'next/server';
 import { authenticate } from '@/lib/auth-middleware';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errors } from '@/lib/api-response';
-import { ClassStatus } from '@/generated/prisma/client';
+import { ClassStatus, NotificationType } from '@/generated/prisma/client';
+import { notify } from '@/lib/notifications/orchestrator';
 
 export async function GET(request: NextRequest) {
   try {
@@ -113,7 +114,94 @@ export async function POST(request: NextRequest) {
         endTime: new Date(endTime),
         status: 'SCHEDULED',
       },
+      include: {
+        teacher: { select: { firstName: true, lastName: true } }
+      }
     });
+
+    // --- NOTIFICATION LOGIC ---
+    const sessionTeacherId = payload.id || (payload as any).userId;
+    const notificationPromises: Promise<any>[] = [];
+
+    // 1. Notify Assigned Students (Mentees)
+    let studentEnrollments: any[] = [];
+    if (courseId) {
+       // Course-specific session: Must be enrolled AND mentored by the creator
+       studentEnrollments = await prisma.enrollment.findMany({
+          where: { 
+             courseId,
+             status: 'ACTIVE',
+             student: {
+                studentProfile: { mentorId: sessionTeacherId }
+             }
+          },
+          select: { studentId: true, student: { select: { email: true, fcmTokens: true } } }
+       });
+    } else {
+       // General session: Just needs to be mentored by the creator
+       const profiles = await prisma.studentProfile.findMany({
+          where: { mentorId: sessionTeacherId },
+          select: { userId: true, user: { select: { email: true, fcmTokens: true } } }
+       });
+       
+       studentEnrollments = profiles.map(p => ({
+          studentId: p.userId,
+          student: p.user
+       }));
+    }
+
+    const sessionStartTime = new Date(startTime).toLocaleString(undefined, {
+       weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+
+    studentEnrollments.forEach(enrollment => {
+       notificationPromises.push(
+          notify({
+             userId: enrollment.studentId,
+             title: `New Class Scheduled: ${title}`,
+             message: `Your teacher, ${session.teacher.firstName} ${session.teacher.lastName}, has scheduled a new session for ${sessionStartTime}.`,
+             type: NotificationType.CLASS_REMINDER,
+             email: { to: enrollment.student.email },
+             push: { tokens: enrollment.student.fcmTokens },
+             metadata: {
+                link: `/student/dashboard`,
+                sessionId: session.id,
+                courseId: courseId || undefined
+             }
+          })
+       );
+    });
+
+    // 2. Notify Other Teachers
+    const otherTeachers = await prisma.user.findMany({
+       where: { 
+          role: 'TEACHER',
+          id: { not: sessionTeacherId }
+       },
+       select: { id: true, email: true, fcmTokens: true }
+    });
+
+    otherTeachers.forEach(teacher => {
+       notificationPromises.push(
+          notify({
+             userId: teacher.id,
+             title: `New Class Session Created`,
+             message: `${session.teacher.firstName} ${session.teacher.lastName} scheduled a new session: "${title}" for ${sessionStartTime}.`,
+             type: NotificationType.CLASS_REMINDER,
+             email: { to: teacher.email },
+             push: { tokens: teacher.fcmTokens },
+             metadata: {
+                link: `/teacher/calendar`,
+                sessionId: session.id,
+                courseId: courseId || undefined
+             }
+          })
+       );
+    });
+
+    // Fire notifications asynchronously without blocking the response
+    Promise.allSettled(notificationPromises).catch(console.error);
+    // --------------------------
 
     return successResponse(session, 'Class session scheduled successfully', 201);
   } catch (error) {
