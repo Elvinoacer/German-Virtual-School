@@ -5,7 +5,7 @@ import { successResponse, errors } from '@/lib/api-response';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { studentId: string } }
+  { params }: { params: Promise<{ studentId: string }> }
 ) {
   try {
     const user = await authenticate(request);

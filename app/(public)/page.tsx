@@ -82,10 +82,10 @@ export default function Home() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
                   <Link
-                    href="/register"
+                    href="/reserve-seat"
                     className="px-6 md:px-8 py-3 md:py-4 bg-primary text-white text-sm md:text-base font-semibold hover:bg-blue-700 transition-colors text-center font-sans"
                   >
-                    Begin Your Journey
+                    Reserve Your Seat
                   </Link>
                   <Link
                     href="#curriculum"
@@ -418,10 +418,10 @@ export default function Home() {
                       Duration: 120 contact hours
                     </p>
                     <Link
-                      href={`/register?program=${course.level}`}
+                      href={`/reserve-seat?program=${course.level}`}
                       className="text-xs font-bold text-primary hover:underline"
                     >
-                      Enroll Now
+                      Reserve Your Seat →
                     </Link>
                   </div>
 
@@ -606,19 +606,34 @@ export default function Home() {
         <section className="py-20 lg:py-28 bg-primary text-white">
           <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
             <h2 className="text-3xl lg:text-4xl font-bold mb-6">
-              Begin Your German Language Journey
+              Secure Your Spot for The May Intake
             </h2>
-            <p className="text-xl mb-10 text-blue-100 leading-relaxed">
-              Join our distinguished community of learners and invest in your
-              linguistic future. Enrollment for the upcoming semester is now
-              open.
+            <p className="text-xl mb-6 text-blue-100 leading-relaxed">
+              Reserve your seat today with a one-time fee of{" "}
+              <span className="font-bold text-white">KSH 2,500</span>.
+              This locks your place in our upcoming May intake and is
+              deducted from your total tuition fee.
             </p>
+            <div className="flex flex-wrap items-center justify-center gap-4 mb-8 text-sm text-blue-100">
+              <span className="flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[18px]">lock</span>
+                Locks your seat
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[18px]">receipt_long</span>
+                Deducted from total fee
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[18px]">info</span>
+                Non-refundable
+              </span>
+            </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                href="/register"
+                href="/reserve-seat"
                 className="px-10 py-4 bg-white text-primary text-lg font-semibold hover:bg-blue-50 transition-colors font-sans"
               >
-                Enroll Now
+                Reserve Your Seat — KSH 2,500
               </Link>
               <Link
                 href="/courses"

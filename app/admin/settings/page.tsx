@@ -36,7 +36,12 @@ export default function AdminSettingsPage() {
     enrollmentEndDate: "",
     orientationDate: "",
     firstClassDate: "",
-    lastClassDate: ""
+    lastClassDate: "",
+    // Seat Reservation & Material Fee Fields
+    seatReservationFee: "",
+    materialFee: "",
+    materialFeeDeadline: "",
+    intakeLabel: ""
   });
 
   const { data: settingsData, isLoading } = useQuery({
@@ -68,7 +73,12 @@ export default function AdminSettingsPage() {
         enrollmentEndDate: formatDateForInput(settingsData.enrollmentEndDate),
         orientationDate: formatDateForInput(settingsData.orientationDate),
         firstClassDate: formatDateForInput(settingsData.firstClassDate),
-        lastClassDate: formatDateForInput(settingsData.lastClassDate)
+        lastClassDate: formatDateForInput(settingsData.lastClassDate),
+        // Seat Reservation & Material Fee Fields
+        seatReservationFee: settingsData.seatReservationFee?.toString() || "2500",
+        materialFee: settingsData.materialFee?.toString() || "7500",
+        materialFeeDeadline: formatDateForInput(settingsData.materialFeeDeadline),
+        intakeLabel: settingsData.intakeLabel || "May 2026"
       });
     }
   }, [settingsData]);
@@ -292,6 +302,73 @@ export default function AdminSettingsPage() {
               />
               <p className="text-xs text-[#4c669a] mt-1">Classes end</p>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Seat Reservation & Payment Settings */}
+      <div className="bg-white dark:bg-[#1a202c] rounded-xl border border-[#e7ebf3] dark:border-[#2d3748] shadow-sm p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="material-symbols-outlined text-primary">event_seat</span>
+          <h2 className="text-lg font-bold text-[#0d121b] dark:text-white">
+            Seat Reservation & Fees
+          </h2>
+        </div>
+        <p className="text-[#4c669a] text-sm mb-6">
+          Configure seat reservation fees, learning material fees, and intake labels. These values are used on the public reservation page and for automated billing.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-[#4c669a] mb-2">
+              Seat Reservation Fee (KES)
+            </label>
+            <input
+              type="number"
+              value={formData.seatReservationFee}
+              onChange={(e) => setFormData({ ...formData, seatReservationFee: e.target.value })}
+              placeholder="2500"
+              className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
+            />
+            <p className="text-xs text-[#4c669a] mt-1">Non-refundable fee to lock a seat. Deducted from total tuition.</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#4c669a] mb-2">
+              Learning Material Fee (KES)
+            </label>
+            <input
+              type="number"
+              value={formData.materialFee}
+              onChange={(e) => setFormData({ ...formData, materialFee: e.target.value })}
+              placeholder="7500"
+              className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
+            />
+            <p className="text-xs text-[#4c669a] mt-1">Fee for purchasing learning materials. Prompted 3 weeks before classes.</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#4c669a] mb-2">
+              Material Fee Deadline
+            </label>
+            <input
+              type="date"
+              value={formData.materialFeeDeadline}
+              onChange={(e) => setFormData({ ...formData, materialFeeDeadline: e.target.value })}
+              className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
+            />
+            <p className="text-xs text-[#4c669a] mt-1">Deadline for material fee payment (e.g. end of April)</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#4c669a] mb-2">
+              Intake Label
+            </label>
+            <input
+              type="text"
+              value={formData.intakeLabel}
+              onChange={(e) => setFormData({ ...formData, intakeLabel: e.target.value })}
+              placeholder="May 2026"
+              className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
+            />
+            <p className="text-xs text-[#4c669a] mt-1">Label shown on the public reservation page (e.g. &quot;May 2026&quot;)</p>
           </div>
         </div>
       </div>

@@ -209,6 +209,7 @@ model User {
   invoices          Invoice[]
   receivedEvaluations Evaluation[]  @relation("StudentEvaluations")
   termRegistrations   TermRegistration[]
+  seatReservations  SeatReservation[]
   
   // Communication
   forumThreads      ForumThread[]
@@ -550,8 +551,9 @@ model Invoice {
   // Relations
   student    User          @relation(fields: [studentId], references: [id], onDelete: Cascade)
   enrollment Enrollment?   @relation(fields: [enrollmentId], references: [id])
-  term       AcademicTerm? @relation(fields: [termId], references: [id])
-  payments   Payment[]
+  term              AcademicTerm?    @relation(fields: [termId], references: [id])
+  payments          Payment[]
+  seatReservation   SeatReservation?
 }
 
 model Payment {
@@ -742,6 +744,12 @@ model SystemSettings {
   firstClassDate      DateTime?
   lastClassDate       DateTime?
   
+  // Seat Reservation & Material Fee Settings
+  seatReservationFee  Decimal?  @db.Decimal(10, 2) // e.g. 2500
+  materialFee         Decimal?  @db.Decimal(10, 2) // e.g. 7500
+  materialFeeDeadline DateTime?                     // e.g. end of April
+  intakeLabel         String?                       // e.g. "May 2026"
+  
   // JSON fields for flexible configuration
   notifications       Json?    // e.g. { emailNotifications: true, ... }
   integrations        Json?    // e.g. { jitsiDomain: "...", ... }
@@ -846,4 +854,31 @@ model AdminMeetingInvitee {
   user      User         @relation("MeetingInvitees", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([meetingId, userId])
+}
+
+// --------------------------------------------
+// Seat Reservations
+// --------------------------------------------
+
+model SeatReservation {
+  id          String   @id @default(uuid())
+  email       String
+  firstName   String
+  lastName    String
+  phone       String?
+  program     String?  // e.g. "A1", "B1"
+  amount      Decimal  @db.Decimal(10, 2)
+  status      String   @default("PENDING") // PENDING, PAID, EXPIRED, CONVERTED
+  intakeLabel String   @default("May 2026")
+  invoiceId   String?  @unique
+  userId      String?  // Linked after account creation
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  invoice     Invoice? @relation(fields: [invoiceId], references: [id])
+  user        User?    @relation(fields: [userId], references: [id])
+
+  @@index([email])
+  @@index([status])
 }

@@ -73,6 +73,11 @@ export async function PATCH(request: NextRequest) {
         orientationDate: body.orientationDate !== undefined ? parseDate(body.orientationDate) : undefined,
         firstClassDate: body.firstClassDate !== undefined ? parseDate(body.firstClassDate) : undefined,
         lastClassDate: body.lastClassDate !== undefined ? parseDate(body.lastClassDate) : undefined,
+        // Seat Reservation & Material Fee Fields
+        seatReservationFee: body.seatReservationFee !== undefined ? (body.seatReservationFee ? Number(body.seatReservationFee) : null) : undefined,
+        materialFee: body.materialFee !== undefined ? (body.materialFee ? Number(body.materialFee) : null) : undefined,
+        materialFeeDeadline: body.materialFeeDeadline !== undefined ? parseDate(body.materialFeeDeadline) : undefined,
+        intakeLabel: body.intakeLabel !== undefined ? (body.intakeLabel || null) : undefined,
       },
       create: {
         id: SETTINGS_ID,
@@ -87,6 +92,11 @@ export async function PATCH(request: NextRequest) {
         orientationDate: parseDate(body.orientationDate),
         firstClassDate: parseDate(body.firstClassDate),
         lastClassDate: parseDate(body.lastClassDate),
+        // Seat Reservation & Material Fee Fields
+        seatReservationFee: body.seatReservationFee ? Number(body.seatReservationFee) : null,
+        materialFee: body.materialFee ? Number(body.materialFee) : null,
+        materialFeeDeadline: parseDate(body.materialFeeDeadline),
+        intakeLabel: body.intakeLabel || null,
       }
     });
 

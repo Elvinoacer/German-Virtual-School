@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errors } from '@/lib/api-response';
 import { IntaSendService, type IntaSendWebhookPayload } from '@/lib/intasend';
+import { sendEmailNotification } from '@/lib/notifications/channels/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,40 +27,60 @@ export async function POST(request: NextRequest) {
       invoice_id: intasendInvoiceId,
       state,
       value,
-      api_ref: invoiceId, // Our internal invoice ID
+      api_ref: apiRef, // Our internal reference (invoiceId or SEAT_reservationId)
       provider,
       failed_reason,
       net_amount,
       charges
     } = body;
 
+    // Detect if this is a seat reservation payment
+    const isSeatReservation = apiRef.startsWith('SEAT_');
+
     // Handle payment based on state
     switch (state) {
       case 'COMPLETE':
-        await handleCompletePayment({
-          invoiceId,
-          intasendInvoiceId,
-          paidAmount: parseFloat(value),
-          netAmount: parseFloat(net_amount),
-          charges: parseFloat(charges),
-          provider
-        });
+        if (isSeatReservation) {
+          await handleSeatReservationPayment({
+            reservationId: apiRef.replace('SEAT_', ''),
+            intasendInvoiceId,
+            paidAmount: parseFloat(value),
+            provider,
+          });
+        } else {
+          await handleCompletePayment({
+            invoiceId: apiRef,
+            intasendInvoiceId,
+            paidAmount: parseFloat(value),
+            netAmount: parseFloat(net_amount),
+            charges: parseFloat(charges),
+            provider
+          });
+        }
         break;
 
       case 'FAILED':
-        await handleFailedPayment({
-          invoiceId,
-          intasendInvoiceId,
-          failedReason: failed_reason || 'Unknown error'
-        });
+        if (isSeatReservation) {
+          const reservationId = apiRef.replace('SEAT_', '');
+          await prisma.seatReservation.update({
+            where: { id: reservationId },
+            data: { status: 'EXPIRED' },
+          }).catch(() => console.warn(`Could not update reservation ${reservationId}`));
+        } else {
+          await handleFailedPayment({
+            invoiceId: apiRef,
+            intasendInvoiceId,
+            failedReason: failed_reason || 'Unknown error'
+          });
+        }
         break;
 
       case 'PROCESSING':
-        console.log(`⏳ Payment processing for invoice ${invoiceId}`);
+        console.log(`⏳ Payment processing for ${apiRef}`);
         break;
 
       case 'PENDING':
-        console.log(`⏸️  Payment pending for invoice ${invoiceId}`);
+        console.log(`⏸️  Payment pending for ${apiRef}`);
         break;
 
       default:
@@ -70,6 +91,89 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Webhook processing error:', error);
     return errors.internal('Webhook processing failed');
+  }
+}
+
+/**
+ * Handle successful seat reservation payment
+ */
+async function handleSeatReservationPayment({
+  reservationId,
+  intasendInvoiceId,
+  paidAmount,
+  provider,
+}: {
+  reservationId: string;
+  intasendInvoiceId: string;
+  paidAmount: number;
+  provider: string;
+}) {
+  console.log(`🪑 Processing seat reservation payment for ${reservationId}`);
+
+  const reservation = await prisma.seatReservation.findUnique({
+    where: { id: reservationId },
+  });
+
+  if (!reservation) {
+    console.warn(`⚠️  Seat reservation ${reservationId} not found`);
+    return;
+  }
+
+  if (reservation.status === 'PAID') {
+    console.log(`ℹ️  Seat reservation ${reservationId} already paid`);
+    return;
+  }
+
+  // Update reservation status to PAID
+  await prisma.seatReservation.update({
+    where: { id: reservationId },
+    data: { status: 'PAID' },
+  });
+
+  console.log(`✅ Seat reservation ${reservationId} marked as PAID`);
+
+  // Send confirmation email
+  try {
+    await sendEmailNotification({
+      userId: reservation.userId || 'system',
+      title: 'Seat Reservation Confirmed — German Virtual School',
+      message: `Your seat for the ${reservation.intakeLabel} intake has been confirmed.`,
+      email: {
+        to: reservation.email,
+        subject: 'Seat Reservation Confirmed — German Virtual School',
+        html: `
+          <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #1a4d8f;">Seat Reserved Successfully! 🎉</h1>
+            <p>Dear ${reservation.firstName},</p>
+            <p>Your seat for the <strong>${reservation.intakeLabel}</strong> intake at German Virtual School has been confirmed.</p>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <h3 style="margin: 0 0 12px; color: #1a4d8f;">Reservation Details</h3>
+              <p style="margin: 4px 0;"><strong>Name:</strong> ${reservation.firstName} ${reservation.lastName}</p>
+              ${reservation.program ? `<p style="margin: 4px 0;"><strong>Program:</strong> ${reservation.program}</p>` : ''}
+              <p style="margin: 4px 0;"><strong>Amount Paid:</strong> KSH ${paidAmount.toLocaleString()}</p>
+              <p style="margin: 4px 0;"><strong>Status:</strong> ✅ Confirmed</p>
+            </div>
+            
+            <div style="background: #fff3cd; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
+              <p style="margin: 0; font-size: 14px;"><strong>What's Next?</strong></p>
+              <ul style="margin: 8px 0 0; padding-left: 20px; font-size: 14px;">
+                <li>Your KSH ${paidAmount.toLocaleString()} will be deducted from your total tuition.</li>
+                <li>You'll be notified about <strong>learning material fees (KSH 7,500)</strong> closer to the class start date.</li>
+                <li>Create your student account at <a href="${process.env.NEXT_PUBLIC_APP_URL}/register" style="color: #1a4d8f;">our registration page</a> to access the full platform.</li>
+              </ul>
+            </div>
+            
+            <p style="color: #666; font-size: 12px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+              This is a non-refundable reservation fee. If you have any questions, contact us at ${process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@germanvirtualschool.com'}.
+            </p>
+          </div>
+        `,
+      },
+    });
+    console.log(`📧 Confirmation email sent to ${reservation.email}`);
+  } catch (emailErr) {
+    console.error('Failed to send seat reservation confirmation email:', emailErr);
   }
 }
 
