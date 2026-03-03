@@ -40,7 +40,7 @@ export function PublicFooter() {
               </li>
               <li>
                 <Link
-                  href="/register"
+                  href="/reserve-seat"
                   className="hover:text-primary transition-colors"
                 >
                   Admissions

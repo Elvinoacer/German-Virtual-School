@@ -64,10 +64,10 @@ export function PublicHeader() {
               Student Portal
             </Link>
             <Link
-              href="/register"
+              href="/reserve-seat"
               className="px-3 py-1.5 md:px-4 lg:px-6 md:py-2 lg:py-2.5 bg-primary text-white text-xs md:text-sm font-semibold hover:bg-blue-700 transition-colors font-sans rounded-lg"
             >
-              Enroll Now
+              Reserve a Seat
             </Link>
           </div>
         </div>

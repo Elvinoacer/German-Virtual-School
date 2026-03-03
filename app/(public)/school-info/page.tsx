@@ -171,10 +171,10 @@ export default function SchoolInfoPage() {
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link 
-                href="/register" 
+                href="/reserve-seat" 
                 className="bg-white text-primary px-8 py-4 rounded-2xl font-bold hover:bg-slate-50 transition-all shadow-xl text-center"
               >
-                Apply Now
+                Reserve Your Seat
               </Link>
               <Link 
                 href="/courses" 
@@ -220,10 +220,10 @@ export default function SchoolInfoPage() {
             </div>
             {data.enrollment.status === "open" && (
               <Link 
-                href="/register" 
+                href="/reserve-seat" 
                 className="bg-white text-green-600 px-6 py-3 rounded-xl font-bold hover:bg-slate-50 transition-all text-center shrink-0"
               >
-                Register Now →
+                Reserve Your Seat →
               </Link>
             )}
           </div>
@@ -335,10 +335,10 @@ export default function SchoolInfoPage() {
                 </li>
               </ul>
               <Link 
-                href="/register" 
+                href="/reserve-seat" 
                 className="inline-block bg-primary hover:bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold transition-all shadow-lg"
               >
-                Start Your Journey
+                Reserve Your Seat
               </Link>
             </div>
           </section>

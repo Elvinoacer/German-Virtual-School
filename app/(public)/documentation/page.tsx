@@ -1458,9 +1458,9 @@ export default function DocumentationPage() {
                   Get Started
                 </h4>
                 <div className="space-y-2">
-                  <Link href="/register" className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-primary transition-colors">
+                  <Link href="/reserve-seat" className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-primary transition-colors">
                     <span className="material-symbols-outlined text-base">arrow_forward</span>
-                    Create Account
+                    Reserve a Seat
                   </Link>
                   <Link href="/courses" className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-primary transition-colors">
                     <span className="material-symbols-outlined text-base">arrow_forward</span>

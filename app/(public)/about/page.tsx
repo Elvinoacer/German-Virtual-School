@@ -125,8 +125,8 @@ export default function AboutPage() {
           <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center text-white">
             <h2 className="text-3xl lg:text-5xl font-bold mb-8">Start Your Academic Journey Today</h2>
             <div className="flex flex-col sm:flex-row gap-4 justify-center font-sans">
-              <Link href="/register" className="px-10 py-4 bg-white text-primary font-bold hover:bg-slate-100 transition-colors shadow-xl">
-                Enroll in GVS
+              <Link href="/reserve-seat" className="px-10 py-4 bg-white text-primary font-bold hover:bg-slate-100 transition-colors shadow-xl">
+                Reserve Your Seat
               </Link>
               <Link href="/courses" className="px-10 py-4 bg-transparent border-2 border-white text-white font-bold hover:bg-white/10 transition-colors">
                 Explore Programs
