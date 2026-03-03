@@ -104,6 +104,20 @@ export async function POST(request: NextRequest) {
         },
       });
 
+      // Link any existing PAID seat reservations to this new user
+      try {
+        await prisma.seatReservation.updateMany({
+          where: {
+            email: email.toLowerCase().trim(),
+            status: 'PAID',
+            userId: null,
+          },
+          data: { userId: user.id },
+        });
+      } catch (linkError) {
+        console.error('Failed to link seat reservations (non-fatal):', linkError);
+      }
+
     } else if (role === 'TEACHER') {
       await prisma.teacherProfile.create({
         data: { userId: user.id },

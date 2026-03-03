@@ -110,7 +110,48 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        const description = `Semester Fee: ${currentTerm.name}${totalAmount > Number(billingSettings.defaultFee) ? ' (includes arrears)' : ''}`;
+        // Check for seat reservation & material fee credits
+        let deductions = 0;
+        const deductionNotes: string[] = [];
+
+        // Check for PAID seat reservation
+        const paidReservation = await tx.seatReservation.findFirst({
+          where: {
+            userId: student.id,
+            status: 'PAID',
+          },
+          select: { amount: true },
+        });
+
+        if (paidReservation) {
+          deductions += Number(paidReservation.amount);
+          deductionNotes.push(`seat reservation KES ${Number(paidReservation.amount).toLocaleString()}`);
+        }
+
+        // Check for PAID material fee invoice
+        const paidMaterialInvoice = await tx.invoice.findFirst({
+          where: {
+            studentId: student.id,
+            description: { contains: 'Learning Material Fee' },
+            status: 'PAID',
+          },
+          select: { amount: true },
+        });
+
+        if (paidMaterialInvoice) {
+          deductions += Number(paidMaterialInvoice.amount);
+          deductionNotes.push(`material fee KES ${Number(paidMaterialInvoice.amount).toLocaleString()}`);
+        }
+
+        totalAmount = Math.max(0, totalAmount - deductions);
+
+        let description = `Semester Fee: ${currentTerm.name}`;
+        if (totalAmount > Number(billingSettings.defaultFee) - deductions && shouldRollArrears) {
+          description += ' (includes arrears)';
+        }
+        if (deductionNotes.length > 0) {
+          description += ` (less ${deductionNotes.join(' & ')})`;
+        }
 
         const newInvoice = await (tx.invoice as any).create({
           data: {
