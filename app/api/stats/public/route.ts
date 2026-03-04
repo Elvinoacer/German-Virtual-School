@@ -83,7 +83,7 @@ export async function GET() {
       orderBy: { price: 'asc' },
     });
 
-    // 6. System Fee Settings
+    // 6. System Fee Settings (Seat Reservation & Materials)
     const settings = await prisma.systemSettings.findUnique({
       where: { id: 'system-settings' },
       select: {
@@ -91,6 +91,14 @@ export async function GET() {
         materialFee: true,
         materialFeeDeadline: true,
         intakeLabel: true,
+      },
+    });
+
+    // 7. Global Billing Settings (Total School Fee)
+    const billingSettings = await prisma.globalBillingSettings.findUnique({
+      where: { id: 'global-settings' },
+      select: {
+        defaultFee: true,
       },
     });
 
@@ -116,6 +124,7 @@ export async function GET() {
         materialFee: settings?.materialFee ? Number(settings.materialFee) : null,
         materialFeeDeadline: settings?.materialFeeDeadline || null,
         intakeLabel: settings?.intakeLabel || null,
+        defaultFee: billingSettings?.defaultFee ? Number(billingSettings.defaultFee) : null,
       },
     });
 

@@ -17,6 +17,7 @@ interface FeeData {
   materialFee: number | null;
   materialFeeDeadline: string | null;
   intakeLabel: string | null;
+  defaultFee: number | null;
 }
 
 interface PublicStats {

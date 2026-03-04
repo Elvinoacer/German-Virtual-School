@@ -34,6 +34,7 @@ function ReserveSeatContent() {
   const { stats } = usePublicStats();
   const seatFee = stats.fees?.seatReservationFee ?? 2500;
   const matFee = stats.fees?.materialFee ?? 7500;
+  const courseFee = stats.fees?.defaultFee ?? 5000; // Fallback to 5000 if not set
   const matDeadline = stats.fees?.materialFeeDeadline;
   const intakeLabel = stats.fees?.intakeLabel ?? "May";
 
@@ -45,11 +46,6 @@ function ReserveSeatContent() {
     program: programFromUrl || "",
     referralCode: refFromUrl?.toUpperCase() || "",
   });
-
-  const selectedCourse = stats.fees?.courses.find(
-    (c) => c.level === formData.program
-  );
-  const courseFee = selectedCourse ? selectedCourse.price : null;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -446,10 +442,10 @@ function ReserveSeatContent() {
                 <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4 text-sm text-slate-600 dark:text-slate-300 space-y-3">
                   <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <span className="font-medium text-slate-900 dark:text-white">
-                      Total Course Fee:
+                      Total Tuition Fee:
                     </span>
                     <span className="font-bold text-primary text-lg">
-                      {courseFee ? `KES ${courseFee.toLocaleString()}` : <span className="text-sm font-normal text-slate-500">Select a program to view</span>}
+                      KES {courseFee.toLocaleString()}
                     </span>
                   </div>
                   <div>
