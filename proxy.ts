@@ -23,6 +23,8 @@ export default auth((req) => {
     nextUrl.pathname.startsWith("/channels") || // Public channels page
     nextUrl.pathname.startsWith("/documentation") ||
     nextUrl.pathname.startsWith("/school-info") ||
+    nextUrl.pathname.startsWith("/partners") ||
+    nextUrl.pathname.startsWith("/reserve-seat") ||
     nextUrl.pathname.startsWith("/verify-email") || 
     nextUrl.pathname.startsWith("/check-email");
 

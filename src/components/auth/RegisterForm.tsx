@@ -49,7 +49,7 @@ export default function RegisterForm() {
   useEffect(() => {
     const checkEnrollmentStatus = async () => {
       try {
-        const response = await axios.get("/api/school/calendar");
+        const response = await axios.get("/school/calendar");
         if (response.data.success) {
           setCalendarData(response.data.data);
         }
@@ -146,7 +146,7 @@ export default function RegisterForm() {
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
     try {
-      const response = await axios.post("/api/auth/register", {
+      const response = await axios.post("/auth/register", {
         email: data.email,
         password: data.password,
         firstName: data.firstName,
