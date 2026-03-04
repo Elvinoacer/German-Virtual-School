@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Suspense } from "react";
 import axios from "axios";
 import Link from "next/link";
+import { usePublicStats } from "@/hooks/usePublicStats";
 
 const PROGRAMS = [
   { value: "A1", label: "A1 — Elementary I" },
@@ -29,6 +30,12 @@ function ReserveSeatContent() {
       axios.post("/api/referral/track", { code: refFromUrl, page: "/reserve-seat" }).catch(console.error);
     }
   }, [refFromUrl]);
+
+  const { stats } = usePublicStats();
+  const seatFee = stats.fees?.seatReservationFee ?? 2500;
+  const matFee = stats.fees?.materialFee ?? 7500;
+  const matDeadline = stats.fees?.materialFeeDeadline;
+  const intakeLabel = stats.fees?.intakeLabel ?? "May";
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -195,10 +202,10 @@ function ReserveSeatContent() {
                   </div>
                   <div>
                     <p className="font-semibold text-slate-900 dark:text-white font-sans">
-                      KSH 2,500 — Seat Reservation
+                      KSH {seatFee.toLocaleString()} — Seat Reservation
                     </p>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      Locks your seat for the May intake. This is deducted from
+                      Locks your seat for the {intakeLabel} intake. This is deducted from
                       your total tuition fee.
                     </p>
                   </div>
@@ -211,10 +218,10 @@ function ReserveSeatContent() {
                   </div>
                   <div>
                     <p className="font-semibold text-slate-900 dark:text-white font-sans">
-                      KSH 7,500 — Learning Materials
+                      KSH {matFee.toLocaleString()} — Learning Materials
                     </p>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      Due before end of April. You&apos;ll be notified 3 weeks
+                      {matDeadline ? `Due by ${new Date(matDeadline).toLocaleDateString("en-GB", { day: "numeric", month: "long" })}` : "Due before classes begin"}. You&apos;ll be notified 3 weeks
                       before classes begin. Also deducted from total fee.
                     </p>
                   </div>
@@ -486,7 +493,7 @@ function ReserveSeatContent() {
                       <span className="material-symbols-outlined text-xl">
                         lock
                       </span>
-                      Pay KSH 2,500 — Reserve Your Seat
+                      Pay KSH {seatFee.toLocaleString()} — Reserve Your Seat
                     </>
                   )}
                 </button>
@@ -500,15 +507,11 @@ function ReserveSeatContent() {
         </div>
       </div>
 
-      {/* Material Symbols */}
-      <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-        rel="stylesheet"
-      />
     </div>
   );
 }
 
+// Wrapper for Suspense since useSearchParams requires it
 export default function ReserveSeatPage() {
   return (
     <Suspense

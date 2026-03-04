@@ -63,11 +63,60 @@ export async function GET() {
     // 4. Levels (CEFR Levels)
     const levelsCount = Object.keys(CourseLevel).length;
 
+    // 5. Published Course Fees (for landing page pricing section)
+    const courses = await prisma.course.findMany({
+      where: { status: 'PUBLISHED' },
+      select: {
+        id: true,
+        title: true,
+        level: true,
+        price: true,
+        durationWeeks: true,
+        feePlans: {
+          select: {
+            amount: true,
+            billingCycle: true,
+            installments: true,
+          },
+        },
+      },
+      orderBy: { price: 'asc' },
+    });
+
+    // 6. System Fee Settings
+    const settings = await prisma.systemSettings.findUnique({
+      where: { id: 'system-settings' },
+      select: {
+        seatReservationFee: true,
+        materialFee: true,
+        materialFeeDeadline: true,
+        intakeLabel: true,
+      },
+    });
+
     return NextResponse.json({
       studentsCount,
       instructorsCount,
       successRate,
-      levelsCount
+      levelsCount,
+      fees: {
+        courses: courses.map(c => ({
+          id: c.id,
+          title: c.title,
+          level: c.level,
+          price: Number(c.price),
+          durationWeeks: c.durationWeeks,
+          feePlans: c.feePlans.map(fp => ({
+            amount: Number(fp.amount),
+            billingCycle: fp.billingCycle,
+            installments: fp.installments,
+          })),
+        })),
+        seatReservationFee: settings?.seatReservationFee ? Number(settings.seatReservationFee) : null,
+        materialFee: settings?.materialFee ? Number(settings.materialFee) : null,
+        materialFeeDeadline: settings?.materialFeeDeadline || null,
+        intakeLabel: settings?.intakeLabel || null,
+      },
     });
 
   } catch (error) {

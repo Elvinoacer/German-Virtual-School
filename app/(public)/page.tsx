@@ -800,6 +800,139 @@ export default function Home() {
           </div>
         )}
 
+        {/* Pricing & Fees Section */}
+        {stats.fees && (stats.fees.courses.length > 0 || stats.fees.seatReservationFee || stats.fees.materialFee) && (
+          <section id="pricing" className="py-20 lg:py-28 bg-white dark:bg-slate-900">
+            <div className="max-w-7xl mx-auto px-6 lg:px-8">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="text-center mb-14"
+              >
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-sm font-semibold mb-4">
+                  <span className="material-symbols-outlined text-[16px]">payments</span>
+                  Transparent Pricing
+                </span>
+                <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-4">
+                  Fees &amp; Course Pricing
+                </h2>
+                <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
+                  Clear breakdown of all costs. No hidden charges — invest in your future with confidence.
+                </p>
+              </motion.div>
+
+              {/* System Fees (Seat Reservation + Material Fee) */}
+              {(stats.fees.seatReservationFee || stats.fees.materialFee) && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12 max-w-3xl mx-auto"
+                >
+                  {stats.fees.seatReservationFee && (
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/10 rounded-2xl p-6 border border-blue-200 dark:border-blue-800/30">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center">
+                          <span className="material-symbols-outlined text-white text-xl">confirmation_number</span>
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-slate-900 dark:text-white">Seat Reservation</h3>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">One-time, non-refundable</p>
+                        </div>
+                      </div>
+                      <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                        KES {stats.fees.seatReservationFee.toLocaleString()}
+                      </p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+                        Deducted from your total tuition fee. Secures your spot{stats.fees.intakeLabel ? ` for the ${stats.fees.intakeLabel} intake` : ""}.
+                      </p>
+                    </div>
+                  )}
+                  {stats.fees.materialFee && (
+                    <div className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/10 rounded-2xl p-6 border border-amber-200 dark:border-amber-800/30">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center">
+                          <span className="material-symbols-outlined text-white text-xl">menu_book</span>
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-slate-900 dark:text-white">Learning Materials</h3>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">One-time fee</p>
+                        </div>
+                      </div>
+                      <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">
+                        KES {stats.fees.materialFee.toLocaleString()}
+                      </p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+                        Covers all course materials, textbooks, and digital resources{stats.fees.materialFeeDeadline ? `. Due by ${new Date(stats.fees.materialFeeDeadline).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}` : ""}.
+                      </p>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {/* Course Fee Cards */}
+              {stats.fees.courses.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {stats.fees.courses.map((course, idx) => {
+                    const levelColors: Record<string, string> = {
+                      A1: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+                      A2: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+                      B1: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+                      B2: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400",
+                      C1: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+                      C2: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+                    };
+                    return (
+                      <motion.div
+                        key={course.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: idx * 0.1 }}
+                        className="bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-lg transition-shadow"
+                      >
+                        <div className="p-6">
+                          <div className="flex items-center justify-between mb-4">
+                            <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${levelColors[course.level] || "bg-slate-100 text-slate-700"}`}>
+                              {course.level}
+                            </span>
+                            <span className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[14px]">schedule</span>
+                              {course.durationWeeks} weeks
+                            </span>
+                          </div>
+                          <h3 className="font-bold text-slate-900 dark:text-white text-lg mb-3 leading-tight">
+                            {course.title}
+                          </h3>
+                          <p className="text-3xl font-bold text-slate-900 dark:text-white mb-1">
+                            KES {course.price.toLocaleString()}
+                          </p>
+                          {course.feePlans.length > 0 && (
+                            <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Payment Options</p>
+                              {course.feePlans.map((fp, i) => (
+                                <div key={i} className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-300 py-1">
+                                  <span className="flex items-center gap-1.5">
+                                    <span className="material-symbols-outlined text-[14px] text-primary">check_circle</span>
+                                    {fp.billingCycle.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                                    {fp.installments > 1 && ` (${fp.installments}x)`}
+                                  </span>
+                                  <span className="font-semibold">KES {fp.amount.toLocaleString()}{fp.installments > 1 ? "/inst." : ""}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
         {/* Call to Action */}
         <section className="py-20 lg:py-28 bg-primary text-white">
           <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">

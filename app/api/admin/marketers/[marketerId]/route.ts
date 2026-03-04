@@ -129,3 +129,51 @@ export async function PATCH(
     return errors.internal('Failed to update marketer');
   }
 }
+
+/**
+ * DELETE /api/admin/marketers/[marketerId]
+ * Delete a marketer and cascade related records
+ */
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ marketerId: string }> }
+) {
+  try {
+    const payload = await authenticate(request);
+    if (payload.role !== 'ADMIN') {
+      return errors.forbidden('Access denied');
+    }
+
+    const { marketerId } = await params;
+
+    const marketer = await prisma.marketer.findUnique({
+      where: { id: marketerId },
+      select: { id: true, firstName: true, lastName: true },
+    });
+
+    if (!marketer) {
+      return errors.notFound('Marketer');
+    }
+
+    // Cascade: delete clicks, commissions, payouts, then unlink seat reservations
+    await prisma.$transaction([
+      prisma.referralClick.deleteMany({ where: { marketerId } }),
+      prisma.referralCommission.deleteMany({ where: { marketerId } }),
+      prisma.commissionPayout.deleteMany({ where: { marketerId } }),
+      prisma.seatReservation.updateMany({
+        where: { marketerId },
+        data: { marketerId: null },
+      }),
+      prisma.user.updateMany({
+        where: { referredByMarketerId: marketerId },
+        data: { referredByMarketerId: null },
+      }),
+      prisma.marketer.delete({ where: { id: marketerId } }),
+    ]);
+
+    return successResponse(null, `Marketer ${marketer.firstName} ${marketer.lastName} deleted`);
+  } catch (error) {
+    console.error('Delete marketer error:', error);
+    return errors.internal('Failed to delete marketer');
+  }
+}

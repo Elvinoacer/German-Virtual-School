@@ -44,9 +44,12 @@ export default function AdminMarketersPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [showPayout, setShowPayout] = useState<string | null>(null);
   const [showEdit, setShowEdit] = useState<Marketer | null>(null);
+  const [viewDetail, setViewDetail] = useState<any>(null);
+  const [viewDetailLoading, setViewDetailLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [payingOut, setPayingOut] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   // Edit Form State
   const [editForm, setEditForm] = useState({
@@ -190,6 +193,35 @@ export default function AdminMarketersPage() {
     }
   };
 
+  const openDetail = async (id: string) => {
+    setViewDetailLoading(true);
+    setViewDetail(null);
+    try {
+      const { data } = await axios.get(`/api/admin/marketers/${id}`);
+      if (data.success) setViewDetail(data.data);
+    } catch {
+      toast.error("Failed to load marketer details");
+    } finally {
+      setViewDetailLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to permanently delete ${name}? This will remove all their clicks, commissions, and payouts. This cannot be undone.`)) return;
+    setDeleting(id);
+    try {
+      const { data } = await axios.delete(`/api/admin/marketers/${id}`);
+      if (data.success) {
+        toast.success(data.message || "Marketer deleted");
+        fetchMarketers();
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || "Failed to delete marketer");
+    } finally {
+      setDeleting(null);
+    }
+  };
+
   const handleVoidCommission = async (id: string) => {
     if (!confirm("Are you sure you want to void this commission?")) return;
     try {
@@ -198,8 +230,8 @@ export default function AdminMarketersPage() {
         toast.success("Commission voided");
         fetchCommissions();
       }
-    } catch (err) {
-      toast.error("Failed to void commission");
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || "Failed to void commission");
     }
   };
 
@@ -284,6 +316,13 @@ export default function AdminMarketersPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-center gap-1">
                         <button
+                          onClick={() => openDetail(m.id)}
+                          className="p-1.5 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 text-purple-600 transition-colors"
+                          title="View Details"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">visibility</span>
+                        </button>
+                        <button
                           onClick={() => openEdit(m)}
                           className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 transition-colors"
                           title="Edit Marketer"
@@ -317,6 +356,14 @@ export default function AdminMarketersPage() {
                           title="Copy Referral Link"
                         >
                           <span className="material-symbols-outlined text-[18px]">content_copy</span>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(m.id, `${m.firstName} ${m.lastName}`)}
+                          disabled={deleting === m.id}
+                          className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition-colors disabled:opacity-50"
+                          title="Delete Marketer"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">{deleting === m.id ? "hourglass_empty" : "delete"}</span>
                         </button>
                       </div>
                     </td>
@@ -665,6 +712,177 @@ export default function AdminMarketersPage() {
                   <button type="submit" disabled={editing} className="flex-1 h-10 bg-primary text-white font-bold rounded-xl">{editing ? "Saving..." : "Save Changes"}</button>
                 </div>
               </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* View Detail Modal */}
+      <AnimatePresence>
+        {(viewDetail || viewDetailLoading) && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            onClick={() => { setViewDetail(null); setViewDetailLoading(false); }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto"
+            >
+              {viewDetailLoading ? (
+                <div className="flex flex-col items-center justify-center py-12 gap-4">
+                  <RefreshCw className="w-8 h-8 animate-spin text-primary" />
+                  <p className="text-slate-500">Loading marketer details...</p>
+                </div>
+              ) : viewDetail ? (
+                <>
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <span className="material-symbols-outlined text-primary">person</span>
+                      {viewDetail.firstName} {viewDetail.lastName}
+                    </h2>
+                    <button
+                      onClick={() => setViewDetail(null)}
+                      className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-xl">close</span>
+                    </button>
+                  </div>
+
+                  {/* Personal Info */}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    {[
+                      { label: "Email", value: viewDetail.email, icon: "mail" },
+                      { label: "Phone", value: viewDetail.phone || "Not provided", icon: "phone" },
+                      { label: "Referral Code", value: viewDetail.referralCode, icon: "tag" },
+                      { label: "Status", value: viewDetail.isActive ? "Active" : "Inactive", icon: "toggle_on" },
+                      { label: "Total Clicks", value: viewDetail.totalClicks || 0, icon: "ads_click" },
+                      { label: "Joined", value: new Date(viewDetail.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }), icon: "calendar_today" },
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
+                        <span className="material-symbols-outlined text-primary text-[20px] mt-0.5">{item.icon}</span>
+                        <div>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">{item.label}</p>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white">{item.value}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Payout Settings */}
+                  <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/10 rounded-xl border border-green-200 dark:border-green-800/30">
+                    <h3 className="text-sm font-bold text-green-800 dark:text-green-300 mb-2 flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+                      Payout Settings
+                    </h3>
+                    <p className="text-sm text-green-700 dark:text-green-400">
+                      <strong>Method:</strong> {viewDetail.payoutMethod || "Not configured"} &nbsp;|&nbsp;
+                      <strong>Details:</strong> {viewDetail.payoutDetails ? JSON.stringify(viewDetail.payoutDetails) : "Not set"}
+                    </p>
+                    {viewDetail.termsAcceptedAt && (
+                      <p className="text-xs text-green-600 dark:text-green-500 mt-1">
+                        Terms accepted: {new Date(viewDetail.termsAcceptedAt).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Referred Students */}
+                  {viewDetail.seatReservations?.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-[18px] text-blue-500">group</span>
+                        Referred Students ({viewDetail.seatReservations.length})
+                      </h3>
+                      <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+                        <table className="w-full text-xs">
+                          <thead className="bg-slate-50 dark:bg-slate-700/50">
+                            <tr>
+                              <th className="text-left px-3 py-2 font-medium text-slate-500">Student</th>
+                              <th className="text-left px-3 py-2 font-medium text-slate-500">Program</th>
+                              <th className="text-center px-3 py-2 font-medium text-slate-500">Status</th>
+                              <th className="text-right px-3 py-2 font-medium text-slate-500">Amount</th>
+                              <th className="text-right px-3 py-2 font-medium text-slate-500">Date</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                            {viewDetail.seatReservations.map((s: any) => (
+                              <tr key={s.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                                <td className="px-3 py-2">
+                                  <p className="font-medium text-slate-900 dark:text-white">{s.firstName} {s.lastName}</p>
+                                  <p className="text-slate-400">{s.email}</p>
+                                </td>
+                                <td className="px-3 py-2 text-slate-700 dark:text-slate-300">{s.program}</td>
+                                <td className="px-3 py-2 text-center">
+                                  <span className={`inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-bold ${s.status === "PAID" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"}`}>
+                                    {s.status}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-2 text-right font-medium text-slate-900 dark:text-white">KES {Number(s.amount).toLocaleString()}</td>
+                                <td className="px-3 py-2 text-right text-slate-400">{new Date(s.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Recent Commissions */}
+                  {viewDetail.commissions?.length > 0 && (
+                    <div className="mb-4">
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-[18px] text-amber-500">monetization_on</span>
+                        Commissions ({viewDetail.commissions.length})
+                      </h3>
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {viewDetail.commissions.map((c: any) => (
+                          <div key={c.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/30 rounded-lg text-xs">
+                            <div>
+                              <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-bold mr-2 ${c.type === "RESERVATION" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" : "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"}`}>
+                                {c.type}
+                              </span>
+                              <span className="text-slate-500">{c.studentName} • {c.studentEmail}</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className={`font-bold ${c.status === "VOIDED" ? "text-red-500 line-through" : "text-green-600 dark:text-green-400"}`}>
+                                KES {Number(c.amount).toLocaleString()}
+                              </span>
+                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${c.status === "EARNED" ? "bg-yellow-100 text-yellow-700" : c.status === "PAID" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                                {c.status}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Recent Payouts */}
+                  {viewDetail.payouts?.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-[18px] text-green-500">payments</span>
+                        Payouts ({viewDetail.payouts.length})
+                      </h3>
+                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                        {viewDetail.payouts.map((p: any) => (
+                          <div key={p.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/30 rounded-lg text-xs">
+                            <div className="flex items-center gap-2">
+                              <span className="text-slate-500">{p.payoutMethod || "N/A"}</span>
+                              {p.transactionReference && <span className="font-mono text-slate-400">#{p.transactionReference}</span>}
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="font-bold text-slate-900 dark:text-white">KES {Number(p.amount).toLocaleString()}</span>
+                              <span className="text-slate-400">{new Date(p.paidAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : null}
             </motion.div>
           </motion.div>
         )}
