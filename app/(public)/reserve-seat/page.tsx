@@ -46,6 +46,11 @@ function ReserveSeatContent() {
     referralCode: refFromUrl?.toUpperCase() || "",
   });
 
+  const selectedCourse = stats.fees?.courses.find(
+    (c) => c.level === formData.program
+  );
+  const courseFee = selectedCourse ? selectedCourse.price : null;
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(statusFromUrl === "success");
@@ -438,32 +443,50 @@ function ReserveSeatContent() {
                 </label>
 
                 {/* Terms Notice */}
-                <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4 text-sm text-slate-600 dark:text-slate-300 space-y-2">
-                  <p className="font-semibold text-slate-900 dark:text-white font-sans">
-                    By proceeding, you agree that:
-                  </p>
-                  <ul className="space-y-1 ml-1">
-                    <li className="flex items-start gap-2">
-                      <span className="material-symbols-outlined text-[16px] text-primary mt-0.5">
-                        check
+                <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4 text-sm text-slate-600 dark:text-slate-300 space-y-3">
+                  {courseFee && (
+                    <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 flex items-center justify-between">
+                      <span className="font-medium text-slate-900 dark:text-white">
+                        Total Course Fee:
                       </span>
-                      The KSH 2,500 seat reservation fee is{" "}
-                      <strong>non-refundable</strong>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="material-symbols-outlined text-[16px] text-primary mt-0.5">
-                        check
+                      <span className="font-bold text-primary text-lg">
+                        KES {courseFee.toLocaleString()}
                       </span>
-                      This fee locks your seat for the{" "}
-                      <strong>May intake</strong>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="material-symbols-outlined text-[16px] text-primary mt-0.5">
-                        check
-                      </span>
-                      The fee will be deducted from your total tuition
-                    </li>
-                  </ul>
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-semibold text-slate-900 dark:text-white font-sans mb-2">
+                      By proceeding, you agree that:
+                    </p>
+                    <ul className="space-y-1 ml-1 text-xs sm:text-sm">
+                      <li className="flex items-start gap-2">
+                        <span className="material-symbols-outlined text-[16px] text-primary mt-0.5">
+                          check
+                        </span>
+                        <span>
+                          The KES {seatFee.toLocaleString()} seat reservation fee is{" "}
+                          <strong>non-refundable</strong>
+                        </span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="material-symbols-outlined text-[16px] text-primary mt-0.5">
+                          check
+                        </span>
+                        <span>
+                          This fee locks your seat for the{" "}
+                          <strong>{intakeLabel} intake</strong>
+                        </span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="material-symbols-outlined text-[16px] text-primary mt-0.5">
+                          check
+                        </span>
+                        <span>
+                          The fee will be deducted from your total tuition
+                        </span>
+                      </li>
+                    </ul>
+                  </div>
                 </div>
 
                 {/* Submit */}
