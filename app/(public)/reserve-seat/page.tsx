@@ -444,16 +444,14 @@ function ReserveSeatContent() {
 
                 {/* Terms Notice */}
                 <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4 text-sm text-slate-600 dark:text-slate-300 space-y-3">
-                  {courseFee && (
-                    <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 flex items-center justify-between">
-                      <span className="font-medium text-slate-900 dark:text-white">
-                        Total Course Fee:
-                      </span>
-                      <span className="font-bold text-primary text-lg">
-                        KES {courseFee.toLocaleString()}
-                      </span>
-                    </div>
-                  )}
+                  <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <span className="font-medium text-slate-900 dark:text-white">
+                      Total Course Fee:
+                    </span>
+                    <span className="font-bold text-primary text-lg">
+                      {courseFee ? `KES ${courseFee.toLocaleString()}` : <span className="text-sm font-normal text-slate-500">Select a program to view</span>}
+                    </span>
+                  </div>
                   <div>
                     <p className="font-semibold text-slate-900 dark:text-white font-sans mb-2">
                       By proceeding, you agree that:
