@@ -365,7 +365,11 @@ export default function AdminMarketersPage() {
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage referral partners and track commissions.</p>
         </div>
         <button
-          onClick={() => setShowCreate(true)}
+          onClick={() => {
+            const randomCode = `MKTR-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+            setNewMarketer({ ...newMarketer, referralCode: randomCode });
+            setShowCreate(true);
+          }}
           className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-blue-700 transition-colors shadow-sm"
         >
           <span className="material-symbols-outlined text-[18px]">person_add</span>
