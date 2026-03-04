@@ -26,7 +26,8 @@ export default auth((req) => {
     nextUrl.pathname.startsWith("/partners") ||
     nextUrl.pathname.startsWith("/reserve-seat") ||
     nextUrl.pathname.startsWith("/verify-email") || 
-    nextUrl.pathname.startsWith("/check-email");
+    nextUrl.pathname.startsWith("/check-email") ||
+    nextUrl.pathname.startsWith("/marketer");
 
   // Route protection logic
   const isStudentRoute = nextUrl.pathname.startsWith("/student");
@@ -38,7 +39,8 @@ export default auth((req) => {
     (nextUrl.pathname.startsWith("/api/testimonials") && req.method === "GET") ||
     (nextUrl.pathname.startsWith("/api/stats/public") && req.method === "GET") ||
     (nextUrl.pathname.startsWith("/api/channels") && req.method === "GET") || // Public channels
-    (nextUrl.pathname.startsWith("/api/school") && req.method === "GET"); // Public school info & calendar
+    (nextUrl.pathname.startsWith("/api/school") && req.method === "GET") || // Public school info & calendar
+    nextUrl.pathname.startsWith("/api/marketer"); // Marketer APIs have their own auth middleware
 
   if (isApiRoute) {
     if (nextUrl.searchParams.has('ref')) setReferralCookie(req);

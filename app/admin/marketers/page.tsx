@@ -445,10 +445,29 @@ export default function AdminMarketersPage() {
                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Phone</span>
                    <input type="text" value={newMarketer.phone} onChange={(e) => setNewMarketer({ ...newMarketer, phone: e.target.value })} className="form-input bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white dark:placeholder-slate-400 w-full rounded-lg" />
                  </label>
-                 <label className="flex flex-col gap-1">
+                 <div className="flex flex-col gap-1">
                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Referral Code *</span>
-                   <input type="text" required value={newMarketer.referralCode} onChange={(e) => setNewMarketer({ ...newMarketer, referralCode: e.target.value.toUpperCase() })} className="form-input bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white dark:placeholder-slate-400 uppercase w-full rounded-lg" />
-                 </label>
+                   <div className="flex gap-2">
+                     <input type="text" required value={newMarketer.referralCode} onChange={(e) => setNewMarketer({ ...newMarketer, referralCode: e.target.value.toUpperCase() })} className="form-input bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white dark:placeholder-slate-400 uppercase flex-1 rounded-lg" placeholder="e.g. MKTR-4B9A" />
+                     <button
+                       type="button"
+                       onClick={async () => {
+                         try {
+                           const { data } = await axios.get("/api/admin/marketers/generate-code");
+                           if (data.success) {
+                             setNewMarketer((prev: any) => ({ ...prev, referralCode: data.code }));
+                           }
+                         } catch {
+                           toast.error("Failed to generate code");
+                         }
+                       }}
+                       className="px-3 h-10 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-white text-xs font-semibold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors whitespace-nowrap flex items-center gap-1"
+                     >
+                       <span className="material-symbols-outlined text-[16px]">autorenew</span>
+                       Generate
+                     </button>
+                   </div>
+                 </div>
                  <label className="flex flex-col gap-1">
                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Password *</span>
                    <input type="password" required value={newMarketer.password} onChange={(e) => setNewMarketer({ ...newMarketer, password: e.target.value })} className="form-input bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white dark:placeholder-slate-400 w-full rounded-lg" />
