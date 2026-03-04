@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 import { usePublicStats } from "@/hooks/usePublicStats";
 
 export default function Home() {
@@ -33,7 +34,28 @@ export default function Home() {
   const [testimonials, setTestimonials] = useState<any[]>([]);
   const [isLoadingTestimonials, setIsLoadingTestimonials] = useState(true);
   
+  // Marketer Join Modal State
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [joinForm, setJoinForm] = useState({ name: "", email: "", phone: "", message: "" });
+  const [isSubmittingJoin, setIsSubmittingJoin] = useState(false);
+  const [joinSubmitted, setJoinSubmitted] = useState(false);
+
   const { stats, isLoading: isLoadingStats } = usePublicStats();
+
+  const handleJoinSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingJoin(true);
+    try {
+      const response = await axios.post("/api/marketer/join", joinForm);
+      if (response.data.success) {
+        setJoinSubmitted(true);
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to submit request.");
+    } finally {
+      setIsSubmittingJoin(false);
+    }
+  };
 
   useEffect(() => {
     const fetchTestimonials = async () => {
@@ -601,6 +623,182 @@ export default function Home() {
             </div>
           </section>
         ) : null}
+
+        {/* Marketer Promotional Section */}
+        <section className="py-20 lg:py-28 bg-slate-100 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div>
+                <div className="inline-block mb-4 px-4 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-semibold uppercase tracking-widest font-sans rounded-full">
+                  Partner Program
+                </div>
+                <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-6">
+                  Earn While Sharing Excellence
+                </h2>
+                <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
+                  Become a registered Marketing Partner and earn substantial commissions for every student you refer to Deutsche Virtuelle Schule. Turn your network into a recurring revenue stream while helping others master the German language.
+                </p>
+                
+                <div className="space-y-4 mb-8">
+                  {[
+                    "Earn KES 500 instantly on seat reservation",
+                    "Earn an additional KES 1,500 on full tuition payment",
+                    "Transparent dashboard & direct M-Pesa payouts",
+                    "Receive a unique referral code instantly"
+                  ].map((perk, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <span className="material-symbols-outlined text-green-500 mt-1 flex-shrink-0">check_circle</span>
+                      <span className="text-slate-700 dark:text-slate-300">{perk}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4">
+                  <button
+                    onClick={() => setShowJoinModal(true)}
+                    className="px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm md:text-base font-semibold hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors rounded-xl font-sans text-center"
+                  >
+                    Request to Join as Partner
+                  </button>
+                  <Link
+                    href="/marketer/login"
+                    className="px-8 py-4 bg-transparent border-2 border-slate-900 dark:border-white text-slate-900 dark:text-white text-sm md:text-base font-semibold hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition-colors rounded-xl font-sans text-center"
+                  >
+                    Marketer Login
+                  </Link>
+                </div>
+              </div>
+              <div className="relative">
+                {/* Visual placeholder or illustration for marketer area */}
+                <div className="bg-white dark:bg-slate-700 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-600 p-8 transform rotate-2 hover:rotate-0 transition-transform duration-500">
+                  <div className="flex items-center gap-4 mb-8 border-b border-slate-100 dark:border-slate-600 pb-6">
+                    <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400">payments</span>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-slate-900 dark:text-white">Partner Dashboard</h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">Track referrals & commissions</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
+                      <div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Referred Students</p>
+                        <p className="text-xl font-bold text-slate-900 dark:text-white">124</p>
+                      </div>
+                      <span className="material-symbols-outlined text-green-500">trending_up</span>
+                    </div>
+                    <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
+                      <div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Total Earned</p>
+                        <p className="text-xl font-bold text-slate-900 dark:text-white">KES 248,000</p>
+                      </div>
+                      <span className="material-symbols-outlined text-green-500">account_balance_wallet</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Join as Marketer Modal */}
+        {showJoinModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 md:p-8 w-full max-w-md relative"
+            >
+              <button 
+                onClick={() => setShowJoinModal(false)}
+                className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 transition-colors"
+              >
+                <span className="material-symbols-outlined text-xl">close</span>
+              </button>
+              
+              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                <span className="material-symbols-outlined text-primary text-2xl">handshake</span>
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Partner with Us</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
+                Submit your details below and our admissions team will contact you to set up your marketing account.
+              </p>
+
+              {joinSubmitted ? (
+                <div className="bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 p-4 rounded-xl border border-green-200 dark:border-green-800 text-center">
+                  <span className="material-symbols-outlined text-4xl mb-2 text-green-500">check_circle</span>
+                  <p className="font-semibold">Request Sent Successfully</p>
+                  <p className="text-sm mt-1">We will be in touch shortly via email.</p>
+                  <button 
+                    onClick={() => setShowJoinModal(false)}
+                    className="mt-4 px-6 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleJoinSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name *</label>
+                    <input 
+                      type="text" 
+                      required 
+                      value={joinForm.name}
+                      onChange={(e) => setJoinForm({...joinForm, name: e.target.value})}
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none dark:text-white"
+                      placeholder="e.g. John Doe"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email Address *</label>
+                    <input 
+                      type="email" 
+                      required 
+                      value={joinForm.email}
+                      onChange={(e) => setJoinForm({...joinForm, email: e.target.value})}
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none dark:text-white"
+                      placeholder="john@example.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Phone Number *</label>
+                    <input 
+                      type="tel" 
+                      required 
+                      value={joinForm.phone}
+                      onChange={(e) => setJoinForm({...joinForm, phone: e.target.value})}
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none dark:text-white"
+                      placeholder="+254 7XX XXX XXX"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">How do you plan to refer students?</label>
+                    <textarea 
+                      rows={3}
+                      value={joinForm.message}
+                      onChange={(e) => setJoinForm({...joinForm, message: e.target.value})}
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none dark:text-white resize-none"
+                      placeholder="e.g. I run a student community on social media..."
+                    ></textarea>
+                  </div>
+                  <button 
+                    type="submit" 
+                    disabled={isSubmittingJoin}
+                    className="w-full py-3 bg-primary text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex justify-center"
+                  >
+                    {isSubmittingJoin ? (
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    ) : (
+                      "Submit Request"
+                    )}
+                  </button>
+                </form>
+              )}
+            </motion.div>
+          </div>
+        )}
 
         {/* Call to Action */}
         <section className="py-20 lg:py-28 bg-primary text-white">
