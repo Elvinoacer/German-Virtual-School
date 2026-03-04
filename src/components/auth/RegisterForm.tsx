@@ -171,13 +171,21 @@ export default function RegisterForm() {
       }
     } catch (error: any) {
       console.error("Registration error:", error);
+      const errorData = error.response?.data;
       const errorMessage =
-        error.response?.data?.error?.message ||
-        (typeof error.response?.data?.error === "string"
-          ? error.response?.data?.error
+        errorData?.error?.message ||
+        (typeof errorData?.error === "string"
+          ? errorData?.error
           : null) ||
         "Registration failed. Please try again.";
+      
       toast.error(errorMessage);
+
+      if (errorData?.needsReservation) {
+        setTimeout(() => {
+          router.push("/reserve-seat");
+        }, 2000);
+      }
     } finally {
       setIsLoading(false);
     }

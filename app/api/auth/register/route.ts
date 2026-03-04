@@ -71,7 +71,8 @@ export async function POST(request: NextRequest) {
         if (!paidReservation) {
           return NextResponse.json(
             { 
-              error: `No paid seat reservation found for ${email} (${intakeLabel} intake). Please reserve your seat first.`
+              error: `No paid seat reservation found for ${email} (${intakeLabel} intake). Please reserve your seat first.`,
+              needsReservation: true
             },
             { status: 403 }
           );
