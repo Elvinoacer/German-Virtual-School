@@ -29,6 +29,7 @@ interface ReservationData {
   email: string;
   phone?: string;
   program?: string;
+  referralCode?: string;
   timestamp: number;
 }
 
@@ -95,6 +96,24 @@ export default function RegisterForm() {
     },
   });
 
+  // Load referral code from URL or localStorage independently
+  useEffect(() => {
+    const refCode = searchParams.get('ref');
+    if (refCode) {
+      setValue('referralCode', refCode);
+      try {
+        localStorage.setItem('gvs_referral', refCode);
+      } catch (e) {}
+    } else {
+      try {
+        const storedRef = localStorage.getItem('gvs_referral');
+        if (storedRef) {
+          setValue('referralCode', storedRef);
+        }
+      } catch (e) {}
+    }
+  }, [searchParams, setValue]);
+
   // Pre-fill form when reservation data is loaded
   useEffect(() => {
     if (reservationData) {
@@ -103,6 +122,9 @@ export default function RegisterForm() {
       setValue('email', reservationData.email);
       if (reservationData.program) {
         setValue('interestedProgram', reservationData.program);
+      }
+      if (reservationData.referralCode) {
+        setValue('referralCode', reservationData.referralCode);
       }
     }
   }, [reservationData, setValue]);
@@ -131,6 +153,7 @@ export default function RegisterForm() {
         lastName: data.lastName,
         role: "STUDENT", // Default to student, can be changed based on form selection
         interestedProgram: reservationData?.program || program,
+        referralCode: data.referralCode,
       });
 
 
@@ -458,6 +481,34 @@ export default function RegisterForm() {
               {errors.confirmPassword.message}
             </span>
           )}
+        </label>
+
+        {/* Referral Code Field */}
+        <label className="flex flex-col gap-2">
+          <span className="text-gray-900 dark:text-white text-sm font-medium leading-normal flex items-center justify-between">
+            <span>Referral Code (Optional)</span>
+            {isFieldLocked && reservationData?.referralCode && (
+              <span className="text-xs text-green-600 dark:text-green-400 font-medium px-2 py-0.5 bg-green-50 dark:bg-green-900/20 rounded">
+                Applied from reservation
+              </span>
+            )}
+          </span>
+          <div className="relative">
+            <input
+              {...register("referralCode")}
+              type="text"
+              readOnly={isFieldLocked && !!reservationData?.referralCode}
+              tabIndex={isFieldLocked && !!reservationData?.referralCode ? -1 : undefined}
+              className={`form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 focus:border-primary border border-gray-200 dark:border-gray-700 h-12 px-4 shadow-sm pl-10 uppercase transition-all
+                ${isFieldLocked && !!reservationData?.referralCode ? "bg-gray-100 dark:bg-gray-800/50 cursor-not-allowed border-dashed" : "bg-white dark:bg-gray-800"}`}
+              placeholder="E.g. MARK01"
+            />
+            <div className={`absolute left-3 top-1/2 -translate-y-1/2 ${isFieldLocked && !!reservationData?.referralCode ? "text-green-500" : "text-gray-400"}`}>
+              <span className="material-symbols-outlined text-[20px]">
+                {isFieldLocked && !!reservationData?.referralCode ? "verified" : "group_add"}
+              </span>
+            </div>
+          </div>
         </label>
 
         {/* Terms Checkbox */}

@@ -18,7 +18,7 @@ export const registerSchema = z
       message: 'You must agree to the Terms and Privacy Policy',
     }),
     interestedProgram: z.string().optional(),
-
+    referralCode: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",

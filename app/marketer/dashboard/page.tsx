@@ -20,6 +20,8 @@ interface DashboardData {
     totalCommissionEarned: number;
     totalCommissionPaid: number;
     outstandingBalance: number;
+    totalClicks: number;
+    conversionRate: number;
   };
   students: {
     name: string;
@@ -222,6 +224,18 @@ export default function MarketerDashboardPage() {
             label="Reservations Paid"
             value={stats.totalReservationsPaid}
             color="green"
+          />
+          <StatCard
+            icon="ads_click"
+            label="Total Clicks"
+            value={stats.totalClicks || 0}
+            color="purple"
+          />
+          <StatCard
+            icon="trending_up"
+            label="Conversion"
+            value={`${(stats.conversionRate || 0).toFixed(1)}%`}
+            color="blue"
           />
           <StatCard
             icon="payments"

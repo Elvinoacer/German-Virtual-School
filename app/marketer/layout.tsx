@@ -101,9 +101,25 @@ export default function MarketerLayout({
           </div>
           <div className="flex items-center gap-4">
             {marketer && (
-              <span className="text-sm text-slate-500 dark:text-slate-400 hidden sm:inline">
-                {marketer.firstName} {marketer.lastName}
-              </span>
+              <>
+                <Link
+                  href="/marketer/settings"
+                  className="text-sm text-slate-500 hover:text-primary transition-colors flex items-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[18px]">settings</span>
+                  <span className="hidden sm:inline">Settings</span>
+                </Link>
+                <Link
+                  href="/marketer/password"
+                  className="text-sm text-slate-500 hover:text-primary transition-colors flex items-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[18px]">lock</span>
+                  <span className="hidden sm:inline">Password</span>
+                </Link>
+                <span className="text-sm text-slate-500 dark:text-slate-400 hidden sm:inline border-l pl-4 border-slate-200 dark:border-slate-700">
+                  {marketer.firstName} {marketer.lastName}
+                </span>
+              </>
             )}
             <button
               onClick={handleLogout}

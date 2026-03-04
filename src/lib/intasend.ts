@@ -38,7 +38,7 @@ export interface ChargePayload {
 
 export interface IntaSendWebhookPayload {
   invoice_id: string;
-  state: 'PENDING' | 'PROCESSING' | 'COMPLETE' | 'FAILED';
+  state: 'PENDING' | 'PROCESSING' | 'COMPLETE' | 'FAILED' | 'REFUNDED';
   provider: string;
   charges: string;
   net_amount: string;

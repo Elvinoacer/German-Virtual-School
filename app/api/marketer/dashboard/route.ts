@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const marketer = await authenticateMarketer(request);
 
     // Fetch all data in parallel
-    const [commissions, payouts, reservations] = await Promise.all([
+    const [commissions, payouts, reservations, marketerRecord] = await Promise.all([
       prisma.referralCommission.findMany({
         where: { marketerId: marketer.id },
         orderBy: { createdAt: 'desc' },
@@ -36,6 +36,10 @@ export async function GET(request: NextRequest) {
         },
         orderBy: { createdAt: 'desc' },
       }),
+      prisma.marketer.findUnique({
+        where: { id: marketer.id },
+        select: { totalClicks: true },
+      }),
     ]);
 
     // Calculate stats
@@ -45,6 +49,9 @@ export async function GET(request: NextRequest) {
     const totalPaid = payouts.reduce((sum, p) => sum + Number(p.amount), 0);
 
     const paidReservations = reservations.filter(r => r.status === 'PAID');
+    
+    const totalClicks = marketerRecord?.totalClicks || 0;
+    const conversionRate = totalClicks > 0 ? (reservations.length / totalClicks) * 100 : 0;
 
     // Build student breakdown
     const studentMap = new Map<string, {
@@ -103,6 +110,8 @@ export async function GET(request: NextRequest) {
           totalCommissionEarned: totalEarned,
           totalCommissionPaid: totalPaid,
           outstandingBalance: totalEarned - totalPaid,
+          totalClicks,
+          conversionRate,
         },
         students: Array.from(studentMap.values()),
         commissions: {

@@ -1,12 +1,7 @@
-import { NextRequest } from 'next/server';
-import { authenticate } from '@/lib/auth-middleware';
-import { prisma } from '@/lib/prisma';
-import { successResponse, errors } from '@/lib/api-response';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { authenticate } from "@/lib/auth-middleware";
 
-/**
- * POST /api/admin/marketers/[marketerId]/payout
- * Record a commission payout to a marketer
- */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ marketerId: string }> }
@@ -14,67 +9,55 @@ export async function POST(
   try {
     const payload = await authenticate(request);
     if (payload.role !== 'ADMIN') {
-      return errors.forbidden('Access denied');
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { marketerId } = await params;
-    const { amount, note } = await request.json();
+    const { amount, transactionReference, payoutMethod, commissionIds } = await request.json();
 
-    if (!amount || amount <= 0) {
-      return errors.badRequest('Payout amount must be greater than 0');
+    if (!amount || amount <= 0 || !transactionReference || !payoutMethod) {
+      return NextResponse.json({ error: "Invalid payment details" }, { status: 400 });
     }
 
-    // Verify marketer exists
-    const marketer = await prisma.marketer.findUnique({
-      where: { id: marketerId },
-      select: { id: true, firstName: true, lastName: true },
-    });
-
-    if (!marketer) {
-      return errors.notFound('Marketer');
-    }
-
-    // Create payout and mark matching EARNED commissions as PAID
+    // Process payout transaction
     const result = await prisma.$transaction(async (tx) => {
       // Create the payout record
       const payout = await tx.commissionPayout.create({
         data: {
           marketerId,
           amount,
-          note: note || null,
+          transactionReference,
+          payoutMethod,
         },
       });
 
-      // Mark EARNED commissions as PAID up to the payout amount
-      const earnedCommissions = await tx.referralCommission.findMany({
-        where: {
-          marketerId,
-          status: 'EARNED',
-        },
-        orderBy: { createdAt: 'asc' },
-      });
-
-      let remaining = amount;
-      for (const commission of earnedCommissions) {
-        if (remaining <= 0) break;
-
-        await tx.referralCommission.update({
-          where: { id: commission.id },
-          data: {
-            status: 'PAID',
-            payoutId: payout.id,
-          },
+      let commissionsToUpdate;
+      
+      if (commissionIds && Array.isArray(commissionIds) && commissionIds.length > 0) {
+        commissionsToUpdate = await tx.referralCommission.findMany({
+          where: { id: { in: commissionIds }, marketerId, status: 'EARNED' },
         });
+      } else {
+        // Fallback: update all EARNED commissions up to this amount (simplistic approach)
+        // Usually, the frontend should send exactly which commissions are being paid
+        commissionsToUpdate = await tx.referralCommission.findMany({
+          where: { marketerId, status: 'EARNED' },
+        });
+      }
 
-        remaining -= Number(commission.amount);
+      if (commissionsToUpdate.length > 0) {
+        await tx.referralCommission.updateMany({
+          where: { id: { in: commissionsToUpdate.map(c => c.id) } },
+          data: { status: 'PAID' },
+        });
       }
 
       return payout;
     });
 
-    return successResponse(result, `Payout of KES ${amount.toLocaleString()} recorded for ${marketer.firstName} ${marketer.lastName}`);
+    return NextResponse.json({ success: true, data: result });
   } catch (error) {
-    console.error('Record payout error:', error);
-    return errors.internal('Failed to record payout');
+    console.error("Failed to process payout:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

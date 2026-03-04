@@ -75,6 +75,10 @@ export async function POST(request: NextRequest) {
         }
         break;
 
+      case 'REFUNDED':
+        await handleRefundedPayment(apiRef, isSeatReservation);
+        break;
+
       case 'PROCESSING':
         console.log(`⏳ Payment processing for ${apiRef}`);
         break;
@@ -91,6 +95,36 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Webhook processing error:', error);
     return errors.internal('Webhook processing failed');
+  }
+}
+
+/**
+ * Handle refunded payment and void associated commissions
+ */
+async function handleRefundedPayment(apiRef: string, isSeatReservation: boolean) {
+  try {
+    if (isSeatReservation) {
+      const reservationId = apiRef.replace('SEAT_', '');
+      await prisma.seatReservation.update({
+        where: { id: reservationId },
+        data: { status: 'REFUNDED' },
+      }).catch(() => {});
+      
+      const res = await prisma.referralCommission.updateMany({
+        where: { seatReservationId: reservationId, status: 'EARNED' },
+        data: { status: 'VOIDED' }
+      });
+      console.log(`Voided ${res.count} EARNED commissions for refunded reservation: ${reservationId}`);
+    } else {
+      const invoiceId = apiRef;
+      const res = await prisma.referralCommission.updateMany({
+        where: { invoiceId: invoiceId, status: 'EARNED' },
+        data: { status: 'VOIDED' }
+      });
+      console.log(`Voided ${res.count} EARNED commissions for refunded invoice: ${invoiceId}`);
+    }
+  } catch (error) {
+    console.error('Failed to handle refund logic:', error);
   }
 }
 
@@ -149,6 +183,8 @@ async function handleSeatReservationPayment({
           type: 'RESERVATION',
           amount: commissionAmount,
           status: 'EARNED',
+          seatReservationId: reservation.id,
+          studentId: reservation.userId || undefined,
         },
       });
       console.log(`💰 Reservation commission (KSH ${commissionAmount}) created for marketer ${reservation.marketerId}`);
@@ -261,7 +297,8 @@ async function handleCompletePayment({
   console.log(`✅ Processing completed payment for invoice ${invoiceId}`);
 
   const invoice = await prisma.invoice.findUnique({
-    where: { id: invoiceId }
+    where: { id: invoiceId },
+    include: { student: true }
   });
 
   if (!invoice) {
@@ -342,22 +379,26 @@ async function handleCompletePayment({
     // Create full payment commission if student has a linked marketer and invoice is fully paid
     if (newStatus === 'PAID') {
       try {
-        // Find student's seat reservation with a marketer
-        const studentReservation = await tx.seatReservation.findFirst({
-          where: {
-            userId: invoice.studentId,
-            status: 'PAID',
-            marketerId: { not: null },
-          },
-          select: { marketerId: true, email: true, firstName: true, lastName: true },
-        });
+        let marketerIdToCredit = invoice.student.referredByMarketerId;
 
-        if (studentReservation?.marketerId) {
+        // If no direct referral, look for a paid seat reservation with a marketer
+        if (!marketerIdToCredit) {
+          const studentReservation = await tx.seatReservation.findFirst({
+            where: {
+              userId: invoice.studentId,
+              status: 'PAID',
+              marketerId: { not: null },
+            },
+            select: { marketerId: true },
+          });
+          marketerIdToCredit = studentReservation?.marketerId || null;
+        }
+
+        if (marketerIdToCredit) {
           // Check if FULL_PAYMENT commission already exists for this student
           const existingCommission = await tx.referralCommission.findFirst({
             where: {
-              marketerId: studentReservation.marketerId,
-              studentEmail: studentReservation.email,
+              studentId: invoice.studentId,
               type: 'FULL_PAYMENT',
             },
           });
@@ -371,15 +412,17 @@ async function handleCompletePayment({
 
             await tx.referralCommission.create({
               data: {
-                marketerId: studentReservation.marketerId,
-                studentEmail: studentReservation.email,
-                studentName: `${studentReservation.firstName} ${studentReservation.lastName}`,
+                marketerId: marketerIdToCredit,
+                studentEmail: invoice.student.email,
+                studentName: invoice.student.name || `${invoice.student.firstName} ${invoice.student.lastName}`,
                 type: 'FULL_PAYMENT',
                 amount: commissionAmount,
                 status: 'EARNED',
+                studentId: invoice.studentId,
+                invoiceId: invoice.id,
               },
             });
-            console.log(`💰 Full payment commission (KSH ${commissionAmount}) created for marketer ${studentReservation.marketerId}`);
+            console.log(`💰 Full payment commission (KSH ${commissionAmount}) created for marketer ${marketerIdToCredit}`);
           }
         }
       } catch (commErr) {

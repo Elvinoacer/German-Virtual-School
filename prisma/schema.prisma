@@ -139,6 +139,7 @@ enum CommissionType {
 enum CommissionStatus {
   EARNED   // Payment confirmed, commission calculated
   PAID     // Commission paid out to marketer
+  VOIDED   // Commission cancelled (e.g. refund)
 }
 
 // ============================================
@@ -242,6 +243,11 @@ model User {
   
   // Mentorship
   mentoredStudents  StudentProfile[]       @relation("StudentMentor")
+
+  // Referral
+  referredByMarketerId String?
+  referredByMarketer   Marketer? @relation("ReferredStudents", fields: [referredByMarketerId], references: [id])
+  referralCommissions  ReferralCommission[]
 }
 
 // --------------------------------------------
@@ -564,6 +570,7 @@ model Invoice {
   term              AcademicTerm?    @relation(fields: [termId], references: [id])
   payments          Payment[]
   seatReservation   SeatReservation?
+  referralCommissions ReferralCommission[]
 }
 
 model Payment {
@@ -895,6 +902,7 @@ model SeatReservation {
   invoice      Invoice?  @relation(fields: [invoiceId], references: [id])
   user         User?     @relation(fields: [userId], references: [id])
   marketer     Marketer? @relation(fields: [marketerId], references: [id])
+  referralCommissions ReferralCommission[]
 
   @@index([email])
   @@index([status])
@@ -914,6 +922,10 @@ model Marketer {
   referralCode  String   @unique  // e.g. "MARK01", "ABIGAEL01"
   passwordHash  String
   isActive      Boolean  @default(true)
+  payoutMethod  String?  // e.g., "MPESA", "BANK"
+  payoutDetails Json?    // Flexible storage for account details
+  termsAcceptedAt DateTime?
+  totalClicks   Int      @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -921,6 +933,8 @@ model Marketer {
   commissions       ReferralCommission[]
   payouts           CommissionPayout[]
   seatReservations  SeatReservation[]
+  referredUsers     User[] @relation("ReferredStudents")
+  clicks            ReferralClick[]
 }
 
 model ReferralCommission {
@@ -932,26 +946,49 @@ model ReferralCommission {
   amount        Decimal          @db.Decimal(10, 2)
   status        CommissionStatus @default(EARNED)
   payoutId      String?
+  studentId         String?
+  seatReservationId String?
+  invoiceId         String?
   createdAt     DateTime         @default(now())
 
   // Relations
-  marketer      Marketer          @relation(fields: [marketerId], references: [id])
-  payout        CommissionPayout? @relation(fields: [payoutId], references: [id])
+  marketer        Marketer          @relation(fields: [marketerId], references: [id])
+  payout          CommissionPayout? @relation(fields: [payoutId], references: [id])
+  student         User?             @relation(fields: [studentId], references: [id])
+  seatReservation SeatReservation?  @relation(fields: [seatReservationId], references: [id])
+  invoice         Invoice?          @relation(fields: [invoiceId], references: [id])
 
   @@index([marketerId])
   @@index([studentEmail])
+  @@index([studentId])
 }
 
 model CommissionPayout {
   id            String   @id @default(uuid())
   marketerId    String
-  amount        Decimal  @db.Decimal(10, 2)
-  note          String?
-  paidAt        DateTime @default(now())
+  amount               Decimal  @db.Decimal(10, 2)
+  note                 String?
+  transactionReference String?  // M-Pesa receipt, bank ref
+  payoutMethod         String?  // MPESA, BANK
+  receiptUrl           String?  // Uploaded proof
+  paidAt               DateTime @default(now())
 
   // Relations
   marketer      Marketer             @relation(fields: [marketerId], references: [id])
   commissions   ReferralCommission[]
+
+  @@index([marketerId])
+}
+
+model ReferralClick {
+  id         String   @id @default(uuid())
+  marketerId String
+  ipAddress  String?
+  userAgent  String?
+  page       String   @default("/reserve-seat")
+  createdAt  DateTime @default(now())
+
+  marketer   Marketer @relation(fields: [marketerId], references: [id])
 
   @@index([marketerId])
 }

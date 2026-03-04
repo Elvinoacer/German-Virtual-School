@@ -24,6 +24,12 @@ function ReserveSeatContent() {
   const refFromUrl = searchParams.get("ref");
   const statusFromUrl = searchParams.get("status");
 
+  useEffect(() => {
+    if (refFromUrl) {
+      axios.post("/api/referral/track", { code: refFromUrl, page: "/reserve-seat" }).catch(console.error);
+    }
+  }, [refFromUrl]);
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",

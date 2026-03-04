@@ -8,7 +8,7 @@ import { sendEmailNotification } from '@/lib/notifications/channels/email';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password, firstName, lastName, role, interestedProgram } = body;
+    const { email, password, firstName, lastName, role, interestedProgram, referralCode } = body;
 
 
     // Validation
@@ -71,6 +71,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Resolve Referral Code to Marketer ID
+    let referredByMarketerId: string | undefined = undefined;
+    let codeToUse = referralCode;
+
+    if (!codeToUse) {
+      const cookie = request.cookies.get('gvs_referral');
+      if (cookie?.value) {
+        codeToUse = cookie.value;
+      }
+    }
+
+    if (codeToUse) {
+      const marketer = await prisma.marketer.findUnique({
+        where: { referralCode: codeToUse.toUpperCase().trim() },
+        select: { id: true }
+      });
+      if (marketer) {
+        referredByMarketerId = marketer.id;
+      }
+    }
+
     // Hash password
     const passwordHash = await hashPassword(password);
 
@@ -83,6 +104,7 @@ export async function POST(request: NextRequest) {
         lastName,
         name: `${firstName} ${lastName}`,
         role: role as UserRole,
+        referredByMarketerId,
         // emailVerified is null by default, meaning not verified
       },
       select: {

@@ -32,15 +32,27 @@ export async function POST(request: NextRequest) {
 
     const intakeLabel = settings?.intakeLabel || 'May 2026';
 
-    // Validate referral code if provided
+    // Validate referral code if provided or via cookie
+    let codeToUse = referralCode;
+    if (!codeToUse) {
+      const cookie = request.cookies.get('gvs_referral');
+      if (cookie?.value) {
+        codeToUse = cookie.value;
+      }
+    }
+
     let marketerId: string | null = null;
-    if (referralCode && typeof referralCode === 'string' && referralCode.trim()) {
+    let finalReferralCode: string | null = null;
+    if (codeToUse && typeof codeToUse === 'string' && codeToUse.trim()) {
+      const parsedCode = codeToUse.trim().toUpperCase();
       const marketer = await prisma.marketer.findUnique({
-        where: { referralCode: referralCode.trim().toUpperCase() },
-        select: { id: true, isActive: true },
+        where: { referralCode: parsedCode },
+        select: { id: true, isActive: true, email: true },
       });
-      if (marketer?.isActive) {
+      // Self-referral prevention: don't credit the marketer if the email matches exactly
+      if (marketer?.isActive && marketer.email.toLowerCase().trim() !== email.toLowerCase().trim()) {
         marketerId = marketer.id;
+        finalReferralCode = parsedCode;
       }
     }
 
@@ -92,7 +104,7 @@ export async function POST(request: NextRequest) {
         amount: reservationFee,
         status: 'PENDING',
         intakeLabel,
-        referralCode: referralCode?.trim()?.toUpperCase() || null,
+        referralCode: finalReferralCode,
         marketerId,
       },
     });
