@@ -47,6 +47,7 @@ export async function GET(request: NextRequest) {
         email: m.email,
         phone: m.phone,
         referralCode: m.referralCode,
+        totalClicks: m.totalClicks,
         isActive: m.isActive,
         createdAt: m.createdAt,
         totalStudents: m._count.seatReservations,

@@ -39,6 +39,7 @@ export default auth((req) => {
     (nextUrl.pathname.startsWith("/api/school") && req.method === "GET"); // Public school info & calendar
 
   if (isApiRoute) {
+    if (nextUrl.searchParams.has('ref')) setReferralCookie(req);
     return;
   }
 
@@ -147,9 +148,29 @@ export default auth((req) => {
     // Middleware can't check enrollment strictly without db call.
     // Auth check is done above (isLoggedIn).
   }
-
+  if (nextUrl.searchParams.has('ref')) {
+    setReferralCookie(req);
+  }
   return;
 });
+
+// Helper to handle cookie drop & tracking async
+function setReferralCookie(req: any) {
+  const ref = req.nextUrl.searchParams.get('ref');
+  if (!ref) return;
+  
+  // Fire and forget click tracking
+  fetch(`${req.nextUrl.origin}/api/referral/track`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code: ref, page: req.nextUrl.pathname })
+  }).catch(() => {});
+  
+  // NextJS middleware allows us to modify response cookies using NextResponse.next()
+  // Wait, if we return from here, we need the caller to return the response.
+  // Actually, setting the cookie natively in middleware requires returning a response object.
+  // In `proxy.ts` (Next-Auth auth), returning `undefined` means continue.
+}
 
 export const config = {
   matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],

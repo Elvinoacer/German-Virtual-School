@@ -15,6 +15,7 @@ interface Marketer {
   referralCode: string;
   isActive: boolean;
   createdAt: string;
+  totalClicks: number;
   totalStudents: number;
   paidReservations: number;
   fullPayments: number;
@@ -206,6 +207,7 @@ export default function AdminMarketersPage() {
                 <tr>
                   <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Marketer</th>
                   <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Code</th>
+                  <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Clicks</th>
                   <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Students</th>
                   <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Earned</th>
                   <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Paid</th>
@@ -224,6 +226,7 @@ export default function AdminMarketersPage() {
                     <td className="px-4 py-3 text-center">
                       <span className="font-mono text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded font-bold tracking-wider">{m.referralCode}</span>
                     </td>
+                    <td className="px-4 py-3 text-center font-medium text-slate-900 dark:text-white">{m.totalClicks || 0}</td>
                     <td className="px-4 py-3 text-center font-medium text-slate-900 dark:text-white">{m.totalStudents}</td>
                     <td className="px-4 py-3 text-right font-semibold text-green-600 dark:text-green-400">{fmt(m.totalCommissionEarned)}</td>
                     <td className="px-4 py-3 text-right text-slate-500 dark:text-slate-400">{fmt(m.totalCommissionPaid)}</td>

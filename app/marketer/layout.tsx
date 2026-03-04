@@ -103,6 +103,20 @@ export default function MarketerLayout({
             {marketer && (
               <>
                 <Link
+                  href="/marketer/referrals"
+                  className="text-sm text-slate-500 hover:text-primary transition-colors flex items-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[18px]">group</span>
+                  <span className="hidden sm:inline">Referrals</span>
+                </Link>
+                <Link
+                  href="/marketer/payouts"
+                  className="text-sm text-slate-500 hover:text-primary transition-colors flex items-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[18px]">receipt_long</span>
+                  <span className="hidden sm:inline">Payouts</span>
+                </Link>
+                <Link
                   href="/marketer/settings"
                   className="text-sm text-slate-500 hover:text-primary transition-colors flex items-center gap-1.5"
                 >
