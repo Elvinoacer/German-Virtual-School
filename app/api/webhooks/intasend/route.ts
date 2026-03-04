@@ -132,6 +132,31 @@ async function handleSeatReservationPayment({
 
   console.log(`✅ Seat reservation ${reservationId} marked as PAID`);
 
+  // Create referral commission if marketer linked
+  if (reservation.marketerId) {
+    try {
+      const settings = await prisma.systemSettings.findUnique({
+        where: { id: 'system-settings' },
+        select: { reservationCommission: true },
+      });
+      const commissionAmount = settings?.reservationCommission ? Number(settings.reservationCommission) : 500;
+
+      await prisma.referralCommission.create({
+        data: {
+          marketerId: reservation.marketerId,
+          studentEmail: reservation.email,
+          studentName: `${reservation.firstName} ${reservation.lastName}`,
+          type: 'RESERVATION',
+          amount: commissionAmount,
+          status: 'EARNED',
+        },
+      });
+      console.log(`💰 Reservation commission (KSH ${commissionAmount}) created for marketer ${reservation.marketerId}`);
+    } catch (commErr) {
+      console.error('Failed to create reservation commission (non-fatal):', commErr);
+    }
+  }
+
   // Send confirmation email
   try {
     await sendEmailNotification({
@@ -313,6 +338,54 @@ async function handleCompletePayment({
     });
 
     console.log(`✅ Invoice ${invoiceId} updated: ${paidAmount}, new status: ${newStatus}`);
+
+    // Create full payment commission if student has a linked marketer and invoice is fully paid
+    if (newStatus === 'PAID') {
+      try {
+        // Find student's seat reservation with a marketer
+        const studentReservation = await tx.seatReservation.findFirst({
+          where: {
+            userId: invoice.studentId,
+            status: 'PAID',
+            marketerId: { not: null },
+          },
+          select: { marketerId: true, email: true, firstName: true, lastName: true },
+        });
+
+        if (studentReservation?.marketerId) {
+          // Check if FULL_PAYMENT commission already exists for this student
+          const existingCommission = await tx.referralCommission.findFirst({
+            where: {
+              marketerId: studentReservation.marketerId,
+              studentEmail: studentReservation.email,
+              type: 'FULL_PAYMENT',
+            },
+          });
+
+          if (!existingCommission) {
+            const settings = await prisma.systemSettings.findUnique({
+              where: { id: 'system-settings' },
+              select: { fullPaymentCommission: true },
+            });
+            const commissionAmount = settings?.fullPaymentCommission ? Number(settings.fullPaymentCommission) : 1500;
+
+            await tx.referralCommission.create({
+              data: {
+                marketerId: studentReservation.marketerId,
+                studentEmail: studentReservation.email,
+                studentName: `${studentReservation.firstName} ${studentReservation.lastName}`,
+                type: 'FULL_PAYMENT',
+                amount: commissionAmount,
+                status: 'EARNED',
+              },
+            });
+            console.log(`💰 Full payment commission (KSH ${commissionAmount}) created for marketer ${studentReservation.marketerId}`);
+          }
+        }
+      } catch (commErr) {
+        console.error('Failed to create full payment commission (non-fatal):', commErr);
+      }
+    }
   });
 }
 

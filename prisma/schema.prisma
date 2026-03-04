@@ -131,6 +131,16 @@ enum ThreadAudience {
   TEACHERS_ONLY
 }
 
+enum CommissionType {
+  RESERVATION    // e.g. KSH 500 per confirmed reservation
+  FULL_PAYMENT   // e.g. KSH 1,500 per confirmed full payment
+}
+
+enum CommissionStatus {
+  EARNED   // Payment confirmed, commission calculated
+  PAID     // Commission paid out to marketer
+}
+
 // ============================================
 // MODELS
 // ============================================
@@ -750,6 +760,10 @@ model SystemSettings {
   materialFeeDeadline DateTime?                     // e.g. end of April
   intakeLabel         String?                       // e.g. "May 2026"
   
+  // Marketer Commission Settings
+  reservationCommission Decimal? @db.Decimal(10, 2) // e.g. 500
+  fullPaymentCommission Decimal? @db.Decimal(10, 2) // e.g. 1500
+  
   // JSON fields for flexible configuration
   notifications       Json?    // e.g. { emailNotifications: true, ... }
   integrations        Json?    // e.g. { jitsiDomain: "...", ... }
@@ -861,24 +875,83 @@ model AdminMeetingInvitee {
 // --------------------------------------------
 
 model SeatReservation {
-  id          String   @id @default(uuid())
-  email       String
-  firstName   String
-  lastName    String
-  phone       String?
-  program     String?  // e.g. "A1", "B1"
-  amount      Decimal  @db.Decimal(10, 2)
-  status      String   @default("PENDING") // PENDING, PAID, EXPIRED, CONVERTED
-  intakeLabel String   @default("May 2026")
-  invoiceId   String?  @unique
-  userId      String?  // Linked after account creation
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(uuid())
+  email        String
+  firstName    String
+  lastName     String
+  phone        String?
+  program      String?  // e.g. "A1", "B1"
+  amount       Decimal  @db.Decimal(10, 2)
+  status       String   @default("PENDING") // PENDING, PAID, EXPIRED, CONVERTED
+  intakeLabel  String   @default("May 2026")
+  referralCode String?  // Marketer referral code used
+  marketerId   String?  // Linked marketer
+  invoiceId    String?  @unique
+  userId       String?  // Linked after account creation
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Relations
-  invoice     Invoice? @relation(fields: [invoiceId], references: [id])
-  user        User?    @relation(fields: [userId], references: [id])
+  invoice      Invoice?  @relation(fields: [invoiceId], references: [id])
+  user         User?     @relation(fields: [userId], references: [id])
+  marketer     Marketer? @relation(fields: [marketerId], references: [id])
 
   @@index([email])
   @@index([status])
+  @@index([marketerId])
+}
+
+// --------------------------------------------
+// Marketer & Referral System
+// --------------------------------------------
+
+model Marketer {
+  id            String   @id @default(uuid())
+  firstName     String
+  lastName      String
+  email         String   @unique
+  phone         String?
+  referralCode  String   @unique  // e.g. "MARK01", "ABIGAEL01"
+  passwordHash  String
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  commissions       ReferralCommission[]
+  payouts           CommissionPayout[]
+  seatReservations  SeatReservation[]
+}
+
+model ReferralCommission {
+  id            String           @id @default(uuid())
+  marketerId    String
+  studentEmail  String
+  studentName   String
+  type          CommissionType
+  amount        Decimal          @db.Decimal(10, 2)
+  status        CommissionStatus @default(EARNED)
+  payoutId      String?
+  createdAt     DateTime         @default(now())
+
+  // Relations
+  marketer      Marketer          @relation(fields: [marketerId], references: [id])
+  payout        CommissionPayout? @relation(fields: [payoutId], references: [id])
+
+  @@index([marketerId])
+  @@index([studentEmail])
+}
+
+model CommissionPayout {
+  id            String   @id @default(uuid())
+  marketerId    String
+  amount        Decimal  @db.Decimal(10, 2)
+  note          String?
+  paidAt        DateTime @default(now())
+
+  // Relations
+  marketer      Marketer             @relation(fields: [marketerId], references: [id])
+  commissions   ReferralCommission[]
+
+  @@index([marketerId])
 }

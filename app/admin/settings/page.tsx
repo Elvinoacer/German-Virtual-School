@@ -41,7 +41,9 @@ export default function AdminSettingsPage() {
     seatReservationFee: "",
     materialFee: "",
     materialFeeDeadline: "",
-    intakeLabel: ""
+    intakeLabel: "",
+    reservationCommission: "",
+    fullPaymentCommission: "",
   });
 
   const { data: settingsData, isLoading } = useQuery({
@@ -78,7 +80,9 @@ export default function AdminSettingsPage() {
         seatReservationFee: settingsData.seatReservationFee?.toString() || "2500",
         materialFee: settingsData.materialFee?.toString() || "7500",
         materialFeeDeadline: formatDateForInput(settingsData.materialFeeDeadline),
-        intakeLabel: settingsData.intakeLabel || "May 2026"
+        intakeLabel: settingsData.intakeLabel || "May 2026",
+        reservationCommission: settingsData.reservationCommission?.toString() || "500",
+        fullPaymentCommission: settingsData.fullPaymentCommission?.toString() || "1500",
       });
     }
   }, [settingsData]);
@@ -369,6 +373,48 @@ export default function AdminSettingsPage() {
               className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
             />
             <p className="text-xs text-[#4c669a] mt-1">Label shown on the public reservation page (e.g. &quot;May 2026&quot;)</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Marketer Commission Settings */}
+      <div className="bg-white dark:bg-[#1a202c] rounded-xl border border-[#e7ebf3] dark:border-[#2d3748] shadow-sm p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="material-symbols-outlined text-primary">handshake</span>
+          <h2 className="text-lg font-bold text-[#0d121b] dark:text-white">
+            Marketer Commission Rates
+          </h2>
+        </div>
+        <p className="text-[#4c669a] text-sm mb-6">
+          Set the commission amounts marketers earn per referred student.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-[#4c669a] mb-2">
+              Reservation Commission (KES)
+            </label>
+            <input
+              type="number"
+              value={formData.reservationCommission}
+              onChange={(e) => setFormData({ ...formData, reservationCommission: e.target.value })}
+              placeholder="500"
+              className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
+            />
+            <p className="text-xs text-[#4c669a] mt-1">Commission per confirmed seat reservation (default: KES 500)</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#4c669a] mb-2">
+              Full Payment Commission (KES)
+            </label>
+            <input
+              type="number"
+              value={formData.fullPaymentCommission}
+              onChange={(e) => setFormData({ ...formData, fullPaymentCommission: e.target.value })}
+              placeholder="1500"
+              className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
+            />
+            <p className="text-xs text-[#4c669a] mt-1">Commission per confirmed full fee payment (default: KES 1,500)</p>
           </div>
         </div>
       </div>

@@ -11,7 +11,7 @@ const DEFAULT_RESERVATION_FEE = 2500;
  */
 export async function POST(request: NextRequest) {
   try {
-    const { firstName, lastName, email, phone, program } = await request.json();
+    const { firstName, lastName, email, phone, program, referralCode } = await request.json();
 
     if (!firstName || !lastName || !email) {
       return errors.badRequest('First name, last name, and email are required');
@@ -31,6 +31,18 @@ export async function POST(request: NextRequest) {
       : DEFAULT_RESERVATION_FEE;
 
     const intakeLabel = settings?.intakeLabel || 'May 2026';
+
+    // Validate referral code if provided
+    let marketerId: string | null = null;
+    if (referralCode && typeof referralCode === 'string' && referralCode.trim()) {
+      const marketer = await prisma.marketer.findUnique({
+        where: { referralCode: referralCode.trim().toUpperCase() },
+        select: { id: true, isActive: true },
+      });
+      if (marketer?.isActive) {
+        marketerId = marketer.id;
+      }
+    }
 
     // Check for existing paid reservation with same email + intake
     const existingReservation = await prisma.seatReservation.findFirst({
@@ -80,6 +92,8 @@ export async function POST(request: NextRequest) {
         amount: reservationFee,
         status: 'PENDING',
         intakeLabel,
+        referralCode: referralCode?.trim()?.toUpperCase() || null,
+        marketerId,
       },
     });
 
