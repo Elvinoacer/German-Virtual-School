@@ -175,6 +175,44 @@ async function handleSeatReservationPayment({
   } catch (emailErr) {
     console.error('Failed to send seat reservation confirmation email:', emailErr);
   }
+
+  // Send admin notification
+  try {
+    const adminEmail = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'admin@germanvirtualschool.com';
+    await sendEmailNotification({
+      userId: 'system',
+      title: 'New Seat Reservation — Admin Notification',
+      message: `A new seat reservation has been confirmed.`,
+      email: {
+        to: adminEmail,
+        subject: `🪑 New Seat Reservation: ${reservation.firstName} ${reservation.lastName}`,
+        html: `
+          <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #1a4d8f;">New Seat Reservation Received</h1>
+            <p>A new student has reserved their seat for the <strong>${reservation.intakeLabel}</strong> intake.</p>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <h3 style="margin: 0 0 12px; color: #1a4d8f;">Student Details</h3>
+              <p style="margin: 4px 0;"><strong>Name:</strong> ${reservation.firstName} ${reservation.lastName}</p>
+              <p style="margin: 4px 0;"><strong>Email:</strong> ${reservation.email}</p>
+              ${reservation.phone ? `<p style="margin: 4px 0;"><strong>Phone:</strong> ${reservation.phone}</p>` : ''}
+              ${reservation.program ? `<p style="margin: 4px 0;"><strong>Program:</strong> ${reservation.program}</p>` : ''}
+              <p style="margin: 4px 0;"><strong>Amount Paid:</strong> KSH ${paidAmount.toLocaleString()}</p>
+              <p style="margin: 4px 0;"><strong>Payment Provider:</strong> ${provider}</p>
+              <p style="margin: 4px 0;"><strong>Date:</strong> ${new Date().toLocaleString('en-KE', { timeZone: 'Africa/Nairobi' })}</p>
+            </div>
+            
+            <p style="color: #666; font-size: 12px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+              This is an automated notification from the German Virtual School system.
+            </p>
+          </div>
+        `,
+      },
+    });
+    console.log(`📧 Admin notification sent to ${adminEmail}`);
+  } catch (adminEmailErr) {
+    console.error('Failed to send admin notification (non-fatal):', adminEmailErr);
+  }
 }
 
 /**

@@ -50,6 +50,19 @@ function ReserveSeatContent() {
       const { data } = await axios.post("/api/seat-reservation", formData);
 
       if (data.success && data.data?.checkoutUrl) {
+        // Save reservation details to localStorage for registration pre-fill
+        try {
+          localStorage.setItem('gvs_reservation', JSON.stringify({
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            phone: formData.phone,
+            program: formData.program,
+            timestamp: Date.now(),
+          }));
+        } catch (e) {
+          // localStorage might be unavailable — non-blocking
+        }
         // Redirect to IntaSend payment
         window.location.href = data.data.checkoutUrl;
       } else {
@@ -121,7 +134,7 @@ function ReserveSeatContent() {
           </div>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
-              href="/register"
+              href="/register?from=reservation"
               className="px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors text-center font-sans"
             >
               Create Your Account
