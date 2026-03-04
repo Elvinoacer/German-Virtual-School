@@ -818,7 +818,7 @@ export default function Home() {
                   Fees &amp; Course Pricing
                 </h2>
                 <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
-                  Clear breakdown of all costs. No hidden charges — invest in your future with confidence.
+                  All fees are structured per semester. Clear breakdown of all costs — no hidden charges. Flexible installment plans available to help you get started.
                 </p>
               </motion.div>
 
@@ -929,6 +929,37 @@ export default function Home() {
                   })}
                 </div>
               )}
+
+              {/* Installment Info Banner */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="mt-10 max-w-3xl mx-auto bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 dark:from-primary/10 dark:via-primary/20 dark:to-primary/10 rounded-2xl p-6 border border-primary/15 dark:border-primary/25 text-center"
+              >
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <span className="material-symbols-outlined text-primary text-xl">credit_score</span>
+                  <h4 className="font-bold text-slate-900 dark:text-white text-base">Flexible Installment Plans</h4>
+                </div>
+                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                  Tuition fees are payable in installments with a minimum of <strong className="text-primary">KES 9,000</strong> per installment.
+                  Start your learning journey today and spread the cost across the semester at your own pace.
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-4 mt-4 text-xs text-slate-500 dark:text-slate-400">
+                  <span className="flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px] text-green-500">check_circle</span>
+                    No interest charged
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px] text-green-500">check_circle</span>
+                    Min. KES 9,000 per installment
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px] text-green-500">check_circle</span>
+                    Per semester billing
+                  </span>
+                </div>
+              </motion.div>
             </div>
           </section>
         )}

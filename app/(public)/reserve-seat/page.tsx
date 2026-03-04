@@ -246,7 +246,15 @@ function ReserveSeatContent() {
                 },
                 {
                   icon: "school",
-                  text: "Classes begin in May — limited seats available",
+                  text: `Classes begin in ${intakeLabel} — limited seats available`,
+                },
+                {
+                  icon: "calendar_month",
+                  text: "All fees are structured per semester",
+                },
+                {
+                  icon: "credit_score",
+                  text: "Tuition payable in installments — min. KES 9,000 per installment",
                 },
               ].map((item, i) => (
                 <div
