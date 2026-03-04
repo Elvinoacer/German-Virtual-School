@@ -43,8 +43,15 @@ export default function AdminMarketersPage() {
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [showPayout, setShowPayout] = useState<string | null>(null);
+  const [showEdit, setShowEdit] = useState<Marketer | null>(null);
   const [creating, setCreating] = useState(false);
   const [payingOut, setPayingOut] = useState(false);
+  const [editing, setEditing] = useState(false);
+
+  // Edit Form State
+  const [editForm, setEditForm] = useState({
+    firstName: "", lastName: "", email: "", phone: "", referralCode: "", password: "",
+  });
 
   // Commission State
   const [commissions, setCommissions] = useState<any[]>([]);
@@ -145,6 +152,44 @@ export default function AdminMarketersPage() {
     }
   };
 
+  const openEdit = (m: Marketer) => {
+    setEditForm({
+      firstName: m.firstName,
+      lastName: m.lastName,
+      email: m.email,
+      phone: m.phone || "",
+      referralCode: m.referralCode,
+      password: "",
+    });
+    setShowEdit(m);
+  };
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!showEdit) return;
+    setEditing(true);
+    try {
+      const payload: any = {
+        firstName: editForm.firstName,
+        lastName: editForm.lastName,
+        email: editForm.email,
+        phone: editForm.phone,
+        referralCode: editForm.referralCode,
+      };
+      if (editForm.password) payload.password = editForm.password;
+      const { data } = await axios.patch(`/api/admin/marketers/${showEdit.id}`, payload);
+      if (data.success) {
+        toast.success("Marketer updated successfully!");
+        setShowEdit(null);
+        fetchMarketers();
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || "Failed to update marketer");
+    } finally {
+      setEditing(false);
+    }
+  };
+
   const handleVoidCommission = async (id: string) => {
     if (!confirm("Are you sure you want to void this commission?")) return;
     try {
@@ -239,6 +284,13 @@ export default function AdminMarketersPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-center gap-1">
                         <button
+                          onClick={() => openEdit(m)}
+                          className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 transition-colors"
+                          title="Edit Marketer"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">edit</span>
+                        </button>
+                        <button
                           onClick={() => {
                             setShowPayout(m.id);
                             setPayoutData({ amount: "", transactionReference: "", payoutMethod: m.payoutMethod || "MPESA" });
@@ -261,7 +313,7 @@ export default function AdminMarketersPage() {
                             navigator.clipboard.writeText(url);
                             toast.success("Referral link copied!");
                           }}
-                          className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 transition-colors"
+                          className="p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/20 text-slate-500 transition-colors"
                           title="Copy Referral Link"
                         >
                           <span className="material-symbols-outlined text-[18px]">content_copy</span>
@@ -544,6 +596,74 @@ export default function AdminMarketersPage() {
                    <button type="button" onClick={() => setShowPayout(null)} className="flex-1 h-10 border rounded-xl">Cancel</button>
                    <button type="submit" disabled={payingOut} className="flex-1 h-10 bg-green-600 text-white font-bold rounded-xl">{payingOut ? "Processing..." : "Record Payout"}</button>
                  </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Marketer Modal */}
+      <AnimatePresence>
+        {showEdit && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowEdit(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-6 w-full max-w-lg"
+            >
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary">edit</span> Edit Marketer
+              </h2>
+              <form onSubmit={handleEdit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <label className="flex flex-col gap-1">
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">First Name *</span>
+                    <input type="text" required value={editForm.firstName} onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })} className="form-input bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white w-full rounded-lg" />
+                  </label>
+                  <label className="flex flex-col gap-1">
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Last Name *</span>
+                    <input type="text" required value={editForm.lastName} onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })} className="form-input bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white w-full rounded-lg" />
+                  </label>
+                </div>
+                <label className="flex flex-col gap-1">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Email *</span>
+                  <input type="email" required value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} className="form-input bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white w-full rounded-lg" />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Phone</span>
+                  <input type="text" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} className="form-input bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white w-full rounded-lg" />
+                </label>
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Referral Code *</span>
+                  <div className="flex gap-2">
+                    <input type="text" required value={editForm.referralCode} onChange={(e) => setEditForm({ ...editForm, referralCode: e.target.value.toUpperCase() })} className="form-input bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white uppercase flex-1 rounded-lg" />
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          const { data } = await axios.get("/api/admin/marketers/generate-code");
+                          if (data.success) setEditForm((prev) => ({ ...prev, referralCode: data.code }));
+                        } catch { toast.error("Failed to generate code"); }
+                      }}
+                      className="px-3 h-10 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-white text-xs font-semibold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors whitespace-nowrap flex items-center gap-1"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">autorenew</span>
+                      Generate
+                    </button>
+                  </div>
+                </div>
+                <label className="flex flex-col gap-1">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">New Password <span className="text-xs text-slate-400">(leave blank to keep current)</span></span>
+                  <input type="password" value={editForm.password} onChange={(e) => setEditForm({ ...editForm, password: e.target.value })} className="form-input bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white w-full rounded-lg" placeholder="••••••••" />
+                </label>
+                <div className="flex gap-3 pt-2">
+                  <button type="button" onClick={() => setShowEdit(null)} className="flex-1 h-10 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Cancel</button>
+                  <button type="submit" disabled={editing} className="flex-1 h-10 bg-primary text-white font-bold rounded-xl">{editing ? "Saving..." : "Save Changes"}</button>
+                </div>
               </form>
             </motion.div>
           </motion.div>

@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { authenticate } from '@/lib/auth-middleware';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errors } from '@/lib/api-response';
+import { hashPassword } from '@/lib/auth';
 
 /**
  * GET /api/admin/marketers/[marketerId]
@@ -58,7 +59,7 @@ export async function GET(
 
 /**
  * PATCH /api/admin/marketers/[marketerId]
- * Update marketer details (toggle active, change info)
+ * Update marketer details (toggle active, change info, reset password)
  */
 export async function PATCH(
   request: NextRequest,
@@ -78,6 +79,37 @@ export async function PATCH(
     if (body.lastName !== undefined) updateData.lastName = body.lastName.trim();
     if (body.phone !== undefined) updateData.phone = body.phone?.trim() || null;
     if (body.isActive !== undefined) updateData.isActive = body.isActive;
+
+    // Handle email change with uniqueness check
+    if (body.email !== undefined) {
+      const normalizedEmail = body.email.toLowerCase().trim();
+      const existingEmail = await prisma.marketer.findFirst({
+        where: { email: normalizedEmail, id: { not: marketerId } },
+        select: { id: true },
+      });
+      if (existingEmail) {
+        return errors.conflict('Another marketer already uses this email');
+      }
+      updateData.email = normalizedEmail;
+    }
+
+    // Handle referral code change with uniqueness check
+    if (body.referralCode !== undefined) {
+      const normalizedCode = body.referralCode.trim().toUpperCase();
+      const existingCode = await prisma.marketer.findFirst({
+        where: { referralCode: normalizedCode, id: { not: marketerId } },
+        select: { id: true },
+      });
+      if (existingCode) {
+        return errors.conflict('This referral code is already in use by another marketer');
+      }
+      updateData.referralCode = normalizedCode;
+    }
+
+    // Handle password reset
+    if (body.password) {
+      updateData.passwordHash = await hashPassword(body.password);
+    }
 
     const marketer = await prisma.marketer.update({
       where: { id: marketerId },
