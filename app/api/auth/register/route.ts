@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
         select: {
           enrollmentStartDate: true,
           enrollmentEndDate: true,
+          intakeLabel: true,
         }
       });
 
@@ -52,6 +53,25 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             { 
               error: `Enrollment is closed. Registration ended on ${settings.enrollmentEndDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}. Please check back for the next enrollment period.`
+            },
+            { status: 403 }
+          );
+        }
+
+        // New Logic: Mandatory Seat Reservation Check
+        const intakeLabel = settings.intakeLabel || 'May 2026';
+        const paidReservation = await prisma.seatReservation.findFirst({
+          where: {
+            email: email.toLowerCase().trim(),
+            intakeLabel: intakeLabel,
+            status: 'PAID',
+          }
+        });
+
+        if (!paidReservation) {
+          return NextResponse.json(
+            { 
+              error: `No paid seat reservation found for ${email} (${intakeLabel} intake). Please reserve your seat first.`
             },
             { status: 403 }
           );
