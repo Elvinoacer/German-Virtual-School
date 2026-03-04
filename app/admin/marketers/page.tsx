@@ -425,29 +425,29 @@ export default function AdminMarketersPage() {
                <form onSubmit={handleCreate} className="space-y-4">
                  <div className="grid grid-cols-2 gap-4">
                    <label className="flex flex-col gap-1">
-                     <span className="text-sm font-medium text-slate-700">First Name *</span>
-                     <input type="text" required value={newMarketer.firstName} onChange={(e) => setNewMarketer({ ...newMarketer, firstName: e.target.value })} className="form-input" />
+                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">First Name *</span>
+                     <input type="text" required value={newMarketer.firstName} onChange={(e) => setNewMarketer({ ...newMarketer, firstName: e.target.value })} className="form-input bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white dark:placeholder-slate-400 w-full rounded-lg" />
                    </label>
                    <label className="flex flex-col gap-1">
-                     <span className="text-sm font-medium text-slate-700">Last Name *</span>
-                     <input type="text" required value={newMarketer.lastName} onChange={(e) => setNewMarketer({ ...newMarketer, lastName: e.target.value })} className="form-input" />
+                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Last Name *</span>
+                     <input type="text" required value={newMarketer.lastName} onChange={(e) => setNewMarketer({ ...newMarketer, lastName: e.target.value })} className="form-input bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white dark:placeholder-slate-400 w-full rounded-lg" />
                    </label>
                  </div>
                  <label className="flex flex-col gap-1">
-                   <span className="text-sm font-medium text-slate-700">Email *</span>
-                   <input type="email" required value={newMarketer.email} onChange={(e) => setNewMarketer({ ...newMarketer, email: e.target.value })} className="form-input" />
+                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Email *</span>
+                   <input type="email" required value={newMarketer.email} onChange={(e) => setNewMarketer({ ...newMarketer, email: e.target.value })} className="form-input bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white dark:placeholder-slate-400 w-full rounded-lg" />
                  </label>
                  <label className="flex flex-col gap-1">
-                   <span className="text-sm font-medium text-slate-700">Phone</span>
-                   <input type="text" value={newMarketer.phone} onChange={(e) => setNewMarketer({ ...newMarketer, phone: e.target.value })} className="form-input" />
+                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Phone</span>
+                   <input type="text" value={newMarketer.phone} onChange={(e) => setNewMarketer({ ...newMarketer, phone: e.target.value })} className="form-input bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white dark:placeholder-slate-400 w-full rounded-lg" />
                  </label>
                  <label className="flex flex-col gap-1">
-                   <span className="text-sm font-medium text-slate-700">Referral Code *</span>
-                   <input type="text" required value={newMarketer.referralCode} onChange={(e) => setNewMarketer({ ...newMarketer, referralCode: e.target.value.toUpperCase() })} className="form-input uppercase" />
+                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Referral Code *</span>
+                   <input type="text" required value={newMarketer.referralCode} onChange={(e) => setNewMarketer({ ...newMarketer, referralCode: e.target.value.toUpperCase() })} className="form-input bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white dark:placeholder-slate-400 uppercase w-full rounded-lg" />
                  </label>
                  <label className="flex flex-col gap-1">
-                   <span className="text-sm font-medium text-slate-700">Password *</span>
-                   <input type="password" required value={newMarketer.password} onChange={(e) => setNewMarketer({ ...newMarketer, password: e.target.value })} className="form-input" />
+                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Password *</span>
+                   <input type="password" required value={newMarketer.password} onChange={(e) => setNewMarketer({ ...newMarketer, password: e.target.value })} className="form-input bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white dark:placeholder-slate-400 w-full rounded-lg" />
                  </label>
                  <div className="flex gap-3 pt-2">
                    <button type="button" onClick={() => setShowCreate(false)} className="flex-1 h-10 border rounded-xl">Cancel</button>
@@ -471,7 +471,7 @@ export default function AdminMarketersPage() {
                onClick={(e) => e.stopPropagation()}
                className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 w-full max-w-md"
             >
-              <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-4">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
                  <span className="material-symbols-outlined text-green-600">payments</span> Record Payout
               </h2>
               {(() => {
@@ -498,11 +498,11 @@ export default function AdminMarketersPage() {
               })()}
               <form onSubmit={handlePayout} className="space-y-4">
                  <label className="flex flex-col gap-1">
-                   <span className="text-sm font-medium">Payout Method</span>
+                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Payout Method</span>
                    <select 
                      value={payoutData.payoutMethod} 
                      onChange={e => setPayoutData({...payoutData, payoutMethod: e.target.value})}
-                     className="form-input"
+                     className="form-input bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white dark:placeholder-slate-400 w-full rounded-lg"
                    >
                      <option value="MPESA">M-Pesa</option>
                      <option value="BANK">Bank Transfer</option>
@@ -510,12 +510,12 @@ export default function AdminMarketersPage() {
                    </select>
                  </label>
                  <label className="flex flex-col gap-1">
-                   <span className="text-sm font-medium">Amount (KES) *</span>
-                   <input type="number" required min="1" value={payoutData.amount} onChange={(e) => setPayoutData({ ...payoutData, amount: e.target.value })} className="form-input" />
+                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Amount (KES) *</span>
+                   <input type="number" required min="1" value={payoutData.amount} onChange={(e) => setPayoutData({ ...payoutData, amount: e.target.value })} className="form-input bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white dark:placeholder-slate-400 w-full rounded-lg" />
                  </label>
                  <label className="flex flex-col gap-1">
-                   <span className="text-sm font-medium">Transaction Ref. (e.g. M-Pesa Code) *</span>
-                   <input type="text" required value={payoutData.transactionReference} onChange={(e) => setPayoutData({ ...payoutData, transactionReference: e.target.value })} className="form-input uppercase" />
+                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Transaction Ref. (e.g. M-Pesa Code) *</span>
+                   <input type="text" required value={payoutData.transactionReference} onChange={(e) => setPayoutData({ ...payoutData, transactionReference: e.target.value })} className="form-input bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white dark:placeholder-slate-400 uppercase w-full rounded-lg" />
                  </label>
                  <div className="flex gap-3 mt-6">
                    <button type="button" onClick={() => setShowPayout(null)} className="flex-1 h-10 border rounded-xl">Cancel</button>

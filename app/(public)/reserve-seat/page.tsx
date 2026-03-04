@@ -118,7 +118,7 @@ function ReserveSeatContent() {
                 info
               </span>
               <span>
-                Your <strong>KSH 10</strong> reservation fee will be
+                Your <strong>KSH 2,500</strong> reservation fee will be
                 deducted from your total tuition.
               </span>
             </div>
@@ -195,7 +195,7 @@ function ReserveSeatContent() {
                   </div>
                   <div>
                     <p className="font-semibold text-slate-900 dark:text-white font-sans">
-                      KSH 10 — Seat Reservation
+                      KSH 2,500 — Seat Reservation
                     </p>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
                       Locks your seat for the May intake. This is deducted from
@@ -432,7 +432,7 @@ function ReserveSeatContent() {
                       <span className="material-symbols-outlined text-[16px] text-primary mt-0.5">
                         check
                       </span>
-                      The KSH 10 seat reservation fee is{" "}
+                      The KSH 2,500 seat reservation fee is{" "}
                       <strong>non-refundable</strong>
                     </li>
                     <li className="flex items-start gap-2">
@@ -486,7 +486,7 @@ function ReserveSeatContent() {
                       <span className="material-symbols-outlined text-xl">
                         lock
                       </span>
-                      Pay KSH 10 — Reserve Your Seat
+                      Pay KSH 2,500 — Reserve Your Seat
                     </>
                   )}
                 </button>

@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { successResponse, errors } from '@/lib/api-response';
 import { IntaSendService } from '@/lib/intasend';
 
-const DEFAULT_RESERVATION_FEE = 10;
+const DEFAULT_RESERVATION_FEE = 2500;
 
 /**
  * POST /api/seat-reservation
@@ -26,7 +26,9 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const reservationFee = 10; // Forced to 10 for testing purposes
+    const reservationFee = settings?.seatReservationFee
+      ? Number(settings.seatReservationFee)
+      : DEFAULT_RESERVATION_FEE;
 
     const intakeLabel = settings?.intakeLabel || 'May 2026';
 
