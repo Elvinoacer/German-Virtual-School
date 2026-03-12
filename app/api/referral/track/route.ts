@@ -24,21 +24,32 @@ export async function POST(request: NextRequest) {
     const ipAddress = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
     const userAgent = request.headers.get("user-agent") || "unknown";
 
-    // Track the click in DB
-    await prisma.referralClick.create({
-      data: {
+    // Deduplicate: check if same IP already clicked this marketer in the last 24 hours
+    const recentClick = await prisma.referralClick.findFirst({
+      where: {
         marketerId: marketer.id,
-        ipAddress: ipAddress.substring(0, 45), // IPv6 max length
-        userAgent: userAgent.substring(0, 500),
-        page: page || "/",
+        ipAddress: ipAddress.substring(0, 45),
+        createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
       },
     });
 
-    // Increment total clicks on marketer profile (using atomic increment)
-    await prisma.marketer.update({
-      where: { id: marketer.id },
-      data: { totalClicks: { increment: 1 } },
-    });
+    if (!recentClick) {
+      // Track the click in DB (only if not a duplicate)
+      await prisma.referralClick.create({
+        data: {
+          marketerId: marketer.id,
+          ipAddress: ipAddress.substring(0, 45),
+          userAgent: userAgent.substring(0, 500),
+          page: page || "/",
+        },
+      });
+
+      // Increment total clicks on marketer profile (using atomic increment)
+      await prisma.marketer.update({
+        where: { id: marketer.id },
+        data: { totalClicks: { increment: 1 } },
+      });
+    }
 
     // We can also set a 30-day cookie for attribution if it's called from a Server-side setting
     // But since this is a POST from client side, we create a response with Set-Cookie

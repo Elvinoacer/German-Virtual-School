@@ -43,7 +43,6 @@ export default auth((req) => {
     nextUrl.pathname.startsWith("/api/marketer"); // Marketer APIs have their own auth middleware
 
   if (isApiRoute) {
-    if (nextUrl.searchParams.has('ref')) setReferralCookie(req);
     return;
   }
 
@@ -153,27 +152,40 @@ export default auth((req) => {
     // Auth check is done above (isLoggedIn).
   }
   if (nextUrl.searchParams.has('ref')) {
-    setReferralCookie(req);
+    const cookieResponse = setReferralCookie(req);
+    if (cookieResponse) return cookieResponse;
   }
   return;
 });
 
-// Helper to handle cookie drop & tracking async
-function setReferralCookie(req: any) {
+// Helper to set referral cookie on the response and fire async tracking
+function setReferralCookie(req: any): NextResponse | undefined {
   const ref = req.nextUrl.searchParams.get('ref');
   if (!ref) return;
-  
-  // Fire and forget click tracking
+
+  // Skip if cookie already set for this marketer (deduplication)
+  const existingCookie = req.cookies.get('gvs_referral');
+  if (existingCookie?.value === ref.toUpperCase()) return;
+
+  const response = NextResponse.next();
+
+  // Set the cookie directly on the middleware response so it reaches the browser
+  response.cookies.set('gvs_referral', ref.toUpperCase(), {
+    maxAge: 30 * 24 * 60 * 60,
+    path: '/',
+    httpOnly: false,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+  });
+
+  // Still fire click tracking async (best effort)
   fetch(`${req.nextUrl.origin}/api/referral/track`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ referralCode: ref, page: req.nextUrl.pathname })
+    body: JSON.stringify({ referralCode: ref, page: req.nextUrl.pathname }),
   }).catch(() => {});
-  
-  // NextJS middleware allows us to modify response cookies using NextResponse.next()
-  // Wait, if we return from here, we need the caller to return the response.
-  // Actually, setting the cookie natively in middleware requires returning a response object.
-  // In `proxy.ts` (Next-Auth auth), returning `undefined` means continue.
+
+  return response;
 }
 
 export const config = {

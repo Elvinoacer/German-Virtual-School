@@ -104,29 +104,9 @@ export default function AdminMarketersPage() {
   const fetchPayouts = useCallback(async () => {
     setPayoutsLoading(true);
     try {
-      const { data } = await axios.get("/api/admin/marketers");
+      const { data } = await axios.get("/api/admin/marketers/payouts");
       if (data.success) {
-        // Extract payout records from all marketers' details
-        // We need to fetch each marketer's details to get payout records
-        const allPayouts: any[] = [];
-        for (const m of data.data.marketers) {
-          try {
-            const { data: detail } = await axios.get(`/api/admin/marketers/${m.id}`);
-            if (detail.success && detail.data?.payouts) {
-              for (const p of detail.data.payouts) {
-                allPayouts.push({
-                  ...p,
-                  marketerName: `${m.firstName} ${m.lastName}`,
-                  marketerEmail: m.email,
-                });
-              }
-            }
-          } catch {
-            // skip individual marketer errors
-          }
-        }
-        allPayouts.sort((a, b) => new Date(b.paidAt).getTime() - new Date(a.paidAt).getTime());
-        setPayoutsData(allPayouts);
+        setPayoutsData(data.data);
       }
     } catch (err) {
       console.error("Failed to fetch payouts");
