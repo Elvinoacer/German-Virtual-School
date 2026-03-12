@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const marketer = await authenticateMarketer(request);
 
     // Fetch all data in parallel
-    const [commissions, payouts, reservations, marketerRecord] = await Promise.all([
+    const [commissions, payouts, reservations, marketerRecord, systemSettings] = await Promise.all([
       prisma.referralCommission.findMany({
         where: { marketerId: marketer.id },
         orderBy: { createdAt: 'desc' },
@@ -40,6 +40,10 @@ export async function GET(request: NextRequest) {
         where: { id: marketer.id },
         select: { totalClicks: true },
       }),
+      prisma.systemSettings.findUnique({
+        where: { id: 'system-settings' },
+        select: { reservationCommission: true, fullPaymentCommission: true },
+      }),
     ]);
 
     // Calculate stats
@@ -51,7 +55,7 @@ export async function GET(request: NextRequest) {
     const paidReservations = reservations.filter(r => r.status === 'PAID');
     
     const totalClicks = marketerRecord?.totalClicks || 0;
-    const conversionRate = totalClicks > 0 ? (reservations.length / totalClicks) * 100 : 0;
+    const conversionRate = totalClicks > 0 ? (paidReservations.length / totalClicks) * 100 : 0;
 
     // Build student breakdown
     const studentMap = new Map<string, {
@@ -117,12 +121,12 @@ export async function GET(request: NextRequest) {
         commissions: {
           reservation: {
             count: reservationCommissions.length,
-            ratePerStudent: reservationCommissions.length > 0 ? Number(reservationCommissions[0].amount) : 500,
+            ratePerStudent: systemSettings?.reservationCommission ? Number(systemSettings.reservationCommission) : 500,
             total: reservationCommissions.reduce((s, c) => s + Number(c.amount), 0),
           },
           fullPayment: {
             count: fullPaymentCommissions.length,
-            ratePerStudent: fullPaymentCommissions.length > 0 ? Number(fullPaymentCommissions[0].amount) : 1500,
+            ratePerStudent: systemSettings?.fullPaymentCommission ? Number(systemSettings.fullPaymentCommission) : 1500,
             total: fullPaymentCommissions.reduce((s, c) => s + Number(c.amount), 0),
           },
           totalEarned,

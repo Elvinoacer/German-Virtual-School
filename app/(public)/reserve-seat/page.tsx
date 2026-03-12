@@ -27,7 +27,7 @@ function ReserveSeatContent() {
 
   useEffect(() => {
     if (refFromUrl) {
-      axios.post("/api/referral/track", { code: refFromUrl, page: "/reserve-seat" }).catch(console.error);
+      axios.post("/api/referral/track", { referralCode: refFromUrl, page: "/reserve-seat" }).catch(console.error);
     }
   }, [refFromUrl]);
 

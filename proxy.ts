@@ -167,7 +167,7 @@ function setReferralCookie(req: any) {
   fetch(`${req.nextUrl.origin}/api/referral/track`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code: ref, page: req.nextUrl.pathname })
+    body: JSON.stringify({ referralCode: ref, page: req.nextUrl.pathname })
   }).catch(() => {});
   
   // NextJS middleware allows us to modify response cookies using NextResponse.next()

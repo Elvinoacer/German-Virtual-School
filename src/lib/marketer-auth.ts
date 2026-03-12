@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
 
-const MARKETER_JWT_SECRET = process.env.NEXTAUTH_SECRET || 'marketer-secret-fallback';
+const MARKETER_JWT_SECRET = process.env.MARKETER_JWT_SECRET || process.env.NEXTAUTH_SECRET || 'marketer-secret-fallback';
 const MARKETER_COOKIE_NAME = 'gvs_marketer_token';
 
 interface MarketerPayload {

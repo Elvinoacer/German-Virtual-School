@@ -60,6 +60,10 @@ export default function AdminMarketersPage() {
   const [commissions, setCommissions] = useState<any[]>([]);
   const [commissionsLoading, setCommissionsLoading] = useState(false);
 
+  // Payouts State
+  const [payoutsData, setPayoutsData] = useState<any[]>([]);
+  const [payoutsLoading, setPayoutsLoading] = useState(false);
+
   // Create Form State
   const [newMarketer, setNewMarketer] = useState({
     firstName: "", lastName: "", email: "", phone: "", referralCode: "", password: "",
@@ -97,11 +101,45 @@ export default function AdminMarketersPage() {
     }
   }, []);
 
+  const fetchPayouts = useCallback(async () => {
+    setPayoutsLoading(true);
+    try {
+      const { data } = await axios.get("/api/admin/marketers");
+      if (data.success) {
+        // Extract payout records from all marketers' details
+        // We need to fetch each marketer's details to get payout records
+        const allPayouts: any[] = [];
+        for (const m of data.data.marketers) {
+          try {
+            const { data: detail } = await axios.get(`/api/admin/marketers/${m.id}`);
+            if (detail.success && detail.data?.payouts) {
+              for (const p of detail.data.payouts) {
+                allPayouts.push({
+                  ...p,
+                  marketerName: `${m.firstName} ${m.lastName}`,
+                  marketerEmail: m.email,
+                });
+              }
+            }
+          } catch {
+            // skip individual marketer errors
+          }
+        }
+        allPayouts.sort((a, b) => new Date(b.paidAt).getTime() - new Date(a.paidAt).getTime());
+        setPayoutsData(allPayouts);
+      }
+    } catch (err) {
+      console.error("Failed to fetch payouts");
+    } finally {
+      setPayoutsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (activeTab === "CRM") fetchMarketers();
     if (activeTab === "COMMISSIONS") fetchCommissions();
-    // PAYOUTS tab would fetch payouts, but keeping simple for now
-  }, [activeTab, fetchMarketers, fetchCommissions]);
+    if (activeTab === "PAYOUTS") fetchPayouts();
+  }, [activeTab, fetchMarketers, fetchCommissions, fetchPayouts]);
 
   // Actions
   const handleCreate = async (e: React.FormEvent) => {
@@ -503,9 +541,68 @@ export default function AdminMarketersPage() {
       {activeTab === "CRM" && renderCRM()}
       {activeTab === "COMMISSIONS" && renderCommissions()}
       {activeTab === "PAYOUTS" && (
-        <div className="p-12 text-center text-slate-500 bg-white dark:bg-slate-800 border rounded-xl">
-          <span className="material-symbols-outlined text-4xl mb-2">history</span>
-          <p>Payout history table coming soon.</p>
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+          <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+            <h2 className="font-semibold text-slate-900 dark:text-white">Payout History</h2>
+            <button onClick={fetchPayouts} className="text-slate-500 hover:text-primary transition-colors">
+              <RefreshCw className={`w-5 h-5 ${payoutsLoading ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+
+          {payoutsLoading ? (
+            <div className="p-12 text-center text-slate-400 flex flex-col items-center">
+              <RefreshCw className="w-8 h-8 animate-spin text-primary mb-4" />
+              <p>Loading payouts...</p>
+            </div>
+          ) : payoutsData.length === 0 ? (
+            <div className="p-12 text-center text-slate-400">
+              <span className="material-symbols-outlined text-5xl mb-3 block">history</span>
+              <p className="font-medium">No payouts recorded yet</p>
+              <p className="text-sm mt-1">Record a payout from the CRM tab to see it here.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
+                  <tr>
+                    <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Marketer</th>
+                    <th className="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Amount</th>
+                    <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Method</th>
+                    <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Transaction Ref</th>
+                    <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Date</th>
+                    <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Note</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                  {payoutsData.map((p) => (
+                    <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                      <td className="px-4 py-3">
+                        <p className="font-medium text-slate-900 dark:text-white">{p.marketerName}</p>
+                        <p className="text-xs text-slate-400">{p.marketerEmail}</p>
+                      </td>
+                      <td className="px-4 py-3 text-right font-semibold text-green-600 dark:text-green-400">
+                        {fmt(Number(p.amount))}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className="text-xs font-mono bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded">
+                          {p.payoutMethod || 'N/A'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-slate-500 font-mono text-xs uppercase">
+                        {p.transactionReference || '—'}
+                      </td>
+                      <td className="px-4 py-3 text-center text-slate-500 text-xs">
+                        {new Date(p.paidAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </td>
+                      <td className="px-4 py-3 text-slate-500 text-xs max-w-[200px] truncate">
+                        {p.note || '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 

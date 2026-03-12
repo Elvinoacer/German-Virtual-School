@@ -404,7 +404,7 @@ async function handleCompletePayment({
           });
 
           if (!existingCommission) {
-            const settings = await prisma.systemSettings.findUnique({
+            const settings = await tx.systemSettings.findUnique({
               where: { id: 'system-settings' },
               select: { fullPaymentCommission: true },
             });
