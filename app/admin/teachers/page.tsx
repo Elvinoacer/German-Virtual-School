@@ -277,7 +277,7 @@ export default function AdminTeachersPage() {
                   </td>
                   <td className="px-6 py-4">
                     <span className="text-sm font-semibold text-green-600">
-                      KES {teacher.stats.totalRevenue.toLocaleString()}
+                      ${teacher.stats.totalRevenue.toLocaleString()}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-[#4c669a]">

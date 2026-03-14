@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
           systemName: 'German Virtual School',
           supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@germanvirtualschool.com',
           maxStudentsPerClass: 25,
-          defaultCurrency: 'KES',
+          defaultCurrency: 'USD',
           notifications: {
             emailNotifications: true,
             paymentReminders: true,
@@ -84,7 +84,7 @@ export async function PATCH(request: NextRequest) {
         systemName: body.systemName || 'German Virtual School',
         supportEmail: body.supportEmail || process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@germanvirtualschool.com',
         maxStudentsPerClass: body.maxStudentsPerClass || 25,
-        defaultCurrency: body.defaultCurrency || 'KES',
+        defaultCurrency: body.defaultCurrency || 'USD',
         notifications: body.notifications || {},
         integrations: body.integrations || {},
         enrollmentStartDate: parseDate(body.enrollmentStartDate),

@@ -241,7 +241,7 @@ export default function StudentDashboard() {
               <div className="flex flex-col gap-1">
                 <p className="text-text-subtle text-sm font-medium">Current Balance</p>
                 <div className="flex items-baseline gap-2">
-                  <h3 className="text-3xl font-bold text-text-main dark:text-white">KES {stats.balance.toFixed(2)}</h3>
+                  <h3 className="text-3xl font-bold text-text-main dark:text-white">${stats.balance.toFixed(2)}</h3>
                 </div>
               </div>
               <div className="size-12 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-600 flex items-center justify-center">
@@ -454,7 +454,7 @@ export default function StudentDashboard() {
                           <p className="text-xs text-slate-500">{course.teacherName}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-black text-text-main dark:text-white">{course.price > 0 ? `KES ${course.price.toLocaleString()}` : 'FREE'}</p>
+                          <p className="text-sm font-black text-text-main dark:text-white">{course.price > 0 ? `$${course.price.toLocaleString()}` : 'FREE'}</p>
                           <span className="text-[10px] font-bold text-primary dark:text-primary-light">Details →</span>
                         </div>
                       </Link>
@@ -474,7 +474,7 @@ export default function StudentDashboard() {
                 {stats.balance > 0 ? (
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-text-subtle">Total Due</span>
-                    <span className="font-bold text-red-500">KES {stats.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                    <span className="font-bold text-red-500">${stats.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                   </div>
                 ) : (
                   <div className="flex flex-col gap-2 mb-2">

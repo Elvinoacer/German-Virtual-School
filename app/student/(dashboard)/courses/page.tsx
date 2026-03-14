@@ -306,7 +306,7 @@ export default function StudentCoursesPage() {
                       </span>
                       <div className="flex gap-1 items-center">
                         <span className="text-sm font-bold text-primary">
-                          KES {course.price}
+                          ${course.price}
                         </span>
                       </div>
                     </div>

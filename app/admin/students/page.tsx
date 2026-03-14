@@ -361,10 +361,10 @@ export default function AdminStudentsPage() {
                   <td className="px-6 py-4">
                     <div className="flex flex-col gap-1">
                       <span className={`text-sm font-semibold ${student.stats.arrears > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                        {student.stats.arrears > 0 ? `KES ${student.stats.arrears.toLocaleString()} overdue` : 'Paid'}
+                        {student.stats.arrears > 0 ? `$${student.stats.arrears.toLocaleString()} overdue` : 'Paid'}
                       </span>
                       <span className="text-xs text-[#4c669a]">
-                        KES {student.stats.totalPaid.toLocaleString()} / {student.stats.totalInvoiced.toLocaleString()}
+                        ${student.stats.totalPaid.toLocaleString()} / {student.stats.totalInvoiced.toLocaleString()}
                       </span>
                     </div>
                   </td>

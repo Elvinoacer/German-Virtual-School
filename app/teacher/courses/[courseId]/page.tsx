@@ -114,7 +114,7 @@ export default function TeacherCourseDetailPage({ params }: { params: Promise<{ 
         </div>
         <div className="bg-white dark:bg-surface-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <p className="text-sm text-slate-500 mb-1">Price</p>
-          <p className="text-2xl font-bold">KES {course.price}</p>
+          <p className="text-2xl font-bold">${course.price}</p>
         </div>
         <div className="bg-white dark:bg-surface-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <p className="text-sm text-slate-500 mb-1">Level</p>

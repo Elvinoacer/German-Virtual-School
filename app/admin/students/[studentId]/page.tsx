@@ -174,16 +174,16 @@ export default function AdminStudentDetailPage({ params }: { params: Promise<{ s
         </div>
         <div className="bg-white dark:bg-surface-dark p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Invoiced</p>
-          <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">KES {student.stats.totalInvoiced.toLocaleString()}</p>
+          <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">${student.stats.totalInvoiced.toLocaleString()}</p>
         </div>
         <div className="bg-white dark:bg-surface-dark p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Paid</p>
-          <p className="text-2xl font-black text-green-600 mt-1">KES {student.stats.totalPaid.toLocaleString()}</p>
+          <p className="text-2xl font-black text-green-600 mt-1">${student.stats.totalPaid.toLocaleString()}</p>
         </div>
         <div className="bg-white dark:bg-surface-dark p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Arrears</p>
           <p className={`text-2xl font-black mt-1 ${student.stats.arrears > 0 ? 'text-red-600' : 'text-green-600'}`}>
-            KES {student.stats.arrears.toLocaleString()}
+            ${student.stats.arrears.toLocaleString()}
           </p>
         </div>
       </div>
@@ -250,7 +250,7 @@ export default function AdminStudentDetailPage({ params }: { params: Promise<{ s
                   {student.payments.map((payment) => (
                     <tr key={payment.id}>
                       <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{format(new Date(payment.createdAt), "MMM d, yyyy")}</td>
-                      <td className="px-4 py-3 font-bold text-slate-900 dark:text-white">KES {Number(payment.amount).toLocaleString()}</td>
+                      <td className="px-4 py-3 font-bold text-slate-900 dark:text-white">${Number(payment.amount).toLocaleString()}</td>
                       <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{payment.paymentMethod}</td>
                       <td className="px-4 py-3">
                         <span className={`px-2 py-0.5 rounded text-xs font-bold ${payment.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>

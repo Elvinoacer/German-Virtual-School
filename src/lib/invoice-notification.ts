@@ -91,7 +91,7 @@ export async function generateInvoicePDF(invoice: InvoiceData): Promise<Buffer> 
   });
   
   page.drawText('Description', { x: margin + 10, y: yPosition + 4, size: 10, font: fontBold });
-  page.drawText('Amount (KES)', { x: width - margin - 100, y: yPosition + 4, size: 10, font: fontBold });
+  page.drawText('Amount (USD)', { x: width - margin - 100, y: yPosition + 4, size: 10, font: fontBold });
   
   yPosition -= 30;
 
@@ -112,7 +112,7 @@ export async function generateInvoicePDF(invoice: InvoiceData): Promise<Buffer> 
 
   // 6. Total
   page.drawText('Total Amount Due:', { x: width - margin - 220, y: yPosition, size: 12, font: fontBold });
-  page.drawText(`KES ${invoice.amount.toLocaleString()}`, { 
+  page.drawText(`$${invoice.amount.toLocaleString()}`, { 
     x: width - margin - 100, 
     y: yPosition, 
     size: 14, 
@@ -147,7 +147,7 @@ export async function sendInvoiceNotification(invoice: InvoiceData) {
     const pdfBuffer = await generateInvoicePDF(invoice);
 
     const title = 'New Invoice Generated';
-    const message = `A new invoice for ${invoice.description} (KES ${invoice.amount.toLocaleString()}) has been generated.`;
+    const message = `A new invoice for ${invoice.description} ($${invoice.amount.toLocaleString()}) has been generated.`;
 
     console.log(`📣 Notifying student ${invoice.studentEmail}...`);
     
@@ -158,7 +158,7 @@ export async function sendInvoiceNotification(invoice: InvoiceData) {
       message,
       email: {
         to: invoice.studentEmail,
-        subject: `💳 Invoice #${invoice.id.split('-')[0].toUpperCase()} - KES ${invoice.amount.toLocaleString()}`,
+        subject: `💳 Invoice #${invoice.id.split('-')[0].toUpperCase()} - $${invoice.amount.toLocaleString()}`,
         html: `
           <div style="margin-bottom: 24px;">
             <h1 style="color: #1a1a2e; font-size: 24px; font-weight: 700; margin: 0 0 8px 0;">
@@ -183,7 +183,7 @@ export async function sendInvoiceNotification(invoice: InvoiceData) {
               Amount Due
             </p>
             <p style="color: #ffffff; font-size: 36px; font-weight: 700; margin: 0;">
-              KES ${invoice.amount.toLocaleString()}
+              $${invoice.amount.toLocaleString()}
             </p>
           </div>
           

@@ -117,7 +117,7 @@ export default function ReportsOverviewPage() {
       body: [
         ['Average Grade', `${kpis.averageGrade} Points`],
         ['Attendance Rate', `${kpis.attendanceRate}%`],
-        ['Monthly Revenue', `KES ${kpis.revenue.toLocaleString()}`],
+        ['Monthly Revenue', `$${kpis.revenue.toLocaleString()}`],
         ['Active Classrooms', kpis.activeClassrooms.toString()]
       ],
     });
@@ -246,7 +246,7 @@ export default function ReportsOverviewPage() {
               Total Revenue (Collected)
             </p>
             <h3 className="text-3xl font-bold text-slate-900 dark:text-white">
-              KES {kpis.revenue.toLocaleString()}
+              ${kpis.revenue.toLocaleString()}
             </h3>
             <div className="mt-4 flex items-end gap-1 h-8 opacity-60 group-hover:opacity-100 transition-opacity">
               <div className="w-full bg-emerald-100 dark:bg-emerald-900/30 rounded-t h-2/5"></div>

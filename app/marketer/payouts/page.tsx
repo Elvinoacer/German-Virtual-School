@@ -88,7 +88,7 @@ export default function MarketerPayoutsPage() {
                 <div>
                   <div className="flex items-center gap-3">
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-                      KES {Number(payout.amount).toLocaleString()}
+                      ${Number(payout.amount).toLocaleString()}
                     </h3>
                     <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800">
                       PAID
@@ -121,7 +121,7 @@ export default function MarketerPayoutsPage() {
                       <p className="font-semibold text-slate-800 dark:text-slate-200">{comm.studentName || 'Unknown'}</p>
                       <div className="flex justify-between items-center mt-1">
                         <span className="text-slate-500 text-xs">{comm.type === 'RESERVATION' ? 'Reservation' : 'Full Course'}</span>
-                        <span className="font-medium text-slate-700 dark:text-slate-300">KES {Number(comm.amount)}</span>
+                        <span className="font-medium text-slate-700 dark:text-slate-300">${Number(comm.amount)}</span>
                       </div>
                     </div>
                   ))}

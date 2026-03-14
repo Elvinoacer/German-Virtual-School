@@ -71,7 +71,7 @@ export default function PartnersLandingPage() {
           {[
             { step: "01", title: "Join the Network", desc: "Apply to become a verified partner and get access to your personalized dashboard and unique tracking links.", icon: Users },
             { step: "02", title: "Share & Promote", desc: "Share your tracking link with students interested in learning German. Track clicks and leads in real-time.", icon: Award },
-            { step: "03", title: "Earn Commissions", desc: "Earn KES 500 when they reserve a seat, and an additional KES 1,500 when they complete full payment.", icon: DollarSign },
+            { step: "03", title: "Earn Commissions", desc: "Earn $5 when they reserve a seat, and an additional $15 when they complete full payment.", icon: DollarSign },
           ].map((item, i) => (
             <motion.div 
               key={i}
@@ -109,7 +109,7 @@ export default function PartnersLandingPage() {
                   "Generous tiered commission structure (Reservation + Full Enrollment)",
                   "30-day cookie tracking window to ensure you get credited",
                   "Real-time dashboard to monitor clicks, leads, and earnings",
-                  "Fast payouts directly to your default M-Pesa or Bank account",
+                  "Fast payouts directly to your bank or card account",
                   "High conversion rates due to our premium course quality",
                 ].map((benefit, i) => (
                   <motion.li 
@@ -133,7 +133,7 @@ export default function PartnersLandingPage() {
                 <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-100 dark:border-slate-800">
                   <div>
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Potential Earning</p>
-                    <p className="text-3xl font-extrabold text-green-600 dark:text-green-400">KES 2,000</p>
+                    <p className="text-3xl font-extrabold text-green-600 dark:text-green-400">$20</p>
                     <p className="text-sm text-slate-400 mt-1">Per successful student enrollment</p>
                   </div>
                   <div className="w-16 h-16 bg-green-50 dark:bg-green-900/30 rounded-full flex items-center justify-center text-green-600">
@@ -147,14 +147,14 @@ export default function PartnersLandingPage() {
                       <div className="w-2 h-2 rounded-full bg-amber-500"></div>
                       <span className="font-medium dark:text-slate-300">Reservation Payment</span>
                     </div>
-                    <span className="font-bold dark:text-white">KES 500</span>
+                    <span className="font-bold dark:text-white">$5</span>
                   </div>
                   <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-800 p-4 rounded-xl">
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 rounded-full bg-primary"></div>
                       <span className="font-medium dark:text-slate-300">Full Course Payment</span>
                     </div>
-                    <span className="font-bold dark:text-white">KES 1,500</span>
+                    <span className="font-bold dark:text-white">$15</span>
                   </div>
                 </div>
               </div>

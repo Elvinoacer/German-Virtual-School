@@ -21,7 +21,7 @@ export default function AdminSettingsPage() {
     systemName: "",
     supportEmail: "",
     maxStudentsPerClass: 25,
-    defaultCurrency: "KES",
+    defaultCurrency: "USD",
     notifications: {
       emailNotifications: true,
       paymentReminders: true,
@@ -60,7 +60,7 @@ export default function AdminSettingsPage() {
         systemName: settingsData.systemName || "",
         supportEmail: settingsData.supportEmail || "",
         maxStudentsPerClass: settingsData.maxStudentsPerClass || 25,
-        defaultCurrency: settingsData.defaultCurrency || "KES",
+        defaultCurrency: settingsData.defaultCurrency || "USD",
         notifications: (settingsData.notifications as any) || {
           emailNotifications: true,
           paymentReminders: true,
@@ -173,9 +173,9 @@ export default function AdminSettingsPage() {
               onChange={(e) => setFormData({ ...formData, defaultCurrency: e.target.value })}
               className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
             >
-              <option value="KES">KES - Kenyan Shilling</option>
-              <option value="EUR">EUR - Euro</option>
               <option value="USD">USD - US Dollar</option>
+              <option value="EUR">EUR - Euro</option>
+              <option value="KES">KES - Kenyan Shilling</option>
             </select>
           </div>
         </div>
@@ -325,7 +325,7 @@ export default function AdminSettingsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-[#4c669a] mb-2">
-              Seat Reservation Fee (KES)
+              Seat Reservation Fee (USD)
             </label>
             <input
               type="number"
@@ -338,7 +338,7 @@ export default function AdminSettingsPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-[#4c669a] mb-2">
-              Learning Material Fee (KES)
+              Learning Material Fee (USD)
             </label>
             <input
               type="number"
@@ -392,7 +392,7 @@ export default function AdminSettingsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-[#4c669a] mb-2">
-              Reservation Commission (KES)
+              Reservation Commission (USD)
             </label>
             <input
               type="number"
@@ -401,11 +401,11 @@ export default function AdminSettingsPage() {
               placeholder="500"
               className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
             />
-            <p className="text-xs text-[#4c669a] mt-1">Commission per confirmed seat reservation (default: KES 500)</p>
+            <p className="text-xs text-[#4c669a] mt-1">Commission per confirmed seat reservation (default: $5)</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-[#4c669a] mb-2">
-              Full Payment Commission (KES)
+              Full Payment Commission (USD)
             </label>
             <input
               type="number"
@@ -414,7 +414,7 @@ export default function AdminSettingsPage() {
               placeholder="1500"
               className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
             />
-            <p className="text-xs text-[#4c669a] mt-1">Commission per confirmed full fee payment (default: KES 1,500)</p>
+            <p className="text-xs text-[#4c669a] mt-1">Commission per confirmed full fee payment (default: $15)</p>
           </div>
         </div>
       </div>

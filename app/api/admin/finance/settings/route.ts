@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
         data: {
           id: 'global-settings',
           defaultFee: 5000,
-          currency: 'KES',
+          currency: 'USD',
           billingCycle: 'ONE_TIME',
           taxRate: 0
         }
@@ -53,7 +53,7 @@ export async function PATCH(request: NextRequest) {
       create: {
         id: 'global-settings',
         defaultFee: parseFloat(defaultFee || 0),
-        currency: currency || 'KES',
+        currency: currency || 'USD',
         billingCycle: billingCycle || 'ONE_TIME',
         lateFeeAction,
         taxRate: parseFloat(taxRate || 0),

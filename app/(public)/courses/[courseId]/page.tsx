@@ -299,7 +299,7 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
             <div className="sticky top-24 bg-card-light dark:bg-card-dark rounded-xl p-6 border border-gray-200 dark:border-gray-800 shadow-lg">
               <div className="mb-6">
                 <div className="text-4xl font-bold text-text-main dark:text-white">
-                  KES {course.price}
+                  ${course.price}
                 </div>
                 <p className="text-text-subtle text-sm mt-1">
                   {course.durationWeeks} weeks • {course.level}

@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
 
         if (paidReservation) {
           deductions += Number(paidReservation.amount);
-          deductionNotes.push(`seat reservation KES ${Number(paidReservation.amount).toLocaleString()}`);
+          deductionNotes.push(`seat reservation $${Number(paidReservation.amount).toLocaleString()}`);
         }
 
         // Check for PAID material fee invoice
@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
 
         if (paidMaterialInvoice) {
           deductions += Number(paidMaterialInvoice.amount);
-          deductionNotes.push(`material fee KES ${Number(paidMaterialInvoice.amount).toLocaleString()}`);
+          deductionNotes.push(`material fee $${Number(paidMaterialInvoice.amount).toLocaleString()}`);
         }
 
         totalAmount = Math.max(0, totalAmount - deductions);

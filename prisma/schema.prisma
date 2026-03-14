@@ -132,8 +132,8 @@ enum ThreadAudience {
 }
 
 enum CommissionType {
-  RESERVATION    // e.g. KSH 500 per confirmed reservation
-  FULL_PAYMENT   // e.g. KSH 1,500 per confirmed full payment
+  RESERVATION    // e.g. $5 per confirmed reservation
+  FULL_PAYMENT   // e.g. $15 per confirmed full payment
 }
 
 enum CommissionStatus {
@@ -741,7 +741,7 @@ model TermRegistration {
 model GlobalBillingSettings {
   id              String       @id @default("global-settings")
   defaultFee      Decimal      @db.Decimal(10, 2)
-  currency        String       @default("KES")
+  currency        String       @default("USD")
   billingCycle    PaymentCycle @default(ONE_TIME)
   lateFeeAction   String?      // e.g., "ROLL_TO_NEXT", "ADD_PENALTY"
   taxRate         Float        @default(0)
@@ -752,7 +752,7 @@ model SystemSettings {
   systemName          String   @default("German Virtual School")
   supportEmail        String   @default("support@gvs.edu.de")
   maxStudentsPerClass Int      @default(25)
-  defaultCurrency     String   @default("KES")
+  defaultCurrency     String   @default("USD")
   
   // School Calendar Settings
   enrollmentStartDate DateTime?

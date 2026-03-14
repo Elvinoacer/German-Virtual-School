@@ -253,7 +253,7 @@ export default function AdminMarketersPage() {
     }
   };
 
-  const fmt = (n: number) => `KES ${n.toLocaleString()}`;
+  const fmt = (n: number) => `$${n.toLocaleString()}`;
   const appUrl = typeof window !== "undefined" ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL;
 
   // Render CRM Tab
@@ -709,11 +709,11 @@ export default function AdminMarketersPage() {
                    </select>
                  </label>
                  <label className="flex flex-col gap-1">
-                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Amount (KES) *</span>
+                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Amount (USD) *</span>
                    <input type="number" required min="1" value={payoutData.amount} onChange={(e) => setPayoutData({ ...payoutData, amount: e.target.value })} className="form-input bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white dark:placeholder-slate-400 w-full rounded-lg" />
                  </label>
                  <label className="flex flex-col gap-1">
-                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Transaction Ref. (e.g. M-Pesa Code) *</span>
+                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Transaction Ref. (e.g. Wire/Card Ref.) *</span>
                    <input type="text" required value={payoutData.transactionReference} onChange={(e) => setPayoutData({ ...payoutData, transactionReference: e.target.value })} className="form-input bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white dark:placeholder-slate-400 uppercase w-full rounded-lg" />
                  </label>
                  <div className="flex gap-3 mt-6">
@@ -895,7 +895,7 @@ export default function AdminMarketersPage() {
                                     {s.status}
                                   </span>
                                 </td>
-                                <td className="px-3 py-2 text-right font-medium text-slate-900 dark:text-white">KES {Number(s.amount).toLocaleString()}</td>
+                                <td className="px-3 py-2 text-right font-medium text-slate-900 dark:text-white">${Number(s.amount).toLocaleString()}</td>
                                 <td className="px-3 py-2 text-right text-slate-400">{new Date(s.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</td>
                               </tr>
                             ))}
@@ -923,7 +923,7 @@ export default function AdminMarketersPage() {
                             </div>
                             <div className="flex items-center gap-3">
                               <span className={`font-bold ${c.status === "VOIDED" ? "text-red-500 line-through" : "text-green-600 dark:text-green-400"}`}>
-                                KES {Number(c.amount).toLocaleString()}
+                                ${Number(c.amount).toLocaleString()}
                               </span>
                               <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${c.status === "EARNED" ? "bg-yellow-100 text-yellow-700" : c.status === "PAID" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
                                 {c.status}
@@ -950,7 +950,7 @@ export default function AdminMarketersPage() {
                               {p.transactionReference && <span className="font-mono text-slate-400">#{p.transactionReference}</span>}
                             </div>
                             <div className="flex items-center gap-3">
-                              <span className="font-bold text-slate-900 dark:text-white">KES {Number(p.amount).toLocaleString()}</span>
+                              <span className="font-bold text-slate-900 dark:text-white">${Number(p.amount).toLocaleString()}</span>
                               <span className="text-slate-400">{new Date(p.paidAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
                             </div>
                           </div>

@@ -154,7 +154,7 @@ export default function AdminDashboard() {
                   Monthly Revenue
                 </p>
                 <h3 className="text-2xl font-bold text-[#0d121b] dark:text-white mt-1">
-                  KES {stats.monthlyRevenue.toLocaleString()}
+                  ${stats.monthlyRevenue.toLocaleString()}
                 </h3>
               </div>
             </Link>
@@ -274,7 +274,7 @@ export default function AdminDashboard() {
                 <div className="absolute inset-0 m-auto size-32 bg-white dark:bg-[#1a202c] rounded-full flex flex-col items-center justify-center shadow-inner transition-colors duration-200">
                   <span className="text-sm text-[#4c669a]">Total</span>
                   <span className="text-xl font-bold text-[#0d121b] dark:text-white">
-                    KES {(financialHealth.total / 1000).toFixed(1)}k
+                    ${(financialHealth.total / 1000).toFixed(1)}k
                   </span>
                 </div>
               </div>

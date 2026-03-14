@@ -365,7 +365,7 @@ export default function UserSettingsPage() {
                         </label>
                         <label className="flex flex-col gap-2">
                           <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                            Hourly Rate (KES)
+                            Hourly Rate (USD)
                           </span>
                           <input
                             name="hourlyRate"

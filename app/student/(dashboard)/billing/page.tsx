@@ -87,7 +87,7 @@ export default function StudentBillingPage() {
                 <span className="material-symbols-outlined text-orange-500">account_balance_wallet</span>
               </div>
               <p className="text-3xl font-bold text-text-main dark:text-white">
-                KES {totalOutstanding.toFixed(2)}
+                ${totalOutstanding.toFixed(2)}
               </p>
             </div>
             <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 border border-gray-200 dark:border-gray-800">
@@ -96,7 +96,7 @@ export default function StudentBillingPage() {
                 <span className="material-symbols-outlined text-green-500">check_circle</span>
               </div>
               <p className="text-3xl font-bold text-text-main dark:text-white">
-                KES {totalPaid.toFixed(2)}
+                ${totalPaid.toFixed(2)}
               </p>
             </div>
             <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 border border-gray-200 dark:border-gray-800">
@@ -161,19 +161,19 @@ export default function StudentBillingPage() {
                           <div>
                             <p className="text-text-subtle text-sm">Amount</p>
                             <p className="text-xl font-bold text-text-main dark:text-white">
-                              KES {parseFloat(invoice.amount).toFixed(2)}
+                              ${parseFloat(invoice.amount).toFixed(2)}
                             </p>
                           </div>
                           <div>
                             <p className="text-text-subtle text-sm">Paid</p>
                             <p className="text-xl font-bold text-green-500">
-                              KES {parseFloat(invoice.paidAmount).toFixed(2)}
+                              ${parseFloat(invoice.paidAmount).toFixed(2)}
                             </p>
                           </div>
                           <div>
                             <p className="text-text-subtle text-sm">Outstanding</p>
                             <p className="text-xl font-bold text-orange-500">
-                              KES {remaining.toFixed(2)}
+                              ${remaining.toFixed(2)}
                             </p>
                           </div>
                         </div>
@@ -187,7 +187,7 @@ export default function StudentBillingPage() {
                                     className="block rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:border-primary focus:ring-primary shadow-sm py-2 px-3"
                                 >
                                     <option value="CARD-PAYMENT">Card Payment</option>
-                                    <option value="M-PESA">M-Pesa</option>
+
                                 </select>
                                 <button 
                                     onClick={async () => {
@@ -220,7 +220,7 @@ export default function StudentBillingPage() {
                               {invoice.payments.map((payment: any) => (
                                 <li key={payment.id} className="py-2 flex justify-between items-center text-sm">
                                   <span className="text-text-subtle">{new Date(payment.processedAt).toLocaleDateString()}</span>
-                                  <span className="font-bold text-green-500">KES {parseFloat(payment.amount).toFixed(2)}</span>
+                                  <span className="font-bold text-green-500">${parseFloat(payment.amount).toFixed(2)}</span>
                                   <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-text-main dark:text-white">{payment.method}</span>
                                   <span className={`text-xs font-semibold ${payment.status === 'COMPLETED' ? 'text-green-500' : 'text-gray-500'}`}>{payment.status}</span>
                                 </li>

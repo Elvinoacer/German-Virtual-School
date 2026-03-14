@@ -80,7 +80,7 @@ export function BillingAccessGuard({ children }: Props) {
             <div className="flex items-center justify-between mt-3">
               <span className="text-sm text-slate-500">Amount Due:</span>
               <span className="text-lg font-black text-red-600">
-                KES {data.amount?.toLocaleString()}
+                ${data.amount?.toLocaleString()}
               </span>
             </div>
             {data.dueDate && (

@@ -14,7 +14,7 @@ const DEFAULT_MATERIAL_FEE = 7500;
  * and creates material fee invoices for all PAID seat reservations
  * that don't already have a material fee invoice.
  * 
- * Material fee: KSH 7,500 (configurable in SystemSettings)
+ * Material fee: $7,500 (configurable in SystemSettings)
  * Deadline: materialFeeDeadline from settings (or end of April)
  */
 export async function POST(request: NextRequest) {
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
           await sendEmailNotification({
             userId: 'system',
             title: 'Learning Material Fee — German Virtual School',
-            message: `Your learning material fee of KSH ${materialFee.toLocaleString()} is due.`,
+            message: `Your learning material fee of $${materialFee.toLocaleString()} is due.`,
             email: {
               to: reservation.email,
               subject: 'Learning Material Fee Due — German Virtual School',
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
                   
                   <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
                     <h3 style="margin: 0 0 12px; color: #1a4d8f;">Fee Details</h3>
-                    <p style="margin: 4px 0;"><strong>Amount:</strong> KSH ${materialFee.toLocaleString()}</p>
+                    <p style="margin: 4px 0;"><strong>Amount:</strong> $${materialFee.toLocaleString()}</p>
                     <p style="margin: 4px 0;"><strong>Purpose:</strong> Purchase of learning materials</p>
                     <p style="margin: 4px 0;"><strong>Deadline:</strong> ${materialFeeDeadline.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
                     <p style="margin: 4px 0;"><strong>Note:</strong> This will be deducted from your total tuition fee.</p>

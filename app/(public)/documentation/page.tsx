@@ -416,7 +416,7 @@ const documentationData: Section[] = [
               "Payment history showing all past transactions",
               "Pending balances and arrears visibility",
               "Invoice breakdown with due dates",
-              "Secure payment via Mobile Money (M-Pesa) or Card",
+              "Secure payment via Card or Bank Transfer",
               "Intasend payment gateway integration",
               "Real-time payment status updates via webhooks",
               "Payment confirmation notifications",
@@ -843,7 +843,7 @@ const documentationData: Section[] = [
           {
             title: "Financial Configuration",
             functionality: [
-              "Set default currency (KES/EUR)",
+              "Set default currency (USD/EUR)",
               "Configure default fee amount",
               "Define billing cycle defaults (Monthly/Quarterly/One-Time)",
               "Late fee policies (e.g., Roll to Next, Add Penalty)",
@@ -901,7 +901,7 @@ const documentationData: Section[] = [
             title: "Transaction Management",
             functionality: [
               "View all payments received",
-              "Payment method breakdown (Card, M-Pesa, Bank Transfer)",
+              "Payment method breakdown (Card, Bank Transfer)",
               "Transaction references and checkout IDs",
               "Payment status tracking",
               "Webhook integration for real-time updates (Intasend)"
@@ -1162,7 +1162,7 @@ const documentationData: Section[] = [
           {
             title: "Payment Processing",
             functionality: [
-              "Mobile Money (M-Pesa) support",
+              "Card and Bank Transfer support",
               "Card payment processing",
               "Webhook handlers for payment status updates",
               "Secure checkout flow",

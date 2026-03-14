@@ -123,7 +123,7 @@ export default function MarketerReferralsPage() {
                       <TypeBadge type={comm.type} />
                     </td>
                     <td className="p-4 font-bold text-slate-900 dark:text-white">
-                      KES {Number(comm.amount).toLocaleString()}
+                      ${Number(comm.amount).toLocaleString()}
                     </td>
                     <td className="p-4">
                       <StatusBadge status={comm.status} />

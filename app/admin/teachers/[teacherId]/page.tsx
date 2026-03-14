@@ -137,7 +137,7 @@ export default function AdminTeacherDetailPage({ params }: { params: Promise<{ t
                     <div>
                       <h3 className="font-bold text-slate-900 dark:text-white">{course.title}</h3>
                       <p className="text-xs text-slate-500">
-                        {course._count.enrollments} students • KES {course.price.toLocaleString()}
+                        {course._count.enrollments} students • ${course.price.toLocaleString()}
                       </p>
                     </div>
                   </div>

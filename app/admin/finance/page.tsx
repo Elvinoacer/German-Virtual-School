@@ -231,7 +231,7 @@ export default function AdminFinancePage() {
                </div>
                <p className="text-slate-500 text-xs font-black uppercase tracking-widest mb-2">Total Paid Revenue</p>
                <h3 className="text-3xl font-black text-green-600">
-                 KES {financeData.stats.totalPaid.toLocaleString()}
+                 ${financeData.stats.totalPaid.toLocaleString()}
                </h3>
                <div className="mt-4 flex items-center gap-2 text-[10px] font-bold text-slate-400">
                   <span className="text-green-500 flex items-center"><span className="material-symbols-outlined text-xs">trending_up</span> {financeData.stats.collectionRate}%</span> 
@@ -245,7 +245,7 @@ export default function AdminFinancePage() {
                </div>
                <p className="text-slate-500 text-xs font-black uppercase tracking-widest mb-2">Outstanding Arrears</p>
                <h3 className="text-3xl font-black text-red-600">
-                 KES {financeData.stats.totalOutstanding.toLocaleString()}
+                 ${financeData.stats.totalOutstanding.toLocaleString()}
                </h3>
                <p className="mt-4 text-[10px] font-bold text-slate-400">Total uncollected amount</p>
             </div>
@@ -311,10 +311,10 @@ export default function AdminFinancePage() {
                         {invoice.description || 'N/A'}
                       </td>
                       <td className="px-8 py-6 font-black text-slate-900 dark:text-white">
-                        KES {invoice.amount.toLocaleString()}
+                        ${invoice.amount.toLocaleString()}
                       </td>
                       <td className="px-8 py-6 font-black text-green-600">
-                        KES {invoice.paidAmount.toLocaleString()}
+                        ${invoice.paidAmount.toLocaleString()}
                       </td>
                       <td className="px-8 py-6 text-right">
                         <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
@@ -348,7 +348,7 @@ export default function AdminFinancePage() {
               
               <form onSubmit={handleUpdateSettings} className="space-y-8 relative">
                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] pl-1">Default School Fee (KES)</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] pl-1">Default School Fee (USD)</label>
                     <Input 
                       name="defaultFee" 
                       type="number" 

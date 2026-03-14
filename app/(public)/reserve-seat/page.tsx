@@ -126,7 +126,7 @@ function ReserveSeatContent() {
                 info
               </span>
               <span>
-                Your <strong>KSH 2,500</strong> reservation fee will be
+                Your <strong>$2,500</strong> reservation fee will be
                 deducted from your total tuition.
               </span>
             </div>
@@ -203,7 +203,7 @@ function ReserveSeatContent() {
                   </div>
                   <div>
                     <p className="font-semibold text-slate-900 dark:text-white font-sans">
-                      KSH {seatFee.toLocaleString()} — Seat Reservation
+                      ${seatFee.toLocaleString()} — Seat Reservation
                     </p>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
                       Locks your seat for the {intakeLabel} intake. This is deducted from
@@ -219,7 +219,7 @@ function ReserveSeatContent() {
                   </div>
                   <div>
                     <p className="font-semibold text-slate-900 dark:text-white font-sans">
-                      KSH {matFee.toLocaleString()} — Learning Materials
+                      ${matFee.toLocaleString()} — Learning Materials
                     </p>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
                       {matDeadline ? `Due by ${new Date(matDeadline).toLocaleDateString("en-GB", { day: "numeric", month: "long" })}` : "Due before classes begin"}. You&apos;ll be notified 3 weeks
@@ -255,7 +255,7 @@ function ReserveSeatContent() {
                 },
                 {
                   icon: "credit_score",
-                  text: "Tuition payable in installments — min. KES 9,000 per installment",
+                  text: "Tuition payable in installments — min. $9,000 per installment",
                 },
               ].map((item, i) => (
                 <div
@@ -445,7 +445,7 @@ function ReserveSeatContent() {
                       Total Tuition Fee:
                     </span>
                     <span className="font-bold text-primary text-lg">
-                      KES {courseFee.toLocaleString()}
+                      ${courseFee.toLocaleString()}
                     </span>
                   </div>
                   <div>
@@ -458,7 +458,7 @@ function ReserveSeatContent() {
                           check
                         </span>
                         <span>
-                          The KES {seatFee.toLocaleString()} seat reservation fee is{" "}
+                          The ${seatFee.toLocaleString()} seat reservation fee is{" "}
                           <strong>non-refundable</strong>
                         </span>
                       </li>
@@ -518,7 +518,7 @@ function ReserveSeatContent() {
                       <span className="material-symbols-outlined text-xl">
                         lock
                       </span>
-                      Pay KSH {seatFee.toLocaleString()} — Reserve Your Seat
+                      Pay ${seatFee.toLocaleString()} — Reserve Your Seat
                     </>
                   )}
                 </button>

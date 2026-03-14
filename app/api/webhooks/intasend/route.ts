@@ -187,7 +187,7 @@ async function handleSeatReservationPayment({
           studentId: reservation.userId || undefined,
         },
       });
-      console.log(`💰 Reservation commission (KSH ${commissionAmount}) created for marketer ${reservation.marketerId}`);
+      console.log(`💰 Reservation commission ($${commissionAmount}) created for marketer ${reservation.marketerId}`);
     } catch (commErr) {
       console.error('Failed to create reservation commission (non-fatal):', commErr);
     }
@@ -212,15 +212,15 @@ async function handleSeatReservationPayment({
               <h3 style="margin: 0 0 12px; color: #1a4d8f;">Reservation Details</h3>
               <p style="margin: 4px 0;"><strong>Name:</strong> ${reservation.firstName} ${reservation.lastName}</p>
               ${reservation.program ? `<p style="margin: 4px 0;"><strong>Program:</strong> ${reservation.program}</p>` : ''}
-              <p style="margin: 4px 0;"><strong>Amount Paid:</strong> KSH ${paidAmount.toLocaleString()}</p>
+              <p style="margin: 4px 0;"><strong>Amount Paid:</strong> $${paidAmount.toLocaleString()}</p>
               <p style="margin: 4px 0;"><strong>Status:</strong> ✅ Confirmed</p>
             </div>
             
             <div style="background: #fff3cd; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
               <p style="margin: 0; font-size: 14px;"><strong>What's Next?</strong></p>
               <ul style="margin: 8px 0 0; padding-left: 20px; font-size: 14px;">
-                <li>Your KSH ${paidAmount.toLocaleString()} will be deducted from your total tuition.</li>
-                <li>You'll be notified about <strong>learning material fees (KSH 7,500)</strong> closer to the class start date.</li>
+                <li>Your $${paidAmount.toLocaleString()} will be deducted from your total tuition.</li>
+                <li>You'll be notified about <strong>learning material fees ($7,500)</strong> closer to the class start date.</li>
                 <li>Create your student account at <a href="${process.env.NEXT_PUBLIC_APP_URL}/register" style="color: #1a4d8f;">our registration page</a> to access the full platform.</li>
               </ul>
             </div>
@@ -258,7 +258,7 @@ async function handleSeatReservationPayment({
               <p style="margin: 4px 0;"><strong>Email:</strong> ${reservation.email}</p>
               ${reservation.phone ? `<p style="margin: 4px 0;"><strong>Phone:</strong> ${reservation.phone}</p>` : ''}
               ${reservation.program ? `<p style="margin: 4px 0;"><strong>Program:</strong> ${reservation.program}</p>` : ''}
-              <p style="margin: 4px 0;"><strong>Amount Paid:</strong> KSH ${paidAmount.toLocaleString()}</p>
+              <p style="margin: 4px 0;"><strong>Amount Paid:</strong> $${paidAmount.toLocaleString()}</p>
               <p style="margin: 4px 0;"><strong>Payment Provider:</strong> ${provider}</p>
               <p style="margin: 4px 0;"><strong>Date:</strong> ${new Date().toLocaleString('en-KE', { timeZone: 'Africa/Nairobi' })}</p>
             </div>
@@ -422,7 +422,7 @@ async function handleCompletePayment({
                 invoiceId: invoice.id,
               },
             });
-            console.log(`💰 Full payment commission (KSH ${commissionAmount}) created for marketer ${marketerIdToCredit}`);
+            console.log(`💰 Full payment commission ($${commissionAmount}) created for marketer ${marketerIdToCredit}`);
           }
         }
       } catch (commErr) {

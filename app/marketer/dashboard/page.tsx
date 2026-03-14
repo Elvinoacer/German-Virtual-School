@@ -147,7 +147,7 @@ export default function MarketerDashboardPage() {
 
   const { marketer, stats, students, commissions, payouts } = data;
 
-  const fmt = (n: number) => `KES ${n.toLocaleString()}`;
+  const fmt = (n: number) => `$${n.toLocaleString()}`;
 
   return (
     <div className="space-y-8">

@@ -129,7 +129,7 @@ export default function TeacherCoursesPage() {
                     </div>
                     <div className="flex items-center gap-1">
                       <span className="material-symbols-outlined text-lg">payments</span>
-                      KES {course.price}
+                      ${course.price}
                     </div>
                     <div className="flex items-center gap-1">
                       <span className="material-symbols-outlined text-lg">signal_cellular_alt</span>

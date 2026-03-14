@@ -64,10 +64,10 @@ export async function POST(
       email: invoice.student.email,
       host: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
       amount: Number(amount),
-      currency: 'KES',
+      currency: 'USD',
       api_ref: invoiceId, // Pass our invoice ID for webhook callback
       redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/student/billing?payment=success`,
-      method: method as 'M-PESA' | 'CARD-PAYMENT' | undefined,
+      method: (method as 'CARD-PAYMENT') || 'CARD-PAYMENT',
       mobile_tarrif: 'BUSINESS-PAYS',
       card_tarrif: 'BUSINESS-PAYS'
     });

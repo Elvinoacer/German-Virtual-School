@@ -77,7 +77,7 @@ export class IntaSendService {
         email: data.email,
         host: data.host,
         amount: data.amount,
-        currency: data.currency || 'KES',
+        currency: data.currency || 'USD',
         api_ref: data.api_ref,
         redirect_url: data.redirect_url,
         ...(data.phone_number && { phone_number: data.phone_number }),
@@ -87,7 +87,7 @@ export class IntaSendService {
         ...(data.city && { city: data.city }),
         ...(data.state && { state: data.state }),
         ...(data.zipcode && { zipcode: data.zipcode }),
-        ...(data.method && { method: data.method }),
+        method: data.method || 'CARD-PAYMENT',
         ...(data.card_tarrif && { card_tarrif: data.card_tarrif }),
         ...(data.mobile_tarrif && { mobile_tarrif: data.mobile_tarrif }),
       };

@@ -131,7 +131,7 @@ export default function AdminCoursesPage() {
                 {course.level}
               </div>
               <span className="text-sm font-semibold text-green-600">
-                KES {course.price.toLocaleString()}
+                ${course.price.toLocaleString()}
               </span>
             </div>
 
@@ -165,7 +165,7 @@ export default function AdminCoursesPage() {
               <div>
                 <p className="text-xs text-[#4c669a]">Revenue</p>
                 <p className="text-sm font-bold text-green-600">
-                  KES {course.stats.revenue.toLocaleString()}
+                  ${course.stats.revenue.toLocaleString()}
                 </p>
               </div>
               <div>

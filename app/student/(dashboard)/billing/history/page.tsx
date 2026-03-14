@@ -93,7 +93,7 @@ export default function BillingHistoryPage() {
       inv.id.substring(0, 8),
       format(parseISO(inv.createdAt), "dd/MM/yyyy"),
       inv.course?.title || inv.description || "Course Fee",
-      `KES ${parseFloat(inv.amount).toFixed(2)}`,
+      `$${parseFloat(inv.amount).toFixed(2)}`,
       inv.status
     ]);
 
@@ -254,7 +254,7 @@ export default function BillingHistoryPage() {
                 </span>
               </div>
               <p className="text-slate-900 dark:text-white text-3xl font-bold leading-tight">
-                KES {totalPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ${totalPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
               <p className="text-xs text-slate-400 mt-1">Just updated</p>
             </div>
@@ -268,7 +268,7 @@ export default function BillingHistoryPage() {
                 </span>
               </div>
               <p className="text-slate-900 dark:text-white text-3xl font-bold leading-tight">
-                KES {totalOutstanding.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ${totalOutstanding.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
               <p className="text-xs text-slate-400 mt-1">
                 Due for current semester
@@ -422,7 +422,7 @@ export default function BillingHistoryPage() {
                           {invoice.course?.title || invoice.description || 'Course Fee'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-white font-bold">
-                          KES {parseFloat(invoice.amount).toFixed(2)}
+                          ${parseFloat(invoice.amount).toFixed(2)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300">
                           {invoice.payments?.[0]?.method || '—'}
@@ -490,7 +490,7 @@ export default function BillingHistoryPage() {
                        </p>
                     </div>
                     <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
-                       <p className="text-lg font-black text-slate-900 dark:text-white">KES {parseFloat(invoice.amount).toFixed(2)}</p>
+                       <p className="text-lg font-black text-slate-900 dark:text-white">${parseFloat(invoice.amount).toFixed(2)}</p>
                        <button className="p-2 text-slate-400 hover:text-primary transition-colors">
                           <MoreVertical className="size-5" />
                        </button>

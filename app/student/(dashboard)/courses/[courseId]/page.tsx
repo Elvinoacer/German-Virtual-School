@@ -193,7 +193,7 @@ export default function StudentCourseClassroomPage({ params }: { params: Promise
               </div>
               <div>
                 <h3 className="text-lg font-black tracking-tight">Fee Payment Required</h3>
-                <p className="text-white/80 text-sm max-w-md">Your enrollment is pending payment. Please settle the balance of **KES {course.unpaidInvoice.amount.toLocaleString()}** to ensure uninterrupted access.</p>
+                <p className="text-white/80 text-sm max-w-md">Your enrollment is pending payment. Please settle the balance of **${course.unpaidInvoice.amount.toLocaleString()}** to ensure uninterrupted access.</p>
               </div>
             </div>
             <button 

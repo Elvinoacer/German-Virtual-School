@@ -406,11 +406,11 @@ export default function EditCoursePage() {
                 <div className="grid gap-6 md:grid-cols-2">
                   <div>
                     <label className="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
-                      Price (KES)
+                      Price (USD)
                     </label>
                     <div className="relative rounded-md shadow-sm">
                       <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <span className="text-gray-500 sm:text-sm">KES</span>
+                        <span className="text-gray-500 sm:text-sm">$</span>
                       </div>
                       <input
                         {...register("price", { required: true, min: 0 })}

@@ -148,7 +148,7 @@ export default function MakePaymentPage() {
                       <option value="" disabled>Select an invoice</option>
                       {invoices && invoices.filter((inv: any) => inv.status !== 'PAID').map((inv: any) => (
                         <option key={inv.id} value={inv.id}>
-                          {inv.course?.title || 'Course'} - Due {new Date(inv.dueDate).toLocaleDateString()} - KES {parseFloat(inv.amount).toFixed(2)}
+                          {inv.course?.title || 'Course'} - Due {new Date(inv.dueDate).toLocaleDateString()} - ${parseFloat(inv.amount).toFixed(2)}
                         </option>
                       ))}
                     </select>
@@ -185,7 +185,7 @@ export default function MakePaymentPage() {
                     onClick={handlePay}
                     disabled={loading || !selectedInvoice || !amount}
                   >
-                    {loading ? 'Processing...' : `Pay KES ${amount}`}
+                    {loading ? 'Processing...' : `Pay $${amount}`}
                   </button>
                   {error && <p className="text-red-500 mt-2">{error}</p>}
                   {success && <p className="text-green-500 mt-2">{success}</p>}
@@ -203,9 +203,9 @@ export default function MakePaymentPage() {
                           <div className="flex flex-col gap-1">
                             <h4 className="text-slate-900 dark:text-white font-bold leading-tight">{selectedInvoice.course?.title || 'Course'}</h4>
                             <p className="text-sm text-slate-500 dark:text-slate-400">Due: {new Date(selectedInvoice.dueDate).toLocaleDateString()}</p>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Amount: KES {parseFloat(selectedInvoice.amount).toFixed(2)}</p>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Paid: KES {parseFloat(selectedInvoice.paidAmount).toFixed(2)}</p>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Outstanding: KES {(parseFloat(selectedInvoice.amount) - parseFloat(selectedInvoice.paidAmount)).toFixed(2)}</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Amount: ${parseFloat(selectedInvoice.amount).toFixed(2)}</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Paid: ${parseFloat(selectedInvoice.paidAmount).toFixed(2)}</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Outstanding: ${(parseFloat(selectedInvoice.amount) - parseFloat(selectedInvoice.paidAmount)).toFixed(2)}</p>
                           </div>
                         </div>
                         {/* Payment History */}
@@ -216,7 +216,7 @@ export default function MakePaymentPage() {
                               {selectedInvoice.payments.map((payment: any) => (
                                 <li key={payment.id} className="py-2 flex justify-between items-center">
                                   <span className="text-sm text-text-subtle">{new Date(payment.processedAt).toLocaleDateString()}</span>
-                                  <span className="text-sm font-bold text-green-500">KES {parseFloat(payment.amount).toFixed(2)}</span>
+                                  <span className="text-sm font-bold text-green-500">${parseFloat(payment.amount).toFixed(2)}</span>
                                   <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-text-main dark:text-white">{payment.method}</span>
                                   <span className="text-xs px-2 py-1 rounded-full text-white bg-green-500">{payment.status}</span>
                                 </li>

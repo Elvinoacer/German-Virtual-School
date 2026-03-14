@@ -641,9 +641,9 @@ export default function Home() {
                 
                 <div className="space-y-4 mb-8">
                   {[
-                    "Earn KES 500 instantly on seat reservation",
-                    "Earn an additional KES 1,500 on full tuition payment",
-                    "Transparent dashboard & direct M-Pesa payouts",
+                    "Earn $5 instantly on seat reservation",
+                    "Earn an additional $15 on full tuition payment",
+                    "Transparent dashboard & direct bank/card payouts",
                     "Receive a unique referral code instantly"
                   ].map((perk, i) => (
                     <div key={i} className="flex items-start gap-3">
@@ -692,7 +692,7 @@ export default function Home() {
                     <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
                       <div>
                         <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Total Earned</p>
-                        <p className="text-xl font-bold text-slate-900 dark:text-white">KES 248,000</p>
+                        <p className="text-xl font-bold text-slate-900 dark:text-white">$248,000</p>
                       </div>
                       <span className="material-symbols-outlined text-green-500">account_balance_wallet</span>
                     </div>
@@ -842,7 +842,7 @@ export default function Home() {
                         </div>
                       </div>
                       <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                        KES {stats.fees.seatReservationFee.toLocaleString()}
+                        ${stats.fees.seatReservationFee.toLocaleString()}
                       </p>
                       <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
                         Deducted from your total tuition fee. Secures your spot{stats.fees.intakeLabel ? ` for the ${stats.fees.intakeLabel} intake` : ""}.
@@ -861,7 +861,7 @@ export default function Home() {
                         </div>
                       </div>
                       <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">
-                        KES {stats.fees.materialFee.toLocaleString()}
+                        ${stats.fees.materialFee.toLocaleString()}
                       </p>
                       <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
                         Covers all course materials, textbooks, and digital resources{stats.fees.materialFeeDeadline ? `. Due by ${new Date(stats.fees.materialFeeDeadline).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}` : ""}.
@@ -906,7 +906,7 @@ export default function Home() {
                             {course.title}
                           </h3>
                           <p className="text-3xl font-bold text-slate-900 dark:text-white mb-1">
-                            KES {course.price.toLocaleString()}
+                            ${course.price.toLocaleString()}
                           </p>
                           {course.feePlans.length > 0 && (
                             <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
@@ -918,7 +918,7 @@ export default function Home() {
                                     {fp.billingCycle.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
                                     {fp.installments > 1 && ` (${fp.installments}x)`}
                                   </span>
-                                  <span className="font-semibold">KES {fp.amount.toLocaleString()}{fp.installments > 1 ? "/inst." : ""}</span>
+                                  <span className="font-semibold">${fp.amount.toLocaleString()}{fp.installments > 1 ? "/inst." : ""}</span>
                                 </div>
                               ))}
                             </div>
@@ -942,7 +942,7 @@ export default function Home() {
                   <h4 className="font-bold text-slate-900 dark:text-white text-base">Flexible Installment Plans</h4>
                 </div>
                 <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                  Tuition fees are payable in installments with a minimum of <strong className="text-primary">KES 9,000</strong> per installment.
+                  Tuition fees are payable in installments with a minimum of <strong className="text-primary">$9,000</strong> per installment.
                   Start your learning journey today and spread the cost across the semester at your own pace.
                 </p>
                 <div className="flex flex-wrap items-center justify-center gap-4 mt-4 text-xs text-slate-500 dark:text-slate-400">
@@ -952,7 +952,7 @@ export default function Home() {
                   </span>
                   <span className="flex items-center gap-1">
                     <span className="material-symbols-outlined text-[14px] text-green-500">check_circle</span>
-                    Min. KES 9,000 per installment
+                    Min. $9,000 per installment
                   </span>
                   <span className="flex items-center gap-1">
                     <span className="material-symbols-outlined text-[14px] text-green-500">check_circle</span>
@@ -972,7 +972,7 @@ export default function Home() {
             </h2>
             <p className="text-xl mb-6 text-blue-100 leading-relaxed">
               Reserve your seat today with a one-time fee of{" "}
-              <span className="font-bold text-white">KSH 2,500</span>.
+              <span className="font-bold text-white">$2,500</span>.
               This locks your place in our upcoming May intake and is
               deducted from your total tuition fee.
             </p>
@@ -995,7 +995,7 @@ export default function Home() {
                 href="/reserve-seat"
                 className="px-10 py-4 bg-white text-primary text-lg font-semibold hover:bg-blue-50 transition-colors font-sans"
               >
-                Reserve Your Seat — KSH 2,500
+                Reserve Your Seat — $2,500
               </Link>
               <Link
                 href="/courses"

@@ -312,7 +312,7 @@ export default function SchoolInfoPage() {
               <p className="text-slate-400 mb-6">Invest in your future with German language proficiency</p>
               <div className="flex items-baseline justify-center gap-2 mb-6">
                 <span className="text-5xl md:text-6xl font-black">
-                  {data.fees.currency} {data.fees.semesterFee.toLocaleString()}
+                   {data.fees.currency === 'USD' ? '$' : data.fees.currency} {data.fees.semesterFee.toLocaleString()}
                 </span>
                 <span className="text-slate-400">/semester</span>
               </div>
