@@ -56,3 +56,74 @@ html {
     animation: progress 0.8s infinite linear;
   }
 }
+
+/* ===== Landing Page Premium Styles ===== */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(2deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(19, 91, 236, 0.15); }
+  50% { box-shadow: 0 0 40px rgba(19, 91, 236, 0.3); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes slide-up-fade {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-float-slow { animation: float-slow 8s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+.animate-gradient-x { animation: gradient-x 8s ease infinite; background-size: 200% 200%; }
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.1) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+.glass {
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  background: rgba(255, 255, 255, 0.72);
+}
+.dark .glass {
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.hero-grid {
+  background-image:
+    linear-gradient(rgba(19, 91, 236, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(19, 91, 236, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+.dark .hero-grid {
+  background-image:
+    linear-gradient(rgba(19, 91, 236, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(19, 91, 236, 0.08) 1px, transparent 1px);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #135bec 0%, #6366f1 50%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
