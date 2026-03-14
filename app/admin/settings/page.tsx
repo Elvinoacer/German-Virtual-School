@@ -44,6 +44,7 @@ export default function AdminSettingsPage() {
     intakeLabel: "",
     reservationCommission: "",
     fullPaymentCommission: "",
+    minInstallmentAmount: "",
   });
 
   const { data: settingsData, isLoading } = useQuery({
@@ -83,6 +84,7 @@ export default function AdminSettingsPage() {
         intakeLabel: settingsData.intakeLabel || "May 2026",
         reservationCommission: settingsData.reservationCommission?.toString() || "500",
         fullPaymentCommission: settingsData.fullPaymentCommission?.toString() || "1500",
+        minInstallmentAmount: settingsData.minInstallmentAmount?.toString() || "9000",
       });
     }
   }, [settingsData]);
@@ -373,6 +375,19 @@ export default function AdminSettingsPage() {
               className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
             />
             <p className="text-xs text-[#4c669a] mt-1">Label shown on the public reservation page (e.g. &quot;May 2026&quot;)</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#4c669a] mb-2">
+              Minimum Installment Amount (USD)
+            </label>
+            <input
+              type="number"
+              value={formData.minInstallmentAmount}
+              onChange={(e) => setFormData({ ...formData, minInstallmentAmount: e.target.value })}
+              placeholder="9000"
+              className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
+            />
+            <p className="text-xs text-[#4c669a] mt-1">Minimum amount for flexible installment plans (default: $9,000)</p>
           </div>
         </div>
       </div>

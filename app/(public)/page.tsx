@@ -73,6 +73,8 @@ export default function Home() {
     fetchTestimonials();
   }, []);
 
+  const minInstallment = stats.fees?.minInstallmentAmount ?? 9000;
+
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 font-body text-slate-900 dark:text-slate-100 overflow-x-hidden">
       <main>
@@ -682,10 +684,10 @@ export default function Home() {
                   <h4 className="font-bold text-slate-900 dark:text-white text-base font-display">Flexible Installment Plans</h4>
                 </div>
                 <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                  Tuition fees are payable in installments with a minimum of <strong className="text-primary">$9,000</strong> per installment.
+                  Tuition fees are payable in installments with a minimum of <strong className="text-primary">${minInstallment.toLocaleString()}</strong> per installment.
                 </p>
                 <div className="flex flex-wrap items-center justify-center gap-4 mt-4 text-xs text-slate-500 dark:text-slate-400">
-                  {["No interest charged", "Min. $9,000 per installment", "Per semester billing"].map((t, i) => (
+                  {["No interest charged", `Min. $${minInstallment.toLocaleString()} per installment`, "Per semester billing"].map((t, i) => (
                     <span key={i} className="flex items-center gap-1">
                       <span className="material-symbols-outlined text-[14px] text-green-500">check_circle</span>
                       {t}

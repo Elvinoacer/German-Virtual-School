@@ -37,6 +37,7 @@ function ReserveSeatContent() {
   const courseFee = stats.fees?.defaultFee ?? 5000; // Fallback to 5000 if not set
   const matDeadline = stats.fees?.materialFeeDeadline;
   const intakeLabel = stats.fees?.intakeLabel ?? "May";
+  const minInstallment = stats.fees?.minInstallmentAmount ?? 9000;
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -255,7 +256,7 @@ function ReserveSeatContent() {
                 },
                 {
                   icon: "credit_score",
-                  text: "Tuition payable in installments — min. $9,000 per installment",
+                  text: `Tuition payable in installments — min. $${minInstallment.toLocaleString()} per installment`,
                 },
               ].map((item, i) => (
                 <div

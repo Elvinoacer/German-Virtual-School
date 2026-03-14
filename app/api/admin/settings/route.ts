@@ -78,6 +78,7 @@ export async function PATCH(request: NextRequest) {
         materialFee: body.materialFee !== undefined ? (body.materialFee ? Number(body.materialFee) : null) : undefined,
         materialFeeDeadline: body.materialFeeDeadline !== undefined ? parseDate(body.materialFeeDeadline) : undefined,
         intakeLabel: body.intakeLabel !== undefined ? (body.intakeLabel || null) : undefined,
+        minInstallmentAmount: body.minInstallmentAmount !== undefined ? (body.minInstallmentAmount ? Number(body.minInstallmentAmount) : null) : undefined,
       },
       create: {
         id: SETTINGS_ID,
@@ -97,6 +98,7 @@ export async function PATCH(request: NextRequest) {
         materialFee: body.materialFee ? Number(body.materialFee) : null,
         materialFeeDeadline: parseDate(body.materialFeeDeadline),
         intakeLabel: body.intakeLabel || null,
+        minInstallmentAmount: body.minInstallmentAmount ? Number(body.minInstallmentAmount) : null,
       }
     });
 

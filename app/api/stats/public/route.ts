@@ -91,6 +91,7 @@ export async function GET() {
         materialFee: true,
         materialFeeDeadline: true,
         intakeLabel: true,
+        minInstallmentAmount: true,
       },
     });
 
@@ -124,6 +125,7 @@ export async function GET() {
         materialFee: settings?.materialFee ? Number(settings.materialFee) : null,
         materialFeeDeadline: settings?.materialFeeDeadline || null,
         intakeLabel: settings?.intakeLabel || null,
+        minInstallmentAmount: settings?.minInstallmentAmount ? Number(settings.minInstallmentAmount) : null,
         defaultFee: billingSettings?.defaultFee ? Number(billingSettings.defaultFee) : null,
       },
     });

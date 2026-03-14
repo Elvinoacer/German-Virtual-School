@@ -766,6 +766,7 @@ model SystemSettings {
   materialFee         Decimal?  @db.Decimal(10, 2) // e.g. 7500
   materialFeeDeadline DateTime?                     // e.g. end of April
   intakeLabel         String?                       // e.g. "May 2026"
+  minInstallmentAmount Decimal? @db.Decimal(10, 2) // e.g. 9000
   
   // Marketer Commission Settings
   reservationCommission Decimal? @db.Decimal(10, 2) // e.g. 500

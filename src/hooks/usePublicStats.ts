@@ -18,6 +18,7 @@ interface FeeData {
   materialFeeDeadline: string | null;
   intakeLabel: string | null;
   defaultFee: number | null;
+  minInstallmentAmount: number | null;
 }
 
 interface PublicStats {
