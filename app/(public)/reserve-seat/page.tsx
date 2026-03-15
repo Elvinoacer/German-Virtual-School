@@ -118,7 +118,7 @@ function ReserveSeatContent() {
             Seat Reserved Successfully!
           </h1>
           <p className="text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">
-            Your seat for the <strong>May intake</strong> has been confirmed.
+            Your seat for the <strong>{intakeLabel} intake</strong> has been confirmed.
             You&apos;ll receive a confirmation email shortly with your reservation details.
           </p>
           <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4 mb-8 text-left space-y-2">
@@ -127,7 +127,7 @@ function ReserveSeatContent() {
                 info
               </span>
               <span>
-                Your <strong>$2,500</strong> reservation fee will be
+                Your <strong>${seatFee.toLocaleString()}</strong> reservation fee will be
                 deducted from your total tuition.
               </span>
             </div>
@@ -180,7 +180,7 @@ function ReserveSeatContent() {
             transition={{ duration: 0.5 }}
           >
             <div className="inline-block mb-4 px-3 py-1 bg-primary/10 border border-primary/20 text-primary text-xs font-semibold uppercase tracking-widest font-sans rounded">
-              May Intake
+              {intakeLabel} Intake
             </div>
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-6 leading-tight">
               Reserve Your Seat

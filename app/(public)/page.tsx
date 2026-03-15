@@ -94,7 +94,7 @@ export default function Home() {
               >
                 <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-primary/5 border border-primary/15 dark:bg-primary/10 dark:border-primary/20">
                   <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-xs font-semibold tracking-widest uppercase text-primary font-display">Enrollment Open · May 2026 Intake</span>
+                  <span className="text-xs font-semibold tracking-widest uppercase text-primary font-display">Enrollment Open · {stats.fees?.intakeLabel || "May"} 2026 Intake</span>
                 </motion.div>
 
                 <motion.h1 variants={fadeUp} custom={1} className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-[1.08] tracking-tight mb-6 font-display">
@@ -708,10 +708,10 @@ export default function Home() {
           <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 text-center relative z-10 text-white">
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
               <motion.h2 variants={fadeUp} custom={0} className="text-3xl lg:text-5xl font-extrabold mb-6 font-display">
-                Secure Your Spot for The May Intake
+                Secure Your Spot for The {stats.fees?.intakeLabel || "May"} Intake
               </motion.h2>
               <motion.p variants={fadeUp} custom={1} className="text-xl mb-8 text-white/80 leading-relaxed">
-                Reserve your seat today with a one-time fee of <span className="font-bold text-white">$2,500</span>. This locks your place and is deducted from your total tuition fee.
+                Reserve your seat today with a one-time fee of <span className="font-bold text-white">${(stats.fees?.seatReservationFee ?? 2500).toLocaleString()}</span>. This locks your place and is deducted from your total tuition fee.
               </motion.p>
 
               <motion.div variants={fadeUp} custom={2} className="flex flex-wrap items-center justify-center gap-4 mb-10 text-sm text-white/70">
@@ -729,7 +729,7 @@ export default function Home() {
 
               <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/reserve-seat" className="group relative px-10 py-4 bg-white text-primary text-lg font-bold rounded-xl overflow-hidden hover:shadow-2xl hover:shadow-white/20 hover:-translate-y-0.5 transition-all duration-300 font-display">
-                  Reserve Your Seat — $2,500
+                  Reserve Your Seat — ${(stats.fees?.seatReservationFee ?? 2500).toLocaleString()}
                 </Link>
                 <Link href="/courses" className="px-10 py-4 border-2 border-white/30 text-white text-lg font-semibold rounded-xl hover:bg-white/10 transition-all duration-300 font-display">
                   Browse Courses
