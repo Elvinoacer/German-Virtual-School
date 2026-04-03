@@ -29,6 +29,17 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
+## Project Documentation
+
+The project documentation is organized in the `docs/` directory:
+
+- [**Architecture**](docs/architecture/): Core vision and UI map.
+- [**Features**](docs/features/): Implemented features and functionality analysis.
+- [**Flows**](docs/flows/): User journeys for Admin, Student, and Teacher roles.
+- [**Integrations**](docs/integrations/): Third-party service implementations like Jitsi and Notifications.
+- [**Testing**](docs/testing/): Manual testing guides and Prisma findings.
+- [**Guides**](docs/guides/): Development instructions, page lists, and feature analysis guides.
+
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
