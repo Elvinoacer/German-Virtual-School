@@ -1,6 +1,7 @@
 Yes. Based on your pasted requirements, the right way to handle this is as a **site-wide public experience rebuild with controlled reuse of the current platform**, not as a few isolated page edits. Your pasted brief defines a new primary information architecture, a new top-nav, new conversion paths, a large content layer around Germany opportunities, CEFR course pages A1–C2, Goethe prep, preparation services, resources, blog, success stories, partner/referral, enroll, about, contact, plus hidden SEO pages.
 
 Here is the plan I would use to fully address it.
+ggg
 
 ## 1) Lock the target state first
 
