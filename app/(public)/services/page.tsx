@@ -108,7 +108,7 @@ export default function ServicesPage() {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: "url('/images/gvs-marketing-banner.webp')",
+            backgroundImage: "url('/images/opportunities_work.png')",
           }}
           aria-hidden="true"
         />
