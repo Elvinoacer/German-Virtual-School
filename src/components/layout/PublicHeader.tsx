@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const navLinks = [
   {
-    label: "Germany Opportunities",
+    label: "Opportunities",
     href: "/opportunities",
     children: [
       {
@@ -17,26 +17,26 @@ const navLinks = [
       },
       { label: "Work in Germany", href: "/opportunities/work", icon: "work" },
       {
-        label: "Ausbildung (Vocational Training)",
+        label: "Ausbildung Pathway",
         href: "/opportunities/ausbildung",
         icon: "engineering",
       },
     ],
   },
   {
-    label: "German Courses",
+    label: "Courses",
     href: "/courses",
+    children: [
+      { label: "German Courses", href: "/courses", icon: "menu_book" },
+      { label: "Goethe Exam Prep", href: "/exam-prep", icon: "quiz" },
+    ],
   },
   {
-    label: "Goethe Exam Prep",
-    href: "/exam-prep",
-  },
-  {
-    label: "Preparation Services",
+    label: "Services",
     href: "/services",
     children: [
       {
-        label: "Visa Readiness Guidance",
+        label: "Visa Readiness",
         href: "/services#visa",
         icon: "flight_takeoff",
       },
@@ -46,23 +46,27 @@ const navLinks = [
         icon: "record_voice_over",
       },
       {
-        label: "CV & Application Support",
+        label: "CV & Application",
         href: "/services#cv",
         icon: "description",
       },
     ],
   },
   {
-    label: "Student Resources",
+    label: "Resources",
     href: "/resources",
   },
   {
-    label: "Blog",
-    href: "/blog",
-  },
-  {
-    label: "Success Stories",
-    href: "/success-stories",
+    label: "More",
+    href: "#",
+    children: [
+      { label: "Blog", href: "/blog", icon: "article" },
+      {
+        label: "Success Stories",
+        href: "/success-stories",
+        icon: "emoji_events",
+      },
+    ],
   },
 ];
 
@@ -124,10 +128,10 @@ export function PublicHeader() {
                 className="h-9 w-auto dark:brightness-0 dark:invert"
               />
               <div className="flex flex-col">
-                <span className="text-base lg:text-lg font-bold tracking-tight text-slate-900 dark:text-white font-display leading-tight">
+                <span className="text-[15px] xl:text-base 2xl:text-lg font-bold tracking-tight text-slate-900 dark:text-white font-display leading-tight whitespace-nowrap">
                   German Virtual School
                 </span>
-                <span className="hidden sm:block text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] font-medium">
+                <span className="hidden 2xl:block text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] font-medium whitespace-nowrap">
                   Excellence in German Education
                 </span>
               </div>
@@ -136,7 +140,7 @@ export function PublicHeader() {
             {/* Desktop Nav */}
             <nav
               ref={dropdownRef}
-              className="hidden xl:flex items-center gap-1"
+              className="hidden xl:flex items-center gap-0.5"
             >
               {navLinks.map((link) => (
                 <div key={link.href} className="relative">
@@ -148,7 +152,7 @@ export function PublicHeader() {
                             activeDropdown === link.href ? null : link.href,
                           )
                         }
-                        className={`flex items-center gap-1 px-3 py-2 text-[13px] font-medium rounded-lg transition-all duration-200 ${
+                        className={`flex items-center gap-1 px-2.5 py-2 text-[13px] font-medium rounded-lg transition-all duration-200 whitespace-nowrap ${
                           isActive(link.href, link.children)
                             ? "text-primary bg-primary/5"
                             : "text-slate-600 dark:text-slate-300 hover:text-primary hover:bg-primary/5"
@@ -170,7 +174,7 @@ export function PublicHeader() {
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 8, scale: 0.96 }}
                             transition={{ duration: 0.15 }}
-                            className="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 overflow-hidden z-50"
+                            className="absolute top-full left-0 mt-1 w-60 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 overflow-hidden z-50"
                           >
                             <div className="p-2">
                               {link.children.map((child) => (
@@ -199,7 +203,7 @@ export function PublicHeader() {
                     <Link
                       href={link.href}
                       onClick={() => setActiveDropdown(null)}
-                      className={`px-3 py-2 text-[13px] font-medium rounded-lg transition-all duration-200 ${
+                      className={`px-2.5 py-2 text-[13px] font-medium rounded-lg transition-all duration-200 whitespace-nowrap ${
                         isActive(link.href)
                           ? "text-primary bg-primary/5"
                           : "text-slate-600 dark:text-slate-300 hover:text-primary hover:bg-primary/5"
@@ -216,16 +220,16 @@ export function PublicHeader() {
             <div className="flex items-center gap-2 lg:gap-3">
               <Link
                 href="/login"
-                className="hidden sm:flex items-center gap-1.5 text-xs lg:text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary transition-colors px-3 py-2 rounded-lg hover:bg-primary/5"
+                className="hidden sm:flex items-center gap-1.5 text-xs lg:text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary transition-colors px-2.5 py-2 rounded-lg hover:bg-primary/5"
               >
                 <span className="material-symbols-outlined text-[18px]">
                   login
                 </span>
-                <span className="hidden md:inline">Portal</span>
+                <span className="hidden 2xl:inline">Portal</span>
               </Link>
               <Link
                 href="/reserve-seat"
-                className="group relative px-4 lg:px-5 py-2 lg:py-2.5 bg-primary text-white text-xs lg:text-sm font-semibold rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5 font-display"
+                className="group relative px-4 lg:px-5 py-2 lg:py-2.5 bg-primary text-white text-xs lg:text-sm font-semibold rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5 font-display whitespace-nowrap"
               >
                 <span className="relative z-10">Enroll Now</span>
                 <div className="absolute inset-0 bg-linear-to-r from-primary via-indigo-500 to-primary bg-size-[200%_100%] animate-gradient-x opacity-0 group-hover:opacity-100 transition-opacity duration-500" />

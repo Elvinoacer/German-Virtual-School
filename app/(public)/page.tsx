@@ -169,7 +169,14 @@ export default function Home() {
                   className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-[1.08] tracking-tight mb-6 font-display"
                 >
                   Start Your Journey{" "}
-                  <span className="text-gradient">to Germany 🇩🇪</span>
+                  <span className="text-gradient">to Germany</span>{" "}
+                  <span
+                    className="inline-block"
+                    role="img"
+                    aria-label="Germany flag"
+                  >
+                    🇩🇪
+                  </span>
                 </motion.h1>
                 <motion.p
                   variants={fadeUp}
