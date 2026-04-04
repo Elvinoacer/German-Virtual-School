@@ -6,9 +6,8 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 const navLinks = [
-  { label: "Home", href: "/" },
   {
-    label: "Germany Opportunities",
+    label: "Why Germany",
     href: "/opportunities",
     children: [
       { label: "Study in Germany", href: "/opportunities/study", icon: "school" },
@@ -16,10 +15,16 @@ const navLinks = [
       { label: "Ausbildung", href: "/opportunities/ausbildung", icon: "engineering" },
     ],
   },
-  { label: "German Courses", href: "/courses" },
-  { label: "Exam Prep", href: "/exam-prep" },
   {
-    label: "Preparation Services",
+    label: "Courses",
+    href: "/courses",
+    children: [
+      { label: "All Courses", href: "/courses", icon: "menu_book" },
+      { label: "Goethe Exam Prep", href: "/exam-prep", icon: "quiz" },
+    ],
+  },
+  {
+    label: "Services",
     href: "/services",
     children: [
       { label: "Visa Readiness", href: "/services#visa", icon: "flight_takeoff" },
@@ -27,9 +32,16 @@ const navLinks = [
       { label: "CV & Application", href: "/services#cv", icon: "description" },
     ],
   },
-  { label: "Resources", href: "/resources" },
-  { label: "Blog", href: "/blog" },
-  { label: "Success Stories", href: "/success-stories" },
+  {
+    label: "Discover",
+    href: "/resources",
+    children: [
+      { label: "Student Resources", href: "/resources", icon: "library_books" },
+      { label: "Blog & Guides", href: "/blog", icon: "article" },
+      { label: "Success Stories", href: "/success-stories", icon: "emoji_events" },
+      { label: "About Us", href: "/about", icon: "info" },
+    ],
+  },
 ];
 
 export function PublicHeader() {
@@ -62,9 +74,16 @@ export function PublicHeader() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const isActive = (href: string) => {
+  const isActive = (href: string, children?: { href: string }[]) => {
     if (href === "/") return pathname === "/";
-    return pathname.startsWith(href);
+    if (pathname.startsWith(href)) return true;
+    if (children) {
+      return children.some((child) => {
+        const cleanHref = child.href.split("#")[0];
+        return pathname.startsWith(cleanHref);
+      });
+    }
+    return false;
   };
 
   return (
@@ -106,7 +125,7 @@ export function PublicHeader() {
                           setActiveDropdown(activeDropdown === link.href ? null : link.href)
                         }
                         className={`flex items-center gap-1 px-3 py-2 text-[13px] font-medium rounded-lg transition-all duration-200 ${
-                          isActive(link.href)
+                          isActive(link.href, link.children)
                             ? "text-primary bg-primary/5"
                             : "text-slate-600 dark:text-slate-300 hover:text-primary hover:bg-primary/5"
                         }`}
@@ -130,16 +149,6 @@ export function PublicHeader() {
                             className="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 overflow-hidden z-50"
                           >
                             <div className="p-2">
-                              <Link
-                                href={link.href}
-                                className="flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-slate-900 dark:text-white rounded-lg hover:bg-primary/5 transition-colors"
-                              >
-                                <span className="material-symbols-outlined text-primary text-lg">
-                                  arrow_forward
-                                </span>
-                                View All
-                              </Link>
-                              <div className="h-px bg-slate-100 dark:bg-slate-700 my-1" />
                               {link.children.map((child) => (
                                 <Link
                                   key={child.href}
@@ -254,6 +263,18 @@ export function PublicHeader() {
 
                 {/* Mobile Links */}
                 <nav className="space-y-1">
+                  <Link
+                    href="/"
+                    onClick={() => setMobileOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all ${
+                      pathname === "/"
+                        ? "text-primary bg-primary/5"
+                        : "text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-base opacity-60">home</span>
+                    Home
+                  </Link>
                   {navLinks.map((link) => (
                     <div key={link.href}>
                       {link.children ? (
@@ -265,7 +286,7 @@ export function PublicHeader() {
                               )
                             }
                             className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-xl transition-all ${
-                              isActive(link.href)
+                              isActive(link.href, link.children)
                                 ? "text-primary bg-primary/5"
                                 : "text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
                             }`}
@@ -289,16 +310,6 @@ export function PublicHeader() {
                                 className="overflow-hidden"
                               >
                                 <div className="pl-4 pb-2 space-y-0.5">
-                                  <Link
-                                    href={link.href}
-                                    onClick={() => setMobileOpen(false)}
-                                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-primary font-medium rounded-lg hover:bg-primary/5 transition-colors"
-                                  >
-                                    <span className="material-symbols-outlined text-base">
-                                      arrow_forward
-                                    </span>
-                                    View All
-                                  </Link>
                                   {link.children.map((child) => (
                                     <Link
                                       key={child.href}
