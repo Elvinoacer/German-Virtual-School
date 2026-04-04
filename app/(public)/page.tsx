@@ -254,8 +254,8 @@ export default function Home() {
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-primary/10 border border-slate-200/50 dark:border-slate-700/50 animate-float-slow">
                   <div className="aspect-4/3">
                     <img
-                      src="/hero-image.png"
-                      alt="Students learning German and preparing for opportunities in Germany"
+                      src="/images/german_school.png"
+                      alt="German classroom environment for international students"
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -1521,9 +1521,14 @@ export default function Home() {
           id="enroll"
           className="relative py-24 lg:py-32 overflow-hidden"
         >
-          <div className="absolute inset-0 bg-linear-to-br from-primary via-indigo-600 to-violet-700 animate-gradient-x" />
-          <div className="absolute inset-0 hero-grid opacity-20" />
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-200 h-100 bg-white/5 rounded-full blur-[120px]" />
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: "url('/images/cta_image.png')" }}
+            aria-hidden="true"
+          />
+          <div className="absolute inset-0 bg-linear-to-br from-slate-950/80 via-primary/75 to-indigo-900/75" />
+          <div className="absolute inset-0 hero-grid opacity-15" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-200 h-100 bg-white/10 rounded-full blur-[120px]" />
           <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 text-center relative z-10 text-white">
             <motion.div
               initial="hidden"

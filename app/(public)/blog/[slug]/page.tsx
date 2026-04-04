@@ -7,30 +7,41 @@ import { useParams } from "next/navigation";
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
   visible: (i: number = 0) => ({
-    opacity: 1, y: 0,
-    transition: { duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] },
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      delay: i * 0.1,
+      ease: [0.22, 1, 0.36, 1] as const,
+    },
   }),
 };
 const stagger = { visible: { transition: { staggerChildren: 0.08 } } };
 
-const articleData: Record<string, {
-  title: string;
-  category: string;
-  date: string;
-  readTime: string;
-  gradient: string;
-  icon: string;
-  intro: string;
-  sections: { heading: string; content: string[] }[];
-}> = {
+const articleData: Record<
+  string,
+  {
+    title: string;
+    category: string;
+    date: string;
+    readTime: string;
+    gradient: string;
+    heroImage: string;
+    icon: string;
+    intro: string;
+    sections: { heading: string; content: string[] }[];
+  }
+> = {
   "how-kenyans-can-work-in-germany": {
     title: "How Kenyans Can Work in Germany",
     category: "Work",
     date: "March 15, 2026",
     readTime: "8 min read",
     gradient: "from-emerald-400 to-teal-500",
+    heroImage: "/images/kenyans_work_germany.png",
     icon: "work",
-    intro: "Germany actively recruits skilled workers from around the world, and Kenya has become a key source of talent, particularly in healthcare, IT, and engineering. This guide walks you through everything you need to know.",
+    intro:
+      "Germany actively recruits skilled workers from around the world, and Kenya has become a key source of talent, particularly in healthcare, IT, and engineering. This guide walks you through everything you need to know.",
     sections: [
       {
         heading: "Why Germany Needs Workers",
@@ -68,8 +79,10 @@ const articleData: Record<string, {
     date: "March 10, 2026",
     readTime: "10 min read",
     gradient: "from-amber-400 to-orange-500",
+    heroImage: "/images/germany_vocational_training_system.png",
     icon: "engineering",
-    intro: "Germany's Ausbildung system is one of the most successful vocational training models in the world. Here's everything international students need to know about participating in this unique program.",
+    intro:
+      "Germany's Ausbildung system is one of the most successful vocational training models in the world. Here's everything international students need to know about participating in this unique program.",
     sections: [
       {
         heading: "What is Ausbildung?",
@@ -105,8 +118,10 @@ const articleData: Record<string, {
     date: "February 28, 2026",
     readTime: "7 min read",
     gradient: "from-blue-400 to-indigo-500",
+    heroImage: "/images/how_to_study_in_germany_for_free.jpg",
     icon: "school",
-    intro: "Germany is one of the few countries in the world where you can earn a world-class degree with minimal tuition fees. Here's how to make it happen.",
+    intro:
+      "Germany is one of the few countries in the world where you can earn a world-class degree with minimal tuition fees. Here's how to make it happen.",
     sections: [
       {
         heading: "Tuition-Free Public Universities",
@@ -143,8 +158,10 @@ const articleData: Record<string, {
     date: "February 15, 2026",
     readTime: "9 min read",
     gradient: "from-violet-400 to-purple-500",
+    heroImage: "/images/best_german_scholarships_for_africans.jpg",
     icon: "emoji_events",
-    intro: "A comprehensive guide to the best scholarship opportunities for African students looking to study in Germany, including application tips and eligibility criteria.",
+    intro:
+      "A comprehensive guide to the best scholarship opportunities for African students looking to study in Germany, including application tips and eligibility criteria.",
     sections: [
       {
         heading: "DAAD Scholarships",
@@ -179,8 +196,10 @@ const articleData: Record<string, {
     date: "January 25, 2026",
     readTime: "6 min read",
     gradient: "from-rose-400 to-pink-500",
+    heroImage: "/images/requirements_for_german_visa.jpg",
     icon: "flight_takeoff",
-    intro: "Different visa categories require different language levels. This guide breaks down exactly what you need for each type of German visa application.",
+    intro:
+      "Different visa categories require different language levels. This guide breaks down exactly what you need for each type of German visa application.",
     sections: [
       {
         heading: "Family Reunification Visa",
@@ -214,8 +233,10 @@ const articleData: Record<string, {
     date: "January 10, 2026",
     readTime: "8 min read",
     gradient: "from-cyan-400 to-blue-500",
+    heroImage: "/images/prepare_for_goethe.jpg",
     icon: "quiz",
-    intro: "Practical strategies, study tips, and resources to help you pass your Goethe exam on the first attempt. Applicable for all levels from A1 to C2.",
+    intro:
+      "Practical strategies, study tips, and resources to help you pass your Goethe exam on the first attempt. Applicable for all levels from A1 to C2.",
     sections: [
       {
         heading: "Understand the Exam Format",
@@ -254,10 +275,19 @@ export default function BlogArticlePage() {
     return (
       <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center">
         <div className="text-center">
-          <span className="material-symbols-outlined text-6xl text-slate-300 mb-4 block">article</span>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 font-display">Article Not Found</h1>
-          <p className="text-slate-500 mb-6">The article you're looking for doesn't exist.</p>
-          <Link href="/blog" className="px-6 py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-hover transition-colors font-display">
+          <span className="material-symbols-outlined text-6xl text-slate-300 mb-4 block">
+            article
+          </span>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 font-display">
+            Article Not Found
+          </h1>
+          <p className="text-slate-500 mb-6">
+            The article you&apos;re looking for doesn&apos;t exist.
+          </p>
+          <Link
+            href="/blog"
+            className="px-6 py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-hover transition-colors font-display"
+          >
             Back to Blog
           </Link>
         </div>
@@ -268,29 +298,58 @@ export default function BlogArticlePage() {
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 overflow-x-hidden">
       {/* Hero */}
-      <section className={`relative py-20 lg:py-28 bg-gradient-to-br ${article.gradient} text-white overflow-hidden`}>
+      <section className="relative py-20 lg:py-28 text-white overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url('${article.heroImage}')` }}
+          aria-hidden="true"
+        />
+        <div
+          className={`absolute inset-0 bg-linear-to-br ${article.gradient} opacity-70`}
+        />
         <div className="absolute inset-0 hero-grid opacity-15" />
-        <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-white/5 blur-[100px]" />
+        <div className="absolute top-[-20%] right-[-10%] w-125 h-125 rounded-full bg-white/10 blur-[100px]" />
 
         <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 relative z-10">
           <motion.div initial="hidden" animate="visible" variants={stagger}>
-            <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 mb-6">
-              <Link href="/blog" className="text-white/60 hover:text-white transition-colors text-sm font-display">
+            <motion.div
+              variants={fadeUp}
+              custom={0}
+              className="inline-flex items-center gap-2 mb-6"
+            >
+              <Link
+                href="/blog"
+                className="text-white/60 hover:text-white transition-colors text-sm font-display"
+              >
                 Blog
               </Link>
               <span className="text-white/30">→</span>
-              <span className="text-sm font-semibold font-display">{article.category}</span>
+              <span className="text-sm font-semibold font-display">
+                {article.category}
+              </span>
             </motion.div>
-            <motion.h1 variants={fadeUp} custom={1} className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight mb-6 font-display">
+            <motion.h1
+              variants={fadeUp}
+              custom={1}
+              className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight mb-6 font-display"
+            >
               {article.title}
             </motion.h1>
-            <motion.div variants={fadeUp} custom={2} className="flex flex-wrap items-center gap-4 text-sm text-white/70">
+            <motion.div
+              variants={fadeUp}
+              custom={2}
+              className="flex flex-wrap items-center gap-4 text-sm text-white/70"
+            >
               <span className="flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-base">calendar_today</span>
+                <span className="material-symbols-outlined text-base">
+                  calendar_today
+                </span>
                 {article.date}
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-base">schedule</span>
+                <span className="material-symbols-outlined text-base">
+                  schedule
+                </span>
                 {article.readTime}
               </span>
               <span className="px-3 py-1 rounded-full bg-white/15 text-xs font-semibold font-display">
@@ -312,7 +371,7 @@ export default function BlogArticlePage() {
             {article.intro}
           </motion.p>
 
-          {article.sections.map((section, i) => (
+          {article.sections.map((section) => (
             <motion.div
               key={section.heading}
               initial={{ opacity: 0, y: 20 }}
@@ -325,7 +384,10 @@ export default function BlogArticlePage() {
                 {section.heading}
               </h2>
               {section.content.map((para, j) => (
-                <p key={j} className="text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
+                <p
+                  key={j}
+                  className="text-slate-600 dark:text-slate-400 leading-relaxed mb-4"
+                >
                   {para}
                 </p>
               ))}
@@ -333,18 +395,25 @@ export default function BlogArticlePage() {
           ))}
 
           {/* Article CTA */}
-          <div className="mt-16 bg-gradient-to-br from-primary/5 to-indigo-500/5 dark:from-primary/10 dark:to-indigo-500/10 rounded-2xl p-8 border border-primary/10 text-center">
+          <div className="mt-16 bg-linear-to-br from-primary/5 to-indigo-500/5 dark:from-primary/10 dark:to-indigo-500/10 rounded-2xl p-8 border border-primary/10 text-center">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 font-display">
               Ready to Start Your German Journey?
             </h3>
             <p className="text-slate-600 dark:text-slate-400 mb-6 max-w-lg mx-auto">
-              German Virtual School offers structured courses from A1 to C2, designed to prepare you for opportunities in Germany.
+              German Virtual School offers structured courses from A1 to C2,
+              designed to prepare you for opportunities in Germany.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link href="/reserve-seat" className="px-6 py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-hover transition-colors font-display">
+              <Link
+                href="/reserve-seat"
+                className="px-6 py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-hover transition-colors font-display"
+              >
                 Reserve Your Seat
               </Link>
-              <Link href="/blog" className="px-6 py-3 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-display">
+              <Link
+                href="/blog"
+                className="px-6 py-3 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-display"
+              >
                 More Articles
               </Link>
             </div>

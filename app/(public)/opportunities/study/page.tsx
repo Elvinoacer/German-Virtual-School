@@ -6,8 +6,13 @@ import Link from "next/link";
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
   visible: (i: number = 0) => ({
-    opacity: 1, y: 0,
-    transition: { duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] },
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      delay: i * 0.1,
+      ease: [0.22, 1, 0.36, 1] as const,
+    },
   }),
 };
 
@@ -37,8 +42,14 @@ const sections = [
       "Each university may vary in specific requirements, but the structure is predictable. Preparing these documents early significantly improves your chances of admission.",
     ],
     features: [
-      { icon: "description", text: "Recognized academic qualifications (transcripts, diplomas)" },
-      { icon: "account_balance", text: "Proof of financial means (blocked account ~€11,208/year)" },
+      {
+        icon: "description",
+        text: "Recognized academic qualifications (transcripts, diplomas)",
+      },
+      {
+        icon: "account_balance",
+        text: "Proof of financial means (blocked account ~€11,208/year)",
+      },
       { icon: "health_and_safety", text: "Health insurance coverage" },
       { icon: "translate", text: "German or English language certification" },
     ],
@@ -52,7 +63,10 @@ const sections = [
       "Competition is high — preparation matters. Strong language skills and academic performance significantly improve your chances.",
     ],
     features: [
-      { icon: "school", text: "DAAD scholarships cover tuition (if applicable)" },
+      {
+        icon: "school",
+        text: "DAAD scholarships cover tuition (if applicable)",
+      },
       { icon: "home", text: "Living expense allowances" },
       { icon: "flight", text: "Travel cost coverage" },
       { icon: "emoji_events", text: "Merit-based selection criteria" },
@@ -66,10 +80,22 @@ const sections = [
       "Without the right language level, your options become severely limited. Most programs require certified proof of German proficiency. The exact level depends on your chosen program and pathway.",
     ],
     features: [
-      { icon: "signal_cellular_1_bar", text: "A2–B1: Basic access pathways and foundation programs" },
-      { icon: "signal_cellular_3_bar", text: "B2: Required by many universities for direct admission" },
-      { icon: "signal_cellular_4_bar", text: "C1: Required for most academic and research programs" },
-      { icon: "workspace_premium", text: "TestDaF / DSH: Standard university entrance exams" },
+      {
+        icon: "signal_cellular_1_bar",
+        text: "A2–B1: Basic access pathways and foundation programs",
+      },
+      {
+        icon: "signal_cellular_3_bar",
+        text: "B2: Required by many universities for direct admission",
+      },
+      {
+        icon: "signal_cellular_4_bar",
+        text: "C1: Required for most academic and research programs",
+      },
+      {
+        icon: "workspace_premium",
+        text: "TestDaF / DSH: Standard university entrance exams",
+      },
     ],
   },
 ];
@@ -78,30 +104,70 @@ export default function StudyInGermanyPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 overflow-x-hidden">
       {/* Hero */}
-      <section className="relative py-20 lg:py-28 bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 text-white overflow-hidden">
+      <section className="relative py-20 lg:py-28 text-white overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('/images/opportunities_study.png')" }}
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0 bg-linear-to-br from-blue-950/80 via-indigo-900/70 to-violet-900/70" />
         <div className="absolute inset-0 hero-grid opacity-20" />
-        <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-white/5 blur-[100px]" />
+        <div className="absolute top-[-20%] right-[-10%] w-125 h-125 rounded-full bg-white/10 blur-[100px]" />
 
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 relative z-10">
-          <motion.div initial="hidden" animate="visible" variants={stagger} className="max-w-3xl">
-            <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 mb-6">
-              <Link href="/opportunities" className="text-white/60 hover:text-white transition-colors text-sm font-display">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={stagger}
+            className="max-w-3xl"
+          >
+            <motion.div
+              variants={fadeUp}
+              custom={0}
+              className="inline-flex items-center gap-2 mb-6"
+            >
+              <Link
+                href="/opportunities"
+                className="text-white/60 hover:text-white transition-colors text-sm font-display"
+              >
                 Germany Opportunities
               </Link>
               <span className="text-white/30">→</span>
-              <span className="text-sm font-semibold font-display">Study in Germany</span>
+              <span className="text-sm font-semibold font-display">
+                Study in Germany
+              </span>
             </motion.div>
-            <motion.h1 variants={fadeUp} custom={1} className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 font-display">
+            <motion.h1
+              variants={fadeUp}
+              custom={1}
+              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 font-display"
+            >
               Study in Germany
             </motion.h1>
-            <motion.p variants={fadeUp} custom={2} className="text-lg lg:text-xl text-white/80 leading-relaxed max-w-2xl">
-              Germany offers world-class education through public universities that often charge minimal tuition fees. Thousands of international students study here every year.
+            <motion.p
+              variants={fadeUp}
+              custom={2}
+              className="text-lg lg:text-xl text-white/80 leading-relaxed max-w-2xl"
+            >
+              Germany offers world-class education through public universities
+              that often charge minimal tuition fees. Thousands of international
+              students study here every year.
             </motion.p>
-            <motion.div variants={fadeUp} custom={3} className="flex flex-wrap gap-3 mt-8">
-              <Link href="/reserve-seat" className="px-6 py-3 bg-white text-primary font-bold rounded-xl hover:bg-slate-100 transition-all hover:-translate-y-0.5 font-display">
+            <motion.div
+              variants={fadeUp}
+              custom={3}
+              className="flex flex-wrap gap-3 mt-8"
+            >
+              <Link
+                href="/reserve-seat"
+                className="px-6 py-3 bg-white text-primary font-bold rounded-xl hover:bg-slate-100 transition-all hover:-translate-y-0.5 font-display"
+              >
                 Start Learning German
               </Link>
-              <Link href="/courses" className="px-6 py-3 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all font-display">
+              <Link
+                href="/courses"
+                className="px-6 py-3 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all font-display"
+              >
                 View Courses
               </Link>
             </motion.div>
@@ -123,14 +189,27 @@ export default function StudyInGermanyPage() {
               viewport={{ once: true }}
               variants={stagger}
             >
-              <motion.span variants={fadeUp} custom={0} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/5 dark:bg-primary/10 text-primary text-xs font-semibold mb-4 font-display">
+              <motion.span
+                variants={fadeUp}
+                custom={0}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/5 dark:bg-primary/10 text-primary text-xs font-semibold mb-4 font-display"
+              >
                 {section.badge}
               </motion.span>
-              <motion.h2 variants={fadeUp} custom={1} className="text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white mb-6 font-display">
+              <motion.h2
+                variants={fadeUp}
+                custom={1}
+                className="text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white mb-6 font-display"
+              >
                 {section.title}
               </motion.h2>
               {section.content.map((p, i) => (
-                <motion.p key={i} variants={fadeUp} custom={2 + i} className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed mb-4 max-w-3xl">
+                <motion.p
+                  key={i}
+                  variants={fadeUp}
+                  custom={2 + i}
+                  className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed mb-4 max-w-3xl"
+                >
                   {p}
                 </motion.p>
               ))}
@@ -144,7 +223,9 @@ export default function StudyInGermanyPage() {
                     className="flex items-start gap-4 p-5 bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-primary/20 hover:shadow-lg transition-all duration-300"
                   >
                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-primary text-xl">{f.icon}</span>
+                      <span className="material-symbols-outlined text-primary text-xl">
+                        {f.icon}
+                      </span>
                     </div>
                     <p className="text-sm text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
                       {f.text}
@@ -158,19 +239,26 @@ export default function StudyInGermanyPage() {
       ))}
 
       {/* CTA */}
-      <section className="py-16 lg:py-20 bg-gradient-to-r from-primary to-indigo-600 text-white">
+      <section className="py-16 lg:py-20 bg-linear-to-r from-primary to-indigo-600 text-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl lg:text-4xl font-extrabold mb-4 font-display">
             Ready to Study in Germany?
           </h2>
           <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
-            German language proficiency is the first step. Start building the skills you need with German Virtual School.
+            German language proficiency is the first step. Start building the
+            skills you need with German Virtual School.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/reserve-seat" className="px-8 py-4 bg-white text-primary font-bold rounded-xl hover:bg-slate-100 hover:shadow-xl transition-all font-display">
+            <Link
+              href="/reserve-seat"
+              className="px-8 py-4 bg-white text-primary font-bold rounded-xl hover:bg-slate-100 hover:shadow-xl transition-all font-display"
+            >
               Reserve Your Seat
             </Link>
-            <Link href="/opportunities" className="px-8 py-4 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all font-display">
+            <Link
+              href="/opportunities"
+              className="px-8 py-4 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all font-display"
+            >
               ← Back to Opportunities
             </Link>
           </div>
