@@ -7,40 +7,62 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const navLinks = [
   {
-    label: "Why Germany",
+    label: "Germany Opportunities",
     href: "/opportunities",
     children: [
-      { label: "Study in Germany", href: "/opportunities/study", icon: "school" },
+      {
+        label: "Study in Germany",
+        href: "/opportunities/study",
+        icon: "school",
+      },
       { label: "Work in Germany", href: "/opportunities/work", icon: "work" },
-      { label: "Ausbildung", href: "/opportunities/ausbildung", icon: "engineering" },
+      {
+        label: "Ausbildung (Vocational Training)",
+        href: "/opportunities/ausbildung",
+        icon: "engineering",
+      },
     ],
   },
   {
-    label: "Courses",
+    label: "German Courses",
     href: "/courses",
-    children: [
-      { label: "All Courses", href: "/courses", icon: "menu_book" },
-      { label: "Goethe Exam Prep", href: "/exam-prep", icon: "quiz" },
-    ],
   },
   {
-    label: "Services",
+    label: "Goethe Exam Prep",
+    href: "/exam-prep",
+  },
+  {
+    label: "Preparation Services",
     href: "/services",
     children: [
-      { label: "Visa Readiness", href: "/services#visa", icon: "flight_takeoff" },
-      { label: "Interview Coaching", href: "/services#interview", icon: "record_voice_over" },
-      { label: "CV & Application", href: "/services#cv", icon: "description" },
+      {
+        label: "Visa Readiness Guidance",
+        href: "/services#visa",
+        icon: "flight_takeoff",
+      },
+      {
+        label: "Interview Coaching",
+        href: "/services#interview",
+        icon: "record_voice_over",
+      },
+      {
+        label: "CV & Application Support",
+        href: "/services#cv",
+        icon: "description",
+      },
     ],
   },
   {
-    label: "Discover",
+    label: "Student Resources",
     href: "/resources",
-    children: [
-      { label: "Student Resources", href: "/resources", icon: "library_books" },
-      { label: "Blog & Guides", href: "/blog", icon: "article" },
-      { label: "Success Stories", href: "/success-stories", icon: "emoji_events" },
-      { label: "About Us", href: "/about", icon: "info" },
-    ],
+  },
+  {
+    label: "Blog",
+    href: "/blog",
+  },
+  {
+    label: "Success Stories",
+    href: "/success-stories",
   },
 ];
 
@@ -57,16 +79,13 @@ export function PublicHeader() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu on route change
-  useEffect(() => {
-    setMobileOpen(false);
-    setActiveDropdown(null);
-  }, [pathname]);
-
   // Close dropdown on outside click
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setActiveDropdown(null);
       }
     };
@@ -96,7 +115,7 @@ export function PublicHeader() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16 lg:h-[72px]">
+          <div className="flex justify-between items-center h-16 lg:h-18">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2.5 shrink-0">
               <img
@@ -115,14 +134,19 @@ export function PublicHeader() {
             </Link>
 
             {/* Desktop Nav */}
-            <nav ref={dropdownRef} className="hidden xl:flex items-center gap-1">
+            <nav
+              ref={dropdownRef}
+              className="hidden xl:flex items-center gap-1"
+            >
               {navLinks.map((link) => (
                 <div key={link.href} className="relative">
                   {link.children ? (
                     <>
                       <button
                         onClick={() =>
-                          setActiveDropdown(activeDropdown === link.href ? null : link.href)
+                          setActiveDropdown(
+                            activeDropdown === link.href ? null : link.href,
+                          )
                         }
                         className={`flex items-center gap-1 px-3 py-2 text-[13px] font-medium rounded-lg transition-all duration-200 ${
                           isActive(link.href, link.children)
@@ -153,6 +177,7 @@ export function PublicHeader() {
                                 <Link
                                   key={child.href}
                                   href={child.href}
+                                  onClick={() => setActiveDropdown(null)}
                                   className={`flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-colors ${
                                     isActive(child.href)
                                       ? "text-primary bg-primary/5 font-medium"
@@ -173,6 +198,7 @@ export function PublicHeader() {
                   ) : (
                     <Link
                       href={link.href}
+                      onClick={() => setActiveDropdown(null)}
                       className={`px-3 py-2 text-[13px] font-medium rounded-lg transition-all duration-200 ${
                         isActive(link.href)
                           ? "text-primary bg-primary/5"
@@ -192,7 +218,9 @@ export function PublicHeader() {
                 href="/login"
                 className="hidden sm:flex items-center gap-1.5 text-xs lg:text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary transition-colors px-3 py-2 rounded-lg hover:bg-primary/5"
               >
-                <span className="material-symbols-outlined text-[18px]">login</span>
+                <span className="material-symbols-outlined text-[18px]">
+                  login
+                </span>
                 <span className="hidden md:inline">Portal</span>
               </Link>
               <Link
@@ -200,7 +228,7 @@ export function PublicHeader() {
                 className="group relative px-4 lg:px-5 py-2 lg:py-2.5 bg-primary text-white text-xs lg:text-sm font-semibold rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5 font-display"
               >
                 <span className="relative z-10">Enroll Now</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-primary via-indigo-500 to-primary bg-[length:200%_100%] animate-gradient-x opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-linear-to-r from-primary via-indigo-500 to-primary bg-size-[200%_100%] animate-gradient-x opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </Link>
 
               {/* Mobile menu button */}
@@ -243,7 +271,11 @@ export function PublicHeader() {
               <div className="p-5">
                 {/* Close button */}
                 <div className="flex items-center justify-between mb-8">
-                  <Link href="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
+                  <Link
+                    href="/"
+                    className="flex items-center gap-2"
+                    onClick={() => setMobileOpen(false)}
+                  >
                     <img
                       src="/gvs-logo.png"
                       alt="GVS"
@@ -272,7 +304,9 @@ export function PublicHeader() {
                         : "text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
                     }`}
                   >
-                    <span className="material-symbols-outlined text-base opacity-60">home</span>
+                    <span className="material-symbols-outlined text-base opacity-60">
+                      home
+                    </span>
                     Home
                   </Link>
                   {navLinks.map((link) => (
@@ -282,7 +316,7 @@ export function PublicHeader() {
                           <button
                             onClick={() =>
                               setActiveDropdown(
-                                activeDropdown === link.href ? null : link.href
+                                activeDropdown === link.href ? null : link.href,
                               )
                             }
                             className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-xl transition-all ${

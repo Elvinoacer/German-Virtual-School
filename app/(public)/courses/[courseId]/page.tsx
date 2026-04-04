@@ -1,19 +1,125 @@
-'use client';
+"use client";
 
-import { use, useState } from 'react';
-import { useCourse } from '@/hooks/useCourses';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/hooks/useAuth';
-import axios from '@/lib/axios';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { use, useState } from "react";
+import { useCourse } from "@/hooks/useCourses";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
+import axios from "@/lib/axios";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 
-export default function CourseDetailsPage({ params }: { params: Promise<{ courseId: string }> }) {
+const levelGuidance: Record<
+  string,
+  {
+    levelTitle: string;
+    description: string;
+    includes: string[];
+    usefulFor: string[];
+  }
+> = {
+  A1: {
+    levelTitle: "A1 Beginner",
+    description:
+      "Build your foundation in basic vocabulary, grammar, and everyday communication.",
+    includes: [
+      "Essential vocabulary and everyday phrases",
+      "Introductory grammar and sentence structure",
+      "Guided listening and speaking practice",
+      "Beginner exam-focused preparation",
+    ],
+    usefulFor: [
+      "Family reunification requirements",
+      "Initial language certification pathways",
+    ],
+  },
+  A2: {
+    levelTitle: "A2 Elementary",
+    description:
+      "Strengthen your daily communication skills and confidence in real-life situations.",
+    includes: [
+      "Practical daily communication scenarios",
+      "Reading and writing at elementary level",
+      "Listening and pronunciation drills",
+      "Structured progression toward intermediate level",
+    ],
+    usefulFor: [
+      "Everyday integration readiness",
+      "Early-stage study and mobility pathways",
+    ],
+  },
+  B1: {
+    levelTitle: "B1 Intermediate",
+    description:
+      "Develop independent communication for study, work, and training opportunities.",
+    includes: [
+      "Intermediate grammar and communication structure",
+      "Longer-form speaking and writing tasks",
+      "Professional and practical language scenarios",
+      "Certification-focused practice modules",
+    ],
+    usefulFor: [
+      "Ausbildung applications",
+      "Skilled work and visa preparation",
+      "Residence-related language needs",
+    ],
+  },
+  B2: {
+    levelTitle: "B2 Upper Intermediate",
+    description:
+      "Communicate professionally and academically with stronger fluency and precision.",
+    includes: [
+      "Advanced grammar and expression techniques",
+      "Professional communication scenarios",
+      "Presentation and discussion training",
+      "Upper-intermediate exam readiness",
+    ],
+    usefulFor: [
+      "University admission pathways",
+      "Professional employment in Germany",
+    ],
+  },
+  C1: {
+    levelTitle: "C1 Advanced",
+    description:
+      "Handle complex academic and professional communication with high confidence.",
+    includes: [
+      "Advanced reading and interpretation tasks",
+      "Academic writing and argumentation",
+      "High-level discussion and debate practice",
+      "Advanced certification preparation",
+    ],
+    usefulFor: [
+      "University degree programs",
+      "Academic and research environments",
+    ],
+  },
+  C2: {
+    levelTitle: "C2 Mastery",
+    description:
+      "Achieve near-native precision across advanced professional and academic contexts.",
+    includes: [
+      "Nuanced comprehension and expression",
+      "Complex text and discourse analysis",
+      "High-level communication mastery",
+      "Top-tier language certification readiness",
+    ],
+    usefulFor: [
+      "Research and specialist roles",
+      "Translation, teaching, and leadership communication",
+    ],
+  },
+};
+
+export default function CourseDetailsPage({
+  params,
+}: {
+  params: Promise<{ courseId: string }>;
+}) {
   const { courseId } = use(params);
   const { data: course, isLoading, error } = useCourse(courseId);
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -24,14 +130,19 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
       return data;
     },
     onSuccess: () => {
-      toast.success('Successfully enrolled in course!');
-      queryClient.invalidateQueries({ queryKey: ['enrollments'] });
-      router.push('/student/courses');
+      toast.success("Successfully enrolled in course!");
+      queryClient.invalidateQueries({ queryKey: ["enrollments"] });
+      router.push("/student/courses");
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.error?.message || 
-                      (typeof error.response?.data?.error === 'string' ? error.response?.data?.error : null) || 
-                      'Failed to enroll';
+    onError: (error: unknown) => {
+      const apiError = (
+        error as {
+          response?: { data?: { error?: { message?: string } | string } };
+        }
+      )?.response?.data?.error;
+      const message =
+        (typeof apiError === "string" ? apiError : apiError?.message) ||
+        "Failed to enroll";
       toast.error(message);
     },
   });
@@ -59,8 +170,12 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
     return (
       <div className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-text-main dark:text-white mb-4">Course Not Found</h1>
-          <p className="text-text-subtle mb-6">The course you're looking for doesn't exist.</p>
+          <h1 className="text-4xl font-bold text-text-main dark:text-white mb-4">
+            Course Not Found
+          </h1>
+          <p className="text-text-subtle mb-6">
+            The course you&apos;re looking for doesn&apos;t exist.
+          </p>
           <Link href="/courses" className="text-primary hover:underline">
             Browse all courses
           </Link>
@@ -69,12 +184,15 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
     );
   }
 
+  const levelKey = (course.level || "").toUpperCase();
+  const levelInfo = levelGuidance[levelKey];
+
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark">
       {/* Auth Modal */}
       <AnimatePresence>
         {showAuthModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -89,7 +207,7 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
               className="relative w-full max-w-md bg-white dark:bg-surface-dark rounded-2xl p-8 shadow-2xl overflow-hidden"
             >
               <div className="absolute top-0 left-0 w-full h-2 bg-primary" />
-              <button 
+              <button
                 onClick={() => setShowAuthModal(false)}
                 className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors"
               >
@@ -98,13 +216,16 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
 
               <div className="text-center">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-6">
-                  <span className="material-symbols-outlined text-4xl">account_circle</span>
+                  <span className="material-symbols-outlined text-4xl">
+                    account_circle
+                  </span>
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                   Authentication Required
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400 mb-8">
-                  To enroll in this course and start learning, please log in to your student account or create a new one.
+                  To enroll in this course and start learning, please log in to
+                  your student account or create a new one.
                 </p>
 
                 <div className="flex flex-col gap-3">
@@ -112,20 +233,25 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
                     href="/login"
                     className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-primary hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/20"
                   >
-                    <span className="material-symbols-outlined text-[20px]">login</span>
+                    <span className="material-symbols-outlined text-[20px]">
+                      login
+                    </span>
                     Log In to Continue
                   </Link>
                   <Link
                     href="/register"
                     className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-bold rounded-xl transition-all"
                   >
-                    <span className="material-symbols-outlined text-[20px]">person_add</span>
+                    <span className="material-symbols-outlined text-[20px]">
+                      person_add
+                    </span>
                     Create an Account
                   </Link>
                 </div>
-                
+
                 <p className="mt-6 text-xs text-gray-400">
-                  By continuing, you agree to our Terms of Service and Privacy Policy.
+                  By continuing, you agree to our Terms of Service and Privacy
+                  Policy.
                 </p>
               </div>
             </motion.div>
@@ -137,54 +263,70 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
       <header className="relative bg-primary text-white overflow-hidden">
         {course.thumbnailUrl && (
           <div className="absolute inset-0 z-0">
-            <img 
-              src={course.thumbnailUrl} 
-              alt="" 
+            <img
+              src={course.thumbnailUrl}
+              alt=""
               className="w-full h-full object-cover opacity-30 blur-[2px]"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/80 to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-primary via-primary/80 to-transparent" />
           </div>
         )}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
           <div className="flex flex-col md:flex-row gap-8 items-start">
             {course.thumbnailUrl && (
-              <div className="w-full md:w-80 aspect-video rounded-2xl overflow-hidden shadow-2xl border-4 border-white/10 flex-shrink-0">
-                <img 
-                  src={course.thumbnailUrl} 
-                  alt={course.title} 
+              <div className="w-full md:w-80 aspect-video rounded-2xl overflow-hidden shadow-2xl border-4 border-white/10 shrink-0">
+                <img
+                  src={course.thumbnailUrl}
+                  alt={course.title}
                   className="w-full h-full object-cover"
                 />
               </div>
             )}
             <div className="flex-1">
               <div className="flex items-center gap-2 text-sm mb-4 opacity-90">
-                <Link href="/" className="hover:underline">Home</Link>
+                <Link href="/" className="hover:underline">
+                  Home
+                </Link>
                 <span>/</span>
-                <Link href="/courses" className="hover:underline">Courses</Link>
+                <Link href="/courses" className="hover:underline">
+                  Courses
+                </Link>
                 <span>/</span>
                 <span>{course.title}</span>
               </div>
-              
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">{course.title}</h1>
-              <p className="text-lg opacity-90 mb-8 max-w-2xl">{course.description}</p>
-              
+
+              <h1 className="text-4xl md:text-5xl font-bold mb-4">
+                {course.title}
+              </h1>
+              <p className="text-lg opacity-90 mb-8 max-w-2xl">
+                {course.description}
+              </p>
+
               <div className="flex flex-wrap items-center gap-6 text-sm">
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full backdrop-blur-md">
-                  <span className="material-symbols-outlined text-[20px]">person</span>
+                  <span className="material-symbols-outlined text-[20px]">
+                    person
+                  </span>
                   <span>
                     {course.teacher?.firstName} {course.teacher?.lastName}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full backdrop-blur-md">
-                  <span className="material-symbols-outlined text-[20px]">signal_cellular_alt</span>
+                  <span className="material-symbols-outlined text-[20px]">
+                    signal_cellular_alt
+                  </span>
                   <span>{course.level}</span>
                 </div>
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full backdrop-blur-md">
-                  <span className="material-symbols-outlined text-[20px]">schedule</span>
+                  <span className="material-symbols-outlined text-[20px]">
+                    schedule
+                  </span>
                   <span>{course.durationWeeks} weeks</span>
                 </div>
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full backdrop-blur-md">
-                  <span className="material-symbols-outlined text-[20px]">people</span>
+                  <span className="material-symbols-outlined text-[20px]">
+                    people
+                  </span>
                   <span>{course.enrollmentCount || 0} students</span>
                 </div>
               </div>
@@ -197,21 +339,83 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
+            {/* Level guidance */}
+            {levelInfo && (
+              <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 border border-gray-200 dark:border-gray-800">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="material-symbols-outlined text-primary text-2xl">
+                    school
+                  </span>
+                  <h2 className="text-2xl font-bold text-text-main dark:text-white">
+                    Why This Level Matters
+                  </h2>
+                </div>
+                <p className="text-text-subtle mb-5">
+                  <span className="font-semibold text-text-main dark:text-white">
+                    {levelInfo.levelTitle}:
+                  </span>{" "}
+                  {levelInfo.description}
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white/60 dark:bg-slate-900/40">
+                    <h3 className="font-semibold text-text-main dark:text-white mb-3">
+                      Includes
+                    </h3>
+                    <ul className="space-y-2">
+                      {levelInfo.includes.map((item) => (
+                        <li
+                          key={item}
+                          className="flex items-start gap-2 text-sm text-text-subtle"
+                        >
+                          <span className="material-symbols-outlined text-primary text-base mt-0.5">
+                            check_circle
+                          </span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white/60 dark:bg-slate-900/40">
+                    <h3 className="font-semibold text-text-main dark:text-white mb-3">
+                      Useful For
+                    </h3>
+                    <ul className="space-y-2">
+                      {levelInfo.usefulFor.map((item) => (
+                        <li
+                          key={item}
+                          className="flex items-start gap-2 text-sm text-text-subtle"
+                        >
+                          <span className="material-symbols-outlined text-primary text-base mt-0.5">
+                            arrow_right
+                          </span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Learning Outcomes */}
             {course.learningOutcomes && course.learningOutcomes.length > 0 && (
               <div className="bg-card-light dark:bg-card-dark rounded-xl p-6 border border-gray-200 dark:border-gray-800">
                 <h2 className="text-2xl font-bold text-text-main dark:text-white mb-4">
-                  What You'll Learn
+                  What You&apos;ll Learn
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {course.learningOutcomes.map((outcome: string, index: number) => (
-                    <div key={index} className="flex items-start gap-3">
-                      <span className="material-symbols-outlined text-primary text-xl mt-0.5">
-                        check_circle
-                      </span>
-                      <span className="text-text-subtle">{outcome}</span>
-                    </div>
-                  ))}
+                  {course.learningOutcomes.map(
+                    (outcome: string, index: number) => (
+                      <div key={index} className="flex items-start gap-3">
+                        <span className="material-symbols-outlined text-primary text-xl mt-0.5">
+                          check_circle
+                        </span>
+                        <span className="text-text-subtle">{outcome}</span>
+                      </div>
+                    ),
+                  )}
                 </div>
               </div>
             )}
@@ -223,7 +427,7 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
                   Course Content
                 </h2>
                 <div className="space-y-3">
-                  {course.modules.map((module: any) => (
+                  {course.modules.map((module) => (
                     <div
                       key={module.id}
                       className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
@@ -240,13 +444,15 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
                       </div>
                       {module.resources && module.resources.length > 0 && (
                         <div className="p-4 space-y-2">
-                          {module.resources.map((resource: any) => (
+                          {module.resources.map((resource) => (
                             <div
                               key={resource.id}
                               className="flex items-center gap-3 text-sm"
                             >
                               <span className="material-symbols-outlined text-text-subtle">
-                                {resource.type === 'VIDEO' ? 'play_circle' : 'description'}
+                                {resource.type === "VIDEO"
+                                  ? "play_circle"
+                                  : "description"}
                               </span>
                               <span className="text-text-main dark:text-white">
                                 {resource.title}
@@ -268,7 +474,7 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
                   Instructor
                 </h2>
                 <div className="flex items-start gap-4">
-                  <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+                  <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0">
                     {course.teacher.avatarUrl ? (
                       <img
                         src={course.teacher.avatarUrl}
@@ -277,7 +483,8 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
                       />
                     ) : (
                       <span className="text-2xl font-bold">
-                        {course.teacher.firstName[0]}{course.teacher.lastName[0]}
+                        {course.teacher.firstName[0]}
+                        {course.teacher.lastName[0]}
                       </span>
                     )}
                   </div>
@@ -312,7 +519,9 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
                     disabled
                     className="w-full bg-green-500 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 mb-3"
                   >
-                    <span className="material-symbols-outlined">check_circle</span>
+                    <span className="material-symbols-outlined">
+                      check_circle
+                    </span>
                     Enrolled
                   </button>
                   <Link
@@ -328,7 +537,7 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
                   disabled={enrollMutation.isPending}
                   className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-3"
                 >
-                  {enrollMutation.isPending ? 'Enrolling...' : 'Enroll Now'}
+                  {enrollMutation.isPending ? "Enrolling..." : "Enroll Now"}
                 </button>
               )}
 

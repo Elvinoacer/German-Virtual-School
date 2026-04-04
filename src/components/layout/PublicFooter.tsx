@@ -4,7 +4,7 @@ const footerLinks = {
   explore: [
     { label: "Germany Opportunities", href: "/opportunities" },
     { label: "German Courses", href: "/courses" },
-    { label: "Exam Preparation", href: "/exam-prep" },
+    { label: "Goethe Exam Prep", href: "/exam-prep" },
     { label: "Preparation Services", href: "/services" },
     { label: "Student Resources", href: "/resources" },
   ],
@@ -28,7 +28,7 @@ export function PublicFooter() {
   return (
     <footer className="bg-slate-900 dark:bg-black text-slate-300 relative overflow-hidden">
       {/* Decorative gradient */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-200 h-0.5 bg-linear-to-r from-transparent via-primary/50 to-transparent" />
 
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 pt-16 pb-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12 mb-14">
@@ -57,8 +57,11 @@ export function PublicFooter() {
                 href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@germanvirtualschool.com"}`}
                 className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-primary transition-colors"
               >
-                <span className="material-symbols-outlined text-base">mail</span>
-                {process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@germanvirtualschool.com"}
+                <span className="material-symbols-outlined text-base">
+                  mail
+                </span>
+                {process.env.NEXT_PUBLIC_SUPPORT_EMAIL ||
+                  "support@germanvirtualschool.com"}
               </a>
               <a
                 href="https://wa.me/254742318300"
@@ -66,7 +69,9 @@ export function PublicFooter() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-green-400 transition-colors"
               >
-                <span className="material-symbols-outlined text-base">chat</span>
+                <span className="material-symbols-outlined text-base">
+                  chat
+                </span>
                 WhatsApp Support
               </a>
             </div>
@@ -132,7 +137,10 @@ export function PublicFooter() {
 
         {/* Bottom bar */}
         <div className="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <p>© {new Date().getFullYear()} German Virtual School. All rights reserved.</p>
+          <p>
+            © {new Date().getFullYear()} German Virtual School. All rights
+            reserved.
+          </p>
           <p className="text-center sm:text-right">
             Registered Educational Institution · Accredited CEFR Programs
           </p>
