@@ -19,13 +19,24 @@ export default auth((req) => {
     nextUrl.pathname.startsWith("/privacy") ||
     nextUrl.pathname.startsWith("/terms") ||
     nextUrl.pathname.startsWith("/courses") ||
+    nextUrl.pathname.startsWith("/opportunities") ||
+    nextUrl.pathname.startsWith("/exam-prep") ||
+    nextUrl.pathname.startsWith("/services") ||
+    nextUrl.pathname.startsWith("/resources") ||
+    nextUrl.pathname.startsWith("/blog") ||
+    nextUrl.pathname.startsWith("/success-stories") ||
+    nextUrl.pathname.startsWith("/contact") ||
+    nextUrl.pathname.startsWith("/german-for-hospitality") ||
+    nextUrl.pathname.startsWith("/german-for-it") ||
+    nextUrl.pathname.startsWith("/german-for-nurses") ||
+    nextUrl.pathname.startsWith("/german-visa-requirements") ||
     nextUrl.pathname.startsWith("/calendar") ||
     nextUrl.pathname.startsWith("/channels") || // Public channels page
     nextUrl.pathname.startsWith("/documentation") ||
     nextUrl.pathname.startsWith("/school-info") ||
     nextUrl.pathname.startsWith("/partners") ||
     nextUrl.pathname.startsWith("/reserve-seat") ||
-    nextUrl.pathname.startsWith("/verify-email") || 
+    nextUrl.pathname.startsWith("/verify-email") ||
     nextUrl.pathname.startsWith("/check-email") ||
     nextUrl.pathname.startsWith("/marketer");
 
