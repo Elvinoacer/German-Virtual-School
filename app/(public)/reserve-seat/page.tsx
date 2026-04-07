@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Suspense } from "react";
 import axios from "axios";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { usePublicStats } from "@/hooks/usePublicStats";
 
 const PROGRAMS = [
@@ -20,6 +21,7 @@ const PROGRAMS = [
 ];
 
 function ReserveSeatContent() {
+  const { data: session } = useSession();
   const searchParams = useSearchParams();
   const programFromUrl = searchParams.get("program");
   const refFromUrl = searchParams.get("ref");
@@ -58,9 +60,16 @@ function ReserveSeatContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [emailTouched, setEmailTouched] = useState(false);
   const [isVerifyingReservation, setIsVerifyingReservation] = useState(
     Boolean(reservationIdFromUrl),
   );
+
+  const sessionEmail =
+    typeof session?.user?.email === "string" ? session.user.email.trim() : "";
+  const resolvedEmail = emailTouched
+    ? formData.email
+    : formData.email || sessionEmail;
 
   useEffect(() => {
     if (!reservationRequiredFromUrl) return;
@@ -123,7 +132,11 @@ function ReserveSeatContent() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    if (name === "email") {
+      setEmailTouched(true);
+    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -131,8 +144,13 @@ function ReserveSeatContent() {
     setError(null);
     setIsSubmitting(true);
 
+    const submissionData = {
+      ...formData,
+      email: resolvedEmail,
+    };
+
     try {
-      const { data } = await axios.post("/api/seat-reservation", formData);
+      const { data } = await axios.post("/api/seat-reservation", submissionData);
 
       if (data.success && data.data?.checkoutUrl) {
         // Save reservation details to localStorage for registration pre-fill
@@ -140,16 +158,16 @@ function ReserveSeatContent() {
           localStorage.setItem(
             "gvs_reservation",
             JSON.stringify({
-              firstName: formData.firstName,
-              lastName: formData.lastName,
-              email: formData.email,
-              phone: formData.phone,
-              program: formData.program,
-              referralCode: formData.referralCode,
+              firstName: submissionData.firstName,
+              lastName: submissionData.lastName,
+              email: submissionData.email,
+              phone: submissionData.phone,
+              program: submissionData.program,
+              referralCode: submissionData.referralCode,
               timestamp: Date.now(),
             }),
           );
-        } catch (e) {
+        } catch {
           // localStorage might be unavailable — non-blocking
         }
         // Redirect to IntaSend payment
@@ -157,10 +175,21 @@ function ReserveSeatContent() {
       } else {
         setError("Failed to initiate payment. Please try again.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const axiosError = axios.isAxiosError(err) ? err : null;
+      const responseError = axiosError?.response?.data as
+        | { error?: { message?: string } | string }
+        | undefined;
+
       const msg =
-        err.response?.data?.error?.message ||
-        err.response?.data?.error ||
+        (typeof responseError?.error === "object" &&
+        responseError?.error &&
+        "message" in responseError.error
+          ? responseError.error.message
+          : undefined) ||
+        (typeof responseError?.error === "string"
+          ? responseError.error
+          : undefined) ||
         "Something went wrong. Please try again.";
       setError(msg);
     } finally {
@@ -437,7 +466,7 @@ function ReserveSeatContent() {
                     <input
                       type="email"
                       name="email"
-                      value={formData.email}
+                      value={resolvedEmail}
                       onChange={handleChange}
                       required
                       placeholder="student@email.com"
