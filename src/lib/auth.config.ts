@@ -3,7 +3,8 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth";
-import { UserRole } from '@/generated/prisma/client';
+import { UserRole } from "@/generated/prisma/client";
+import { hasPaidSeatReservation } from "@/lib/seat-reservation-guard";
 
 declare module "next-auth" {
   interface Session {
@@ -20,16 +21,15 @@ declare module "next-auth" {
   }
 
   interface User {
-      id?: string;
-      role: UserRole;
-      firstName: string;
-      lastName: string;
-      isVerified: boolean;
-      onboardingComplete: boolean;
-      emailVerified?: Date | null;
+    id?: string;
+    role: UserRole;
+    firstName: string;
+    lastName: string;
+    isVerified: boolean;
+    onboardingComplete: boolean;
+    emailVerified?: Date | null;
   }
 }
-
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma as any) as any,
@@ -77,7 +77,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const isValid = await verifyPassword(
           credentials.password as string,
-          user.passwordHash
+          user.passwordHash,
         );
 
         if (!isValid) {
@@ -120,8 +120,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           id: profile.sub,
           email: profile.email,
           name: profile.name,
-          firstName: profile.given_name || profile.name?.split(" ")[0] || "Unknown",
-          lastName: profile.family_name || profile.name?.split(" ").slice(1).join(" ") || ".",
+          firstName:
+            profile.given_name || profile.name?.split(" ")[0] || "Unknown",
+          lastName:
+            profile.family_name ||
+            profile.name?.split(" ").slice(1).join(" ") ||
+            ".",
           image: profile.picture,
           role: "STUDENT" as UserRole,
           isVerified: false,
@@ -130,23 +134,57 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         };
       },
     },
-
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
-      
+      if (account?.provider === "google" && user?.email) {
+        try {
+          const normalizedEmail = user.email.toLowerCase().trim();
+          const existingUser = await prisma.user.findUnique({
+            where: { email: normalizedEmail },
+            select: { id: true, role: true },
+          });
+
+          const shouldEnforceReservation =
+            !existingUser || existingUser.role === "STUDENT";
+
+          if (shouldEnforceReservation) {
+            const hasReservation = await hasPaidSeatReservation({
+              email: normalizedEmail,
+              userId: existingUser?.id,
+            });
+
+            if (!hasReservation) {
+              return "/reserve-seat?reservationRequired=1";
+            }
+          }
+        } catch (reservationCheckError) {
+          console.error(
+            "Failed to validate paid seat reservation during Google sign-in:",
+            reservationCheckError,
+          );
+          return false;
+        }
+      }
+
       // For OAuth providers, ensure custom fields are populated
       if (account?.provider && account.provider !== "credentials" && user?.id) {
         try {
           // Check if user already has custom fields populated
           const existingUser = await prisma.user.findUnique({
             where: { id: user.id },
-            select: { firstName: true, lastName: true, role: true, isVerified: true, emailVerified: true }
+            select: {
+              firstName: true,
+              lastName: true,
+              role: true,
+              isVerified: true,
+              emailVerified: true,
+            },
           });
-          
+
           // Only attempt update if user ALREADY exists (prevent P2025 error for new users)
           if (existingUser) {
-             // Prepare update data
+            // Prepare update data
             const updateData: any = {
               emailVerified: new Date(), // Always verify email for Google sign-in
             };
@@ -156,9 +194,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               const profileData = profile as any;
               const fullName = user.name || profileData?.name || "";
               const nameParts = fullName.split(" ");
-              
-              updateData.firstName = profileData?.given_name || nameParts[0] || "Unknown";
-              updateData.lastName = profileData?.family_name || nameParts.slice(1).join(" ") || ".";
+
+              updateData.firstName =
+                profileData?.given_name || nameParts[0] || "Unknown";
+              updateData.lastName =
+                profileData?.family_name || nameParts.slice(1).join(" ") || ".";
               updateData.role = "STUDENT";
               updateData.isVerified = false;
             }
@@ -166,7 +206,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             // Force update to ensure email is verified
             await prisma.user.update({
               where: { id: user.id },
-              data: updateData
+              data: updateData,
             });
           } else {
           }
@@ -180,18 +220,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id as string;
         token.userId = user.id as string;
-        
+
         // For OAuth users, the user object from adapter doesn't include custom fields
         // We need to fetch them from the database
         const userWithRole = user as any;
-        
+
         // Check if we need to fetch fresh data from DB
-        const needsDbFetch = !userWithRole.role || !userWithRole.firstName || !userWithRole.emailVerified;
+        const needsDbFetch =
+          !userWithRole.role ||
+          !userWithRole.firstName ||
+          !userWithRole.emailVerified;
 
         if (needsDbFetch) {
           const dbUser = await prisma.user.findUnique({
             where: { id: user.id as string },
-            select: { firstName: true, lastName: true, role: true, isVerified: true, onboardingComplete: true, emailVerified: true }
+            select: {
+              firstName: true,
+              lastName: true,
+              role: true,
+              isVerified: true,
+              onboardingComplete: true,
+              emailVerified: true,
+            },
           });
           if (dbUser) {
             token.role = dbUser.role;
@@ -212,24 +262,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         // Force email verified for OAuth providers if not already set (fixes race condition)
-        if (account?.provider?.toLowerCase() === 'google' && !token.emailVerified) {
+        if (
+          account?.provider?.toLowerCase() === "google" &&
+          !token.emailVerified
+        ) {
           token.emailVerified = new Date();
         }
       }
 
-      // On subsequent calls (no 'user'), check if token is verified. 
+      // On subsequent calls (no 'user'), check if token is verified.
       if (!token.emailVerified) {
-         try {
-            const dbUser = await prisma.user.findUnique({
-              where: { id: token.id as string },
-              select: { emailVerified: true }
-            });
-            if (dbUser?.emailVerified) {
-              token.emailVerified = dbUser.emailVerified;
-            }
-         } catch (e) {
-           // Ignore db error
-         }
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { emailVerified: true },
+          });
+          if (dbUser?.emailVerified) {
+            token.emailVerified = dbUser.emailVerified;
+          }
+        } catch (e) {
+          // Ignore db error
+        }
       }
 
       // Optimize: Only fetch user data on sign-in or explicit update
@@ -237,16 +290,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (trigger === "update" && session?.user) {
         // Allow updating token from client-side session.update()
         if (session.user.role) token.role = session.user.role;
-        if (session.user.isVerified !== undefined) token.isVerified = session.user.isVerified;
+        if (session.user.isVerified !== undefined)
+          token.isVerified = session.user.isVerified;
         if (session.user.firstName) token.firstName = session.user.firstName;
         if (session.user.lastName) token.lastName = session.user.lastName;
       }
-      
+
       // Update session if data changed (e.g. verification status update)
       if (trigger === "update" && session) {
         token.isVerified = session.user.isVerified;
       }
-      
+
       // We might want to re-fetch verification status here on every JWT rotation
       // to ensure real-time blocking, but for now we trust the login check
       return token;
@@ -273,33 +327,39 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // without breaking Edge Middleware compatibility
         const { notifyAdminsOfNewUser } = await import("@/lib/auth-events");
         await notifyAdminsOfNewUser(user as any);
-        
+
         // Create role-specific profile for OAuth users (credentials flow does this in register API)
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id as string },
-          select: { role: true }
+          select: { role: true },
         });
-        
+
         if (dbUser?.role === "STUDENT") {
           // Check if profile already exists (upsert-like behavior)
           const existingProfile = await prisma.studentProfile.findUnique({
-            where: { userId: user.id as string }
+            where: { userId: user.id as string },
           });
           if (!existingProfile) {
             await prisma.studentProfile.create({
-              data: { userId: user.id as string }
+              data: { userId: user.id as string },
             });
-            console.log("[Auth] Created StudentProfile for OAuth user:", user.id);
+            console.log(
+              "[Auth] Created StudentProfile for OAuth user:",
+              user.id,
+            );
           }
         } else if (dbUser?.role === "TEACHER") {
           const existingProfile = await prisma.teacherProfile.findUnique({
-            where: { userId: user.id as string }
+            where: { userId: user.id as string },
           });
           if (!existingProfile) {
             await prisma.teacherProfile.create({
-              data: { userId: user.id as string }
+              data: { userId: user.id as string },
             });
-            console.log("[Auth] Created TeacherProfile for OAuth user:", user.id);
+            console.log(
+              "[Auth] Created TeacherProfile for OAuth user:",
+              user.id,
+            );
           }
         }
       } catch (error) {
@@ -311,15 +371,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         try {
           await prisma.user.update({
             where: { id: user.id },
-            data: { 
-                emailVerified: new Date(),
-                // Admin verification (isVerified) remains false by default
-            }
+            data: {
+              emailVerified: new Date(),
+              // Admin verification (isVerified) remains false by default
+            },
           });
         } catch (error) {
           console.error("Failed to auto-verify email", error);
         }
       }
-    }
-  }
+    },
+  },
 });

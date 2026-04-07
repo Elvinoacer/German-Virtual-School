@@ -1,80 +1,85 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { hashPassword } from '@/lib/auth';
-import { UserRole } from '@/generated/prisma/client';
-import { randomBytes } from 'crypto';
-import { sendEmailNotification } from '@/lib/notifications/channels/email';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { hashPassword } from "@/lib/auth";
+import { UserRole } from "@/generated/prisma/client";
+import { randomBytes } from "crypto";
+import { sendEmailNotification } from "@/lib/notifications/channels/email";
+import { hasPaidSeatReservation } from "@/lib/seat-reservation-guard";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password, firstName, lastName, role, interestedProgram, referralCode } = body;
-
+    const {
+      email,
+      password,
+      firstName,
+      lastName,
+      role,
+      interestedProgram,
+      referralCode,
+    } = body;
 
     // Validation
     if (!email || !password || !firstName || !lastName || !role) {
       return NextResponse.json(
-        { error: 'All fields are required' },
-        { status: 400 }
+        { error: "All fields are required" },
+        { status: 400 },
       );
     }
 
-    if (!['STUDENT', 'TEACHER'].includes(role)) {
-      return NextResponse.json(
-        { error: 'Invalid role' },
-        { status: 400 }
-      );
+    if (!["STUDENT", "TEACHER"].includes(role)) {
+      return NextResponse.json({ error: "Invalid role" }, { status: 400 });
     }
 
     // Check enrollment period for student registration
-    if (role === 'STUDENT') {
+    if (role === "STUDENT") {
       const settings = await prisma.systemSettings.findUnique({
-        where: { id: 'system-settings' },
+        where: { id: "system-settings" },
         select: {
           enrollmentStartDate: true,
           enrollmentEndDate: true,
           intakeLabel: true,
-        }
+        },
       });
 
       if (settings) {
         const now = new Date();
-        
-        if (settings.enrollmentStartDate && now < settings.enrollmentStartDate) {
+
+        if (
+          settings.enrollmentStartDate &&
+          now < settings.enrollmentStartDate
+        ) {
           return NextResponse.json(
-            { 
-              error: `Enrollment has not started yet. Registration opens on ${settings.enrollmentStartDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.`
+            {
+              error: `Enrollment has not started yet. Registration opens on ${settings.enrollmentStartDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}.`,
             },
-            { status: 403 }
+            { status: 403 },
           );
         }
 
         if (settings.enrollmentEndDate && now > settings.enrollmentEndDate) {
           return NextResponse.json(
-            { 
-              error: `Enrollment is closed. Registration ended on ${settings.enrollmentEndDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}. Please check back for the next enrollment period.`
+            {
+              error: `Enrollment is closed. Registration ended on ${settings.enrollmentEndDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}. Please check back for the next enrollment period.`,
             },
-            { status: 403 }
+            { status: 403 },
           );
         }
 
         // New Logic: Mandatory Seat Reservation Check
-        const intakeLabel = settings.intakeLabel || 'May 2026';
-        const paidReservation = await prisma.seatReservation.findFirst({
-          where: {
-            email: email.toLowerCase().trim(),
-            intakeLabel: intakeLabel,
-            status: 'PAID',
-          }
+        const intakeLabel = settings.intakeLabel || "May 2026";
+        const paidReservation = await hasPaidSeatReservation({
+          email,
+          intakeLabel,
         });
 
         if (!paidReservation) {
           return NextResponse.json(
-            { 
+            {
               error: `No paid seat reservation found for ${email} (${intakeLabel} intake). Please reserve your seat first.`,
-              needsReservation: true
+              needsReservation: true,
             },
-            { status: 403 }
+            { status: 403 },
           );
         }
       }
@@ -87,8 +92,8 @@ export async function POST(request: NextRequest) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: 'Email already registered' },
-        { status: 409 }
+        { error: "Email already registered" },
+        { status: 409 },
       );
     }
 
@@ -97,7 +102,7 @@ export async function POST(request: NextRequest) {
     let codeToUse = referralCode;
 
     if (!codeToUse) {
-      const cookie = request.cookies.get('gvs_referral');
+      const cookie = request.cookies.get("gvs_referral");
       if (cookie?.value) {
         codeToUse = cookie.value;
       }
@@ -106,7 +111,7 @@ export async function POST(request: NextRequest) {
     if (codeToUse) {
       const marketer = await prisma.marketer.findUnique({
         where: { referralCode: codeToUse.toUpperCase().trim() },
-        select: { id: true }
+        select: { id: true },
       });
       if (marketer) {
         referredByMarketerId = marketer.id;
@@ -139,11 +144,13 @@ export async function POST(request: NextRequest) {
     });
 
     // Create role-specific profile
-    if (role === 'STUDENT') {
+    if (role === "STUDENT") {
       await prisma.studentProfile.create({
-        data: { 
+        data: {
           userId: user.id,
-          interestedProgram: interestedProgram ? (interestedProgram as any) : undefined 
+          interestedProgram: interestedProgram
+            ? (interestedProgram as any)
+            : undefined,
         },
       });
 
@@ -152,23 +159,25 @@ export async function POST(request: NextRequest) {
         await prisma.seatReservation.updateMany({
           where: {
             email: email.toLowerCase().trim(),
-            status: 'PAID',
+            status: "PAID",
             userId: null,
           },
           data: { userId: user.id },
         });
       } catch (linkError) {
-        console.error('Failed to link seat reservations (non-fatal):', linkError);
+        console.error(
+          "Failed to link seat reservations (non-fatal):",
+          linkError,
+        );
       }
-
-    } else if (role === 'TEACHER') {
+    } else if (role === "TEACHER") {
       await prisma.teacherProfile.create({
         data: { userId: user.id },
       });
     }
 
     // Generate verification token
-    const token = randomBytes(32).toString('hex');
+    const token = randomBytes(32).toString("hex");
     const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
     await prisma.verificationToken.create({
@@ -181,14 +190,14 @@ export async function POST(request: NextRequest) {
 
     // Send verification email
     const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/verify-email?token=${token}`;
-    
+
     await sendEmailNotification({
       userId: user.id,
-      title: 'Verify Your Email - German Virtual School',
+      title: "Verify Your Email - German Virtual School",
       message: `Please verify your email address to complete your registration.`,
       email: {
         to: email,
-        subject: 'Verify Your Email - German Virtual School',
+        subject: "Verify Your Email - German Virtual School",
         html: `
           <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
             <h1 style="color: #1a4d8f;">Welcome to German Virtual School!</h1>
@@ -219,16 +228,13 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         data: { user },
-        message: 'Registration successful. Please check your email to verify your account.',
+        message:
+          "Registration successful. Please check your email to verify your account.",
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
-    console.error('Registration error:', error);
-    return NextResponse.json(
-      { error: 'Registration failed' },
-      { status: 500 }
-    );
+    console.error("Registration error:", error);
+    return NextResponse.json({ error: "Registration failed" }, { status: 500 });
   }
 }
-

@@ -23,11 +23,18 @@ function ReserveSeatContent() {
   const searchParams = useSearchParams();
   const programFromUrl = searchParams.get("program");
   const refFromUrl = searchParams.get("ref");
-  const statusFromUrl = searchParams.get("status");
+  const reservationIdFromUrl = searchParams.get("reservationId");
+  const reservationRequiredFromUrl =
+    searchParams.get("reservationRequired") === "1";
 
   useEffect(() => {
     if (refFromUrl) {
-      axios.post("/api/referral/track", { referralCode: refFromUrl, page: "/reserve-seat" }).catch(console.error);
+      axios
+        .post("/api/referral/track", {
+          referralCode: refFromUrl,
+          page: "/reserve-seat",
+        })
+        .catch(console.error);
     }
   }, [refFromUrl]);
 
@@ -50,10 +57,71 @@ function ReserveSeatContent() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(statusFromUrl === "success");
+  const [success, setSuccess] = useState(false);
+  const [isVerifyingReservation, setIsVerifyingReservation] = useState(
+    Boolean(reservationIdFromUrl),
+  );
+
+  useEffect(() => {
+    if (!reservationRequiredFromUrl) return;
+
+    setError(
+      "A paid seat reservation is required before Google sign-in or student access.",
+    );
+  }, [reservationRequiredFromUrl]);
+
+  useEffect(() => {
+    if (!reservationIdFromUrl) {
+      setIsVerifyingReservation(false);
+      return;
+    }
+
+    let isActive = true;
+
+    const verifyReservation = async () => {
+      setIsVerifyingReservation(true);
+      setError(null);
+
+      try {
+        const response = await axios.get("/api/seat-reservation", {
+          params: { id: reservationIdFromUrl },
+        });
+
+        if (!isActive) return;
+
+        const status = response.data?.data?.status;
+
+        if (status === "PAID") {
+          setSuccess(true);
+          return;
+        }
+
+        setSuccess(false);
+        setError(
+          "Payment is still being confirmed. Access will be granted only after webhook confirmation. Please refresh in a moment.",
+        );
+      } catch {
+        if (!isActive) return;
+        setSuccess(false);
+        setError(
+          "We could not verify your reservation payment yet. Please refresh this page shortly.",
+        );
+      } finally {
+        if (isActive) {
+          setIsVerifyingReservation(false);
+        }
+      }
+    };
+
+    void verifyReservation();
+
+    return () => {
+      isActive = false;
+    };
+  }, [reservationIdFromUrl]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
@@ -69,15 +137,18 @@ function ReserveSeatContent() {
       if (data.success && data.data?.checkoutUrl) {
         // Save reservation details to localStorage for registration pre-fill
         try {
-          localStorage.setItem('gvs_reservation', JSON.stringify({
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            email: formData.email,
-            phone: formData.phone,
-            program: formData.program,
-            referralCode: formData.referralCode,
-            timestamp: Date.now(),
-          }));
+          localStorage.setItem(
+            "gvs_reservation",
+            JSON.stringify({
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              email: formData.email,
+              phone: formData.phone,
+              program: formData.program,
+              referralCode: formData.referralCode,
+              timestamp: Date.now(),
+            }),
+          );
         } catch (e) {
           // localStorage might be unavailable — non-blocking
         }
@@ -96,6 +167,28 @@ function ReserveSeatContent() {
       setIsSubmitting(false);
     }
   };
+
+  if (isVerifyingReservation) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-lg w-full text-center bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-8 md:p-12"
+        >
+          <div className="w-16 h-16 rounded-full border-4 border-slate-200 dark:border-slate-700 border-t-primary animate-spin mx-auto mb-5"></div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-3 font-sans">
+            Verifying Reservation Payment
+          </h1>
+          <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+            We are confirming your payment with our backend. Your seat will only
+            be marked as successful after the webhook confirms status as{" "}
+            <strong>PAID</strong>.
+          </p>
+        </motion.div>
+      </div>
+    );
+  }
 
   // Success state
   if (success) {
@@ -118,8 +211,9 @@ function ReserveSeatContent() {
             Seat Reserved Successfully!
           </h1>
           <p className="text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">
-            Your seat for the <strong>{intakeLabel} intake</strong> has been confirmed.
-            You&apos;ll receive a confirmation email shortly with your reservation details.
+            Your seat for the <strong>{intakeLabel} intake</strong> has been
+            confirmed. You&apos;ll receive a confirmation email shortly with
+            your reservation details.
           </p>
           <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4 mb-8 text-left space-y-2">
             <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
@@ -127,8 +221,8 @@ function ReserveSeatContent() {
                 info
               </span>
               <span>
-                Your <strong>${seatFee.toLocaleString()}</strong> reservation fee will be
-                deducted from your total tuition.
+                Your <strong>${seatFee.toLocaleString()}</strong> reservation
+                fee will be deducted from your total tuition.
               </span>
             </div>
             <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
@@ -136,8 +230,9 @@ function ReserveSeatContent() {
                 mail
               </span>
               <span>
-                You&apos;ll be notified about <strong>learning material fees</strong> closer
-                to the class start date.
+                You&apos;ll be notified about{" "}
+                <strong>learning material fees</strong> closer to the class
+                start date.
               </span>
             </div>
             <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
@@ -207,8 +302,8 @@ function ReserveSeatContent() {
                       ${seatFee.toLocaleString()} — Seat Reservation
                     </p>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      Locks your seat for the {intakeLabel} intake. This is deducted from
-                      your total tuition fee.
+                      Locks your seat for the {intakeLabel} intake. This is
+                      deducted from your total tuition fee.
                     </p>
                   </div>
                 </div>
@@ -223,8 +318,11 @@ function ReserveSeatContent() {
                       ${matFee.toLocaleString()} — Learning Materials
                     </p>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      {matDeadline ? `Due by ${new Date(matDeadline).toLocaleDateString("en-GB", { day: "numeric", month: "long" })}` : "Due before classes begin"}. You&apos;ll be notified 3 weeks
-                      before classes begin. Also deducted from total fee.
+                      {matDeadline
+                        ? `Due by ${new Date(matDeadline).toLocaleDateString("en-GB", { day: "numeric", month: "long" })}`
+                        : "Due before classes begin"}
+                      . You&apos;ll be notified 3 weeks before classes begin.
+                      Also deducted from total fee.
                     </p>
                   </div>
                 </div>
@@ -433,7 +531,9 @@ function ReserveSeatContent() {
                   </div>
                   {refFromUrl && (
                     <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                      <span className="material-symbols-outlined text-[14px]">
+                        check_circle
+                      </span>
                       Referral code applied from link
                     </span>
                   )}
@@ -459,8 +559,8 @@ function ReserveSeatContent() {
                           check
                         </span>
                         <span>
-                          The ${seatFee.toLocaleString()} seat reservation fee is{" "}
-                          <strong>non-refundable</strong>
+                          The ${seatFee.toLocaleString()} seat reservation fee
+                          is <strong>non-refundable</strong>
                         </span>
                       </li>
                       <li className="flex items-start gap-2">
@@ -532,7 +632,6 @@ function ReserveSeatContent() {
           </motion.div>
         </div>
       </div>
-
     </div>
   );
 }

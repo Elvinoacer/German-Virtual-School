@@ -1,7 +1,8 @@
-import { NextRequest } from 'next/server';
-import { authenticate } from '@/lib/auth-middleware';
-import { prisma } from '@/lib/prisma';
-import { successResponse, errors } from '@/lib/api-response';
+import { NextRequest } from "next/server";
+import { authenticate } from "@/lib/auth-middleware";
+import { prisma } from "@/lib/prisma";
+import { successResponse, errors } from "@/lib/api-response";
+import { requirePaidSeatReservation } from "@/lib/seat-reservation-guard";
 
 /**
  * Explicitly register for a semester without enrolling in a specific course.
@@ -11,40 +12,64 @@ export async function POST(request: NextRequest) {
   try {
     const payload = await authenticate(request);
 
-    if (payload.role !== 'STUDENT') {
-      return errors.forbidden('Only students can register for semesters');
+    if (payload.role !== "STUDENT") {
+      return errors.forbidden("Only students can register for semesters");
     }
 
     const studentId = payload.id || (payload as any).userId;
 
+    try {
+      await requirePaidSeatReservation({ userId: studentId });
+    } catch (reservationError: unknown) {
+      if (
+        reservationError instanceof Error &&
+        reservationError.message === "PAID_SEAT_RESERVATION_REQUIRED"
+      ) {
+        return errors.forbidden(
+          "A paid seat reservation is required before semester registration.",
+        );
+      }
+      throw reservationError;
+    }
+
     // Check enrollment period before allowing registration
     const systemSettings = await prisma.systemSettings.findUnique({
-      where: { id: 'system-settings' },
+      where: { id: "system-settings" },
       select: {
         enrollmentStartDate: true,
         enrollmentEndDate: true,
-      }
+      },
     });
 
     if (systemSettings) {
       const now = new Date();
-      
-      if (systemSettings.enrollmentStartDate && now < systemSettings.enrollmentStartDate) {
-        return errors.forbidden(`Enrollment has not started yet. Registration opens on ${systemSettings.enrollmentStartDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.`);
+
+      if (
+        systemSettings.enrollmentStartDate &&
+        now < systemSettings.enrollmentStartDate
+      ) {
+        return errors.forbidden(
+          `Enrollment has not started yet. Registration opens on ${systemSettings.enrollmentStartDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}.`,
+        );
       }
 
-      if (systemSettings.enrollmentEndDate && now > systemSettings.enrollmentEndDate) {
-        return errors.forbidden(`Enrollment is closed. Registration ended on ${systemSettings.enrollmentEndDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}. Please check back for the next enrollment period.`);
+      if (
+        systemSettings.enrollmentEndDate &&
+        now > systemSettings.enrollmentEndDate
+      ) {
+        return errors.forbidden(
+          `Enrollment is closed. Registration ended on ${systemSettings.enrollmentEndDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}. Please check back for the next enrollment period.`,
+        );
       }
     }
 
     const [currentTerm, billingSettings] = await Promise.all([
       prisma.academicTerm.findFirst({ where: { isCurrent: true } }),
-      prisma.globalBillingSettings.findFirst()
+      prisma.globalBillingSettings.findFirst(),
     ]);
 
     if (!currentTerm) {
-      return errors.notFound('No active semester found');
+      return errors.notFound("No active semester found");
     }
 
     // Check if already registered
@@ -52,13 +77,13 @@ export async function POST(request: NextRequest) {
       where: {
         studentId_termId: {
           studentId,
-          termId: currentTerm.id
-        }
-      }
+          termId: currentTerm.id,
+        },
+      },
     });
 
     if (existingRegistration) {
-      return errors.conflict('Already registered for this semester');
+      return errors.conflict("Already registered for this semester");
     }
 
     // Transaction for registration and invoicing
@@ -67,8 +92,8 @@ export async function POST(request: NextRequest) {
       const registration = await tx.termRegistration.create({
         data: {
           studentId,
-          termId: currentTerm.id
-        }
+          termId: currentTerm.id,
+        },
       });
 
       const now = new Date();
@@ -82,18 +107,23 @@ export async function POST(request: NextRequest) {
             termId: currentTerm.id,
             amount: billingSettings.defaultFee,
             description: `Semester Registration Fee: ${currentTerm.name}`,
-            dueDate: currentTerm.startDate > now ? currentTerm.startDate : dueDate,
-            status: 'PENDING'
-          }
+            dueDate:
+              currentTerm.startDate > now ? currentTerm.startDate : dueDate,
+            status: "PENDING",
+          },
         });
       }
 
       return registration;
     });
 
-    return successResponse(result, 'Successfully registered for the semester', 201);
+    return successResponse(
+      result,
+      "Successfully registered for the semester",
+      201,
+    );
   } catch (error) {
-    console.error('Semester registration error:', error);
-    return errors.internal('Failed to register for semester');
+    console.error("Semester registration error:", error);
+    return errors.internal("Failed to register for semester");
   }
 }

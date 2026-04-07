@@ -1,25 +1,25 @@
-import { NextRequest } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { successResponse, errors } from '@/lib/api-response';
-import { IntaSendService, type IntaSendWebhookPayload } from '@/lib/intasend';
-import { sendEmailNotification } from '@/lib/notifications/channels/email';
+import { NextRequest } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { successResponse, errors } from "@/lib/api-response";
+import { IntaSendService, type IntaSendWebhookPayload } from "@/lib/intasend";
+import { sendEmailNotification } from "@/lib/notifications/channels/email";
 
 export async function POST(request: NextRequest) {
   try {
     const body: IntaSendWebhookPayload = await request.json();
-    
-    console.log('📥 IntaSend Webhook Received:', {
+
+    console.log("📥 IntaSend Webhook Received:", {
       invoice_id: body.invoice_id,
       state: body.state,
       api_ref: body.api_ref,
       amount: body.value,
-      provider: body.provider
+      provider: body.provider,
     });
 
     // Verify webhook authenticity using challenge field
     if (!IntaSendService.verifyWebhook(body)) {
-      console.error('❌ Invalid webhook challenge');
-      return errors.forbidden('Invalid webhook signature');
+      console.error("❌ Invalid webhook challenge");
+      return errors.forbidden("Invalid webhook signature");
     }
 
     // Extract payment details
@@ -31,18 +31,18 @@ export async function POST(request: NextRequest) {
       provider,
       failed_reason,
       net_amount,
-      charges
+      charges,
     } = body;
 
     // Detect if this is a seat reservation payment
-    const isSeatReservation = apiRef.startsWith('SEAT_');
+    const isSeatReservation = apiRef.startsWith("SEAT_");
 
     // Handle payment based on state
     switch (state) {
-      case 'COMPLETE':
+      case "COMPLETE":
         if (isSeatReservation) {
           await handleSeatReservationPayment({
-            reservationId: apiRef.replace('SEAT_', ''),
+            reservationId: apiRef.replace("SEAT_", ""),
             intasendInvoiceId,
             paidAmount: parseFloat(value),
             provider,
@@ -54,36 +54,40 @@ export async function POST(request: NextRequest) {
             paidAmount: parseFloat(value),
             netAmount: parseFloat(net_amount),
             charges: parseFloat(charges),
-            provider
+            provider,
           });
         }
         break;
 
-      case 'FAILED':
+      case "FAILED":
         if (isSeatReservation) {
-          const reservationId = apiRef.replace('SEAT_', '');
-          await prisma.seatReservation.update({
-            where: { id: reservationId },
-            data: { status: 'EXPIRED' },
-          }).catch(() => console.warn(`Could not update reservation ${reservationId}`));
+          const reservationId = apiRef.replace("SEAT_", "");
+          await prisma.seatReservation
+            .update({
+              where: { id: reservationId },
+              data: { status: "EXPIRED" },
+            })
+            .catch(() =>
+              console.warn(`Could not update reservation ${reservationId}`),
+            );
         } else {
           await handleFailedPayment({
             invoiceId: apiRef,
             intasendInvoiceId,
-            failedReason: failed_reason || 'Unknown error'
+            failedReason: failed_reason || "Unknown error",
           });
         }
         break;
 
-      case 'REFUNDED':
+      case "REFUNDED":
         await handleRefundedPayment(apiRef, isSeatReservation);
         break;
 
-      case 'PROCESSING':
+      case "PROCESSING":
         console.log(`⏳ Payment processing for ${apiRef}`);
         break;
 
-      case 'PENDING':
+      case "PENDING":
         console.log(`⏸️  Payment pending for ${apiRef}`);
         break;
 
@@ -93,38 +97,47 @@ export async function POST(request: NextRequest) {
 
     return successResponse({ received: true, state });
   } catch (error: any) {
-    console.error('❌ Webhook processing error:', error);
-    return errors.internal('Webhook processing failed');
+    console.error("❌ Webhook processing error:", error);
+    return errors.internal("Webhook processing failed");
   }
 }
 
 /**
  * Handle refunded payment and void associated commissions
  */
-async function handleRefundedPayment(apiRef: string, isSeatReservation: boolean) {
+async function handleRefundedPayment(
+  apiRef: string,
+  isSeatReservation: boolean,
+) {
   try {
     if (isSeatReservation) {
-      const reservationId = apiRef.replace('SEAT_', '');
-      await prisma.seatReservation.update({
-        where: { id: reservationId },
-        data: { status: 'REFUNDED' },
-      }).catch(() => {});
-      
+      const reservationId = apiRef.replace("SEAT_", "");
+      await prisma.seatReservation
+        .update({
+          where: { id: reservationId },
+          data: { status: "REFUNDED" },
+        })
+        .catch(() => {});
+
       const res = await prisma.referralCommission.updateMany({
-        where: { seatReservationId: reservationId, status: 'EARNED' },
-        data: { status: 'VOIDED' }
+        where: { seatReservationId: reservationId, status: "EARNED" },
+        data: { status: "VOIDED" },
       });
-      console.log(`Voided ${res.count} EARNED commissions for refunded reservation: ${reservationId}`);
+      console.log(
+        `Voided ${res.count} EARNED commissions for refunded reservation: ${reservationId}`,
+      );
     } else {
       const invoiceId = apiRef;
       const res = await prisma.referralCommission.updateMany({
-        where: { invoiceId: invoiceId, status: 'EARNED' },
-        data: { status: 'VOIDED' }
+        where: { invoiceId: invoiceId, status: "EARNED" },
+        data: { status: "VOIDED" },
       });
-      console.log(`Voided ${res.count} EARNED commissions for refunded invoice: ${invoiceId}`);
+      console.log(
+        `Voided ${res.count} EARNED commissions for refunded invoice: ${invoiceId}`,
+      );
     }
   } catch (error) {
-    console.error('Failed to handle refund logic:', error);
+    console.error("Failed to handle refund logic:", error);
   }
 }
 
@@ -153,7 +166,7 @@ async function handleSeatReservationPayment({
     return;
   }
 
-  if (reservation.status === 'PAID') {
+  if (reservation.status === "PAID") {
     console.log(`ℹ️  Seat reservation ${reservationId} already paid`);
     return;
   }
@@ -161,7 +174,7 @@ async function handleSeatReservationPayment({
   // Update reservation status to PAID
   await prisma.seatReservation.update({
     where: { id: reservationId },
-    data: { status: 'PAID' },
+    data: { status: "PAID" },
   });
 
   console.log(`✅ Seat reservation ${reservationId} marked as PAID`);
@@ -170,38 +183,45 @@ async function handleSeatReservationPayment({
   if (reservation.marketerId) {
     try {
       const settings = await prisma.systemSettings.findUnique({
-        where: { id: 'system-settings' },
+        where: { id: "system-settings" },
         select: { reservationCommission: true },
       });
-      const commissionAmount = settings?.reservationCommission ? Number(settings.reservationCommission) : 500;
+      const commissionAmount = settings?.reservationCommission
+        ? Number(settings.reservationCommission)
+        : 5;
 
       await prisma.referralCommission.create({
         data: {
           marketerId: reservation.marketerId,
           studentEmail: reservation.email,
           studentName: `${reservation.firstName} ${reservation.lastName}`,
-          type: 'RESERVATION',
+          type: "RESERVATION",
           amount: commissionAmount,
-          status: 'EARNED',
+          status: "EARNED",
           seatReservationId: reservation.id,
           studentId: reservation.userId || undefined,
         },
       });
-      console.log(`💰 Reservation commission ($${commissionAmount}) created for marketer ${reservation.marketerId}`);
+      console.log(
+        `💰 Reservation commission ($${commissionAmount}) created for marketer ${reservation.marketerId}`,
+      );
     } catch (commErr) {
-      console.error('Failed to create reservation commission (non-fatal):', commErr);
+      console.error(
+        "Failed to create reservation commission (non-fatal):",
+        commErr,
+      );
     }
   }
 
   // Send confirmation email
   try {
     await sendEmailNotification({
-      userId: reservation.userId || 'system',
-      title: 'Seat Reservation Confirmed — German Virtual School',
+      userId: reservation.userId || "system",
+      title: "Seat Reservation Confirmed — German Virtual School",
       message: `Your seat for the ${reservation.intakeLabel} intake has been confirmed.`,
       email: {
         to: reservation.email,
-        subject: 'Seat Reservation Confirmed — German Virtual School',
+        subject: "Seat Reservation Confirmed — German Virtual School",
         html: `
           <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
             <h1 style="color: #1a4d8f;">Seat Reserved Successfully! 🎉</h1>
@@ -211,7 +231,7 @@ async function handleSeatReservationPayment({
             <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
               <h3 style="margin: 0 0 12px; color: #1a4d8f;">Reservation Details</h3>
               <p style="margin: 4px 0;"><strong>Name:</strong> ${reservation.firstName} ${reservation.lastName}</p>
-              ${reservation.program ? `<p style="margin: 4px 0;"><strong>Program:</strong> ${reservation.program}</p>` : ''}
+              ${reservation.program ? `<p style="margin: 4px 0;"><strong>Program:</strong> ${reservation.program}</p>` : ""}
               <p style="margin: 4px 0;"><strong>Amount Paid:</strong> $${paidAmount.toLocaleString()}</p>
               <p style="margin: 4px 0;"><strong>Status:</strong> ✅ Confirmed</p>
             </div>
@@ -226,7 +246,7 @@ async function handleSeatReservationPayment({
             </div>
             
             <p style="color: #666; font-size: 12px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
-              This is a non-refundable reservation fee. If you have any questions, contact us at ${process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@germanvirtualschool.com'}.
+              This is a non-refundable reservation fee. If you have any questions, contact us at ${process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@germanvirtualschool.com"}.
             </p>
           </div>
         `,
@@ -234,15 +254,19 @@ async function handleSeatReservationPayment({
     });
     console.log(`📧 Confirmation email sent to ${reservation.email}`);
   } catch (emailErr) {
-    console.error('Failed to send seat reservation confirmation email:', emailErr);
+    console.error(
+      "Failed to send seat reservation confirmation email:",
+      emailErr,
+    );
   }
 
   // Send admin notification
   try {
-    const adminEmail = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'admin@germanvirtualschool.com';
+    const adminEmail =
+      process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "admin@germanvirtualschool.com";
     await sendEmailNotification({
-      userId: 'system',
-      title: 'New Seat Reservation — Admin Notification',
+      userId: "system",
+      title: "New Seat Reservation — Admin Notification",
       message: `A new seat reservation has been confirmed.`,
       email: {
         to: adminEmail,
@@ -256,11 +280,11 @@ async function handleSeatReservationPayment({
               <h3 style="margin: 0 0 12px; color: #1a4d8f;">Student Details</h3>
               <p style="margin: 4px 0;"><strong>Name:</strong> ${reservation.firstName} ${reservation.lastName}</p>
               <p style="margin: 4px 0;"><strong>Email:</strong> ${reservation.email}</p>
-              ${reservation.phone ? `<p style="margin: 4px 0;"><strong>Phone:</strong> ${reservation.phone}</p>` : ''}
-              ${reservation.program ? `<p style="margin: 4px 0;"><strong>Program:</strong> ${reservation.program}</p>` : ''}
+              ${reservation.phone ? `<p style="margin: 4px 0;"><strong>Phone:</strong> ${reservation.phone}</p>` : ""}
+              ${reservation.program ? `<p style="margin: 4px 0;"><strong>Program:</strong> ${reservation.program}</p>` : ""}
               <p style="margin: 4px 0;"><strong>Amount Paid:</strong> $${paidAmount.toLocaleString()}</p>
               <p style="margin: 4px 0;"><strong>Payment Provider:</strong> ${provider}</p>
-              <p style="margin: 4px 0;"><strong>Date:</strong> ${new Date().toLocaleString('en-KE', { timeZone: 'Africa/Nairobi' })}</p>
+              <p style="margin: 4px 0;"><strong>Date:</strong> ${new Date().toLocaleString("en-KE", { timeZone: "Africa/Nairobi" })}</p>
             </div>
             
             <p style="color: #666; font-size: 12px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
@@ -272,7 +296,10 @@ async function handleSeatReservationPayment({
     });
     console.log(`📧 Admin notification sent to ${adminEmail}`);
   } catch (adminEmailErr) {
-    console.error('Failed to send admin notification (non-fatal):', adminEmailErr);
+    console.error(
+      "Failed to send admin notification (non-fatal):",
+      adminEmailErr,
+    );
   }
 }
 
@@ -285,7 +312,7 @@ async function handleCompletePayment({
   paidAmount,
   netAmount,
   charges,
-  provider
+  provider,
 }: {
   invoiceId: string;
   intasendInvoiceId: string;
@@ -298,18 +325,20 @@ async function handleCompletePayment({
 
   const invoice = await prisma.invoice.findUnique({
     where: { id: invoiceId },
-    include: { student: true }
+    include: { student: true },
   });
 
   if (!invoice) {
-    console.warn(`⚠️  Invoice ${invoiceId} not found for payment ${intasendInvoiceId}`);
+    console.warn(
+      `⚠️  Invoice ${invoiceId} not found for payment ${intasendInvoiceId}`,
+    );
     return;
   }
 
   await prisma.$transaction(async (tx) => {
     // Check if payment already recorded (prevent duplicates)
     const existingPayment = await tx.payment.findUnique({
-      where: { transactionReference: intasendInvoiceId }
+      where: { transactionReference: intasendInvoiceId },
     });
 
     if (existingPayment) {
@@ -319,65 +348,70 @@ async function handleCompletePayment({
 
     // Determine payment method enum strictly matching Prisma schema (MPESA or CARD)
     // IntaSend sends "M-PESA" or "CARD-PAYMENT"
-    const methodEnum = provider.replace('-', '').toUpperCase().includes('MPESA') ? 'MPESA' : 'CARD';
+    const methodEnum = provider.replace("-", "").toUpperCase().includes("MPESA")
+      ? "MPESA"
+      : "CARD";
 
     // Check for pending payment to update
     // Initiation creates record with "PENDING_" prefix
     const pendingPayment = await tx.payment.findUnique({
-        where: { transactionReference: `PENDING_${intasendInvoiceId}` }
+      where: { transactionReference: `PENDING_${intasendInvoiceId}` },
     });
 
     if (pendingPayment) {
-        // Update existing pending payment
-        await tx.payment.update({
-            where: { id: pendingPayment.id },
-            data: {
-                transactionReference: intasendInvoiceId, // Remove PENDING prefix to finalize
-                status: 'PAID',
-                method: methodEnum as any,
-                metadata: {
-                    net_amount: netAmount,
-                    charges: charges,
-                    provider: provider
-                } as any
-            }
-        });
-        console.log(`✅ Updated pending payment ${pendingPayment.id} to PAID`);
+      // Update existing pending payment
+      await tx.payment.update({
+        where: { id: pendingPayment.id },
+        data: {
+          transactionReference: intasendInvoiceId, // Remove PENDING prefix to finalize
+          status: "PAID",
+          method: methodEnum as any,
+          metadata: {
+            net_amount: netAmount,
+            charges: charges,
+            provider: provider,
+          } as any,
+        },
+      });
+      console.log(`✅ Updated pending payment ${pendingPayment.id} to PAID`);
     } else {
-        // Create new payment record if no pending one found
-        await tx.payment.create({
-            data: {
-                invoiceId,
-                amount: paidAmount,
-                method: methodEnum as any,
-                transactionReference: intasendInvoiceId,
-                status: 'PAID',
-                metadata: {
-                    net_amount: netAmount,
-                    charges: charges,
-                    provider: provider
-                } as any
-            }
-        });
-        console.log(`✅ Created new payment record for ${intasendInvoiceId}`);
+      // Create new payment record if no pending one found
+      await tx.payment.create({
+        data: {
+          invoiceId,
+          amount: paidAmount,
+          method: methodEnum as any,
+          transactionReference: intasendInvoiceId,
+          status: "PAID",
+          metadata: {
+            net_amount: netAmount,
+            charges: charges,
+            provider: provider,
+          } as any,
+        },
+      });
+      console.log(`✅ Created new payment record for ${intasendInvoiceId}`);
     }
 
     // Update invoice status
     const newPaidAmount = Number(invoice.paidAmount) + paidAmount;
-    const newStatus = newPaidAmount >= Number(invoice.amount) ? 'PAID' : 'PARTIAL';
+    const newStatus =
+      newPaidAmount >= Number(invoice.amount) ? "PAID" : "PARTIAL";
 
     await tx.invoice.update({
       where: { id: invoiceId },
       data: {
         paidAmount: newPaidAmount,
-        status: newStatus
-      }
+        status: newStatus,
+      },
     });
 
-    console.log(`✅ Invoice ${invoiceId} updated: ${paidAmount}, new status: ${newStatus}`);
+    console.log(
+      `✅ Invoice ${invoiceId} updated: ${paidAmount}, new status: ${newStatus}`,
+    );
 
     // Create full payment commission if student has a linked marketer and invoice is fully paid
-    if (newStatus === 'PAID') {
+    if (newStatus === "PAID") {
       try {
         let marketerIdToCredit = invoice.student.referredByMarketerId;
 
@@ -386,7 +420,7 @@ async function handleCompletePayment({
           const studentReservation = await tx.seatReservation.findFirst({
             where: {
               userId: invoice.studentId,
-              status: 'PAID',
+              status: "PAID",
               marketerId: { not: null },
             },
             select: { marketerId: true },
@@ -399,34 +433,43 @@ async function handleCompletePayment({
           const existingCommission = await tx.referralCommission.findFirst({
             where: {
               studentId: invoice.studentId,
-              type: 'FULL_PAYMENT',
+              type: "FULL_PAYMENT",
             },
           });
 
           if (!existingCommission) {
             const settings = await tx.systemSettings.findUnique({
-              where: { id: 'system-settings' },
+              where: { id: "system-settings" },
               select: { fullPaymentCommission: true },
             });
-            const commissionAmount = settings?.fullPaymentCommission ? Number(settings.fullPaymentCommission) : 1500;
+            const commissionAmount = settings?.fullPaymentCommission
+              ? Number(settings.fullPaymentCommission)
+              : 15;
 
             await tx.referralCommission.create({
               data: {
                 marketerId: marketerIdToCredit,
                 studentEmail: invoice.student.email,
-                studentName: invoice.student.name || `${invoice.student.firstName} ${invoice.student.lastName}`,
-                type: 'FULL_PAYMENT',
+                studentName:
+                  invoice.student.name ||
+                  `${invoice.student.firstName} ${invoice.student.lastName}`,
+                type: "FULL_PAYMENT",
                 amount: commissionAmount,
-                status: 'EARNED',
+                status: "EARNED",
                 studentId: invoice.studentId,
                 invoiceId: invoice.id,
               },
             });
-            console.log(`💰 Full payment commission ($${commissionAmount}) created for marketer ${marketerIdToCredit}`);
+            console.log(
+              `💰 Full payment commission ($${commissionAmount}) created for marketer ${marketerIdToCredit}`,
+            );
           }
         }
       } catch (commErr) {
-        console.error('Failed to create full payment commission (non-fatal):', commErr);
+        console.error(
+          "Failed to create full payment commission (non-fatal):",
+          commErr,
+        );
       }
     }
   });
@@ -438,7 +481,7 @@ async function handleCompletePayment({
 async function handleFailedPayment({
   invoiceId,
   intasendInvoiceId,
-  failedReason
+  failedReason,
 }: {
   invoiceId: string;
   intasendInvoiceId: string;
@@ -452,13 +495,13 @@ async function handleFailedPayment({
     where: {
       invoiceId,
       transactionReference: `PENDING_${intasendInvoiceId}`,
-      status: 'PENDING'
+      status: "PENDING",
     },
     data: {
-      status: 'FAILED',
+      status: "FAILED",
       metadata: {
-        failed_reason: failedReason
-      } as any
-    }
+        failed_reason: failedReason,
+      } as any,
+    },
   });
 }

@@ -25,11 +25,11 @@ export default function AdminSettingsPage() {
     notifications: {
       emailNotifications: true,
       paymentReminders: true,
-      sessionReminders: true
+      sessionReminders: true,
     },
     integrations: {
       jitsiDomain: "meet.jit.si",
-      intasendPublicKey: ""
+      intasendPublicKey: "",
     },
     // School Calendar Fields
     enrollmentStartDate: "",
@@ -48,11 +48,11 @@ export default function AdminSettingsPage() {
   });
 
   const { data: settingsData, isLoading } = useQuery({
-    queryKey: ['admin-settings'],
+    queryKey: ["admin-settings"],
     queryFn: async () => {
-      const response = await axiosInstance.get('/admin/settings');
+      const response = await axiosInstance.get("/admin/settings");
       return response.data.data;
-    }
+    },
   });
 
   useEffect(() => {
@@ -65,34 +65,41 @@ export default function AdminSettingsPage() {
         notifications: (settingsData.notifications as any) || {
           emailNotifications: true,
           paymentReminders: true,
-          sessionReminders: true
+          sessionReminders: true,
         },
         integrations: (settingsData.integrations as any) || {
           jitsiDomain: "meet.jit.si",
-          intasendPublicKey: ""
+          intasendPublicKey: "",
         },
         // School Calendar Fields
-        enrollmentStartDate: formatDateForInput(settingsData.enrollmentStartDate),
+        enrollmentStartDate: formatDateForInput(
+          settingsData.enrollmentStartDate,
+        ),
         enrollmentEndDate: formatDateForInput(settingsData.enrollmentEndDate),
         orientationDate: formatDateForInput(settingsData.orientationDate),
         firstClassDate: formatDateForInput(settingsData.firstClassDate),
         lastClassDate: formatDateForInput(settingsData.lastClassDate),
         // Seat Reservation & Material Fee Fields
-        seatReservationFee: settingsData.seatReservationFee?.toString() || "2500",
+        seatReservationFee:
+          settingsData.seatReservationFee?.toString() || "2500",
         materialFee: settingsData.materialFee?.toString() || "7500",
-        materialFeeDeadline: formatDateForInput(settingsData.materialFeeDeadline),
+        materialFeeDeadline: formatDateForInput(
+          settingsData.materialFeeDeadline,
+        ),
         intakeLabel: settingsData.intakeLabel || "May 2026",
-        reservationCommission: settingsData.reservationCommission?.toString() || "500",
-        fullPaymentCommission: settingsData.fullPaymentCommission?.toString() || "1500",
-        minInstallmentAmount: settingsData.minInstallmentAmount?.toString() || "9000",
+        reservationCommission:
+          settingsData.reservationCommission?.toString() || "5",
+        fullPaymentCommission:
+          settingsData.fullPaymentCommission?.toString() || "15",
+        minInstallmentAmount:
+          settingsData.minInstallmentAmount?.toString() || "9000",
       });
     }
   }, [settingsData]);
 
-
   const saveSettingsMutation = useMutation({
     mutationFn: async (settings: any) => {
-      const response = await axiosInstance.patch('/admin/settings', settings);
+      const response = await axiosInstance.patch("/admin/settings", settings);
       return response.data;
     },
     onSuccess: () => {
@@ -100,7 +107,7 @@ export default function AdminSettingsPage() {
     },
     onError: () => {
       toast.error("Failed to save settings");
-    }
+    },
   });
 
   const handleSave = () => {
@@ -140,7 +147,9 @@ export default function AdminSettingsPage() {
             <input
               type="text"
               value={formData.systemName}
-              onChange={(e) => setFormData({ ...formData, systemName: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, systemName: e.target.value })
+              }
               className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
             />
           </div>
@@ -151,7 +160,9 @@ export default function AdminSettingsPage() {
             <input
               type="email"
               value={formData.supportEmail}
-              onChange={(e) => setFormData({ ...formData, supportEmail: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, supportEmail: e.target.value })
+              }
               className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
             />
           </div>
@@ -162,7 +173,12 @@ export default function AdminSettingsPage() {
             <input
               type="number"
               value={formData.maxStudentsPerClass}
-              onChange={(e) => setFormData({ ...formData, maxStudentsPerClass: Number(e.target.value) })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  maxStudentsPerClass: Number(e.target.value),
+                })
+              }
               className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
             />
           </div>
@@ -172,7 +188,9 @@ export default function AdminSettingsPage() {
             </label>
             <select
               value={formData.defaultCurrency}
-              onChange={(e) => setFormData({ ...formData, defaultCurrency: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, defaultCurrency: e.target.value })
+              }
               className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
             >
               <option value="USD">USD - US Dollar</option>
@@ -186,25 +204,32 @@ export default function AdminSettingsPage() {
       {/* School Calendar Settings */}
       <div className="bg-white dark:bg-[#1a202c] rounded-xl border border-[#e7ebf3] dark:border-[#2d3748] shadow-sm p-6">
         <div className="flex items-center gap-3 mb-4">
-          <span className="material-symbols-outlined text-primary">calendar_month</span>
+          <span className="material-symbols-outlined text-primary">
+            calendar_month
+          </span>
           <h2 className="text-lg font-bold text-[#0d121b] dark:text-white">
             School Calendar
           </h2>
         </div>
         <p className="text-[#4c669a] text-sm mb-6">
-          Set enrollment periods, orientation date, and class schedule. Student registrations will be blocked outside the enrollment period.
+          Set enrollment periods, orientation date, and class schedule. Student
+          registrations will be blocked outside the enrollment period.
         </p>
 
         {/* Enrollment Status Indicator */}
         {(() => {
           const now = new Date();
-          const enrollmentStart = formData.enrollmentStartDate ? new Date(formData.enrollmentStartDate) : null;
-          const enrollmentEnd = formData.enrollmentEndDate ? new Date(formData.enrollmentEndDate) : null;
-          
+          const enrollmentStart = formData.enrollmentStartDate
+            ? new Date(formData.enrollmentStartDate)
+            : null;
+          const enrollmentEnd = formData.enrollmentEndDate
+            ? new Date(formData.enrollmentEndDate)
+            : null;
+
           let statusColor = "green";
           let statusText = "Enrollment Open";
           let statusDescription = "Students can register for the school.";
-          
+
           if (enrollmentStart && now < enrollmentStart) {
             statusColor = "amber";
             statusText = "Enrollment Not Started";
@@ -218,29 +243,43 @@ export default function AdminSettingsPage() {
           }
 
           return (
-            <div className={`flex items-center gap-3 p-4 rounded-lg mb-6 ${
-              statusColor === "green" ? "bg-green-50 dark:bg-green-900/10" :
-              statusColor === "amber" ? "bg-amber-50 dark:bg-amber-900/10" :
-              "bg-red-50 dark:bg-red-900/10"
-            }`}>
-              <span className={`material-symbols-outlined ${
-                statusColor === "green" ? "text-green-600" :
-                statusColor === "amber" ? "text-amber-600" :
-                "text-red-600"
-              }`}>
-                {statusColor === "green" ? "check_circle" : statusColor === "amber" ? "schedule" : "cancel"}
+            <div
+              className={`flex items-center gap-3 p-4 rounded-lg mb-6 ${
+                statusColor === "green"
+                  ? "bg-green-50 dark:bg-green-900/10"
+                  : statusColor === "amber"
+                    ? "bg-amber-50 dark:bg-amber-900/10"
+                    : "bg-red-50 dark:bg-red-900/10"
+              }`}
+            >
+              <span
+                className={`material-symbols-outlined ${
+                  statusColor === "green"
+                    ? "text-green-600"
+                    : statusColor === "amber"
+                      ? "text-amber-600"
+                      : "text-red-600"
+                }`}
+              >
+                {statusColor === "green"
+                  ? "check_circle"
+                  : statusColor === "amber"
+                    ? "schedule"
+                    : "cancel"}
               </span>
               <div>
-                <p className={`text-sm font-medium ${
-                  statusColor === "green" ? "text-green-700 dark:text-green-400" :
-                  statusColor === "amber" ? "text-amber-700 dark:text-amber-400" :
-                  "text-red-700 dark:text-red-400"
-                }`}>
+                <p
+                  className={`text-sm font-medium ${
+                    statusColor === "green"
+                      ? "text-green-700 dark:text-green-400"
+                      : statusColor === "amber"
+                        ? "text-amber-700 dark:text-amber-400"
+                        : "text-red-700 dark:text-red-400"
+                  }`}
+                >
                   {statusText}
                 </p>
-                <p className="text-xs text-[#4c669a]">
-                  {statusDescription}
-                </p>
+                <p className="text-xs text-[#4c669a]">{statusDescription}</p>
               </div>
             </div>
           );
@@ -254,10 +293,17 @@ export default function AdminSettingsPage() {
             <input
               type="date"
               value={formData.enrollmentStartDate}
-              onChange={(e) => setFormData({ ...formData, enrollmentStartDate: e.target.value })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  enrollmentStartDate: e.target.value,
+                })
+              }
               className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
             />
-            <p className="text-xs text-[#4c669a] mt-1">When registration opens</p>
+            <p className="text-xs text-[#4c669a] mt-1">
+              When registration opens
+            </p>
           </div>
           <div>
             <label className="block text-sm font-medium text-[#4c669a] mb-2">
@@ -266,10 +312,14 @@ export default function AdminSettingsPage() {
             <input
               type="date"
               value={formData.enrollmentEndDate}
-              onChange={(e) => setFormData({ ...formData, enrollmentEndDate: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, enrollmentEndDate: e.target.value })
+              }
               className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
             />
-            <p className="text-xs text-[#4c669a] mt-1">When registration closes</p>
+            <p className="text-xs text-[#4c669a] mt-1">
+              When registration closes
+            </p>
           </div>
           <div>
             <label className="block text-sm font-medium text-[#4c669a] mb-2">
@@ -278,10 +328,14 @@ export default function AdminSettingsPage() {
             <input
               type="date"
               value={formData.orientationDate}
-              onChange={(e) => setFormData({ ...formData, orientationDate: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, orientationDate: e.target.value })
+              }
               className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
             />
-            <p className="text-xs text-[#4c669a] mt-1">Student orientation day</p>
+            <p className="text-xs text-[#4c669a] mt-1">
+              Student orientation day
+            </p>
           </div>
           <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-[#e7ebf3] dark:border-[#2d3748]">
             <div>
@@ -291,7 +345,9 @@ export default function AdminSettingsPage() {
               <input
                 type="date"
                 value={formData.firstClassDate}
-                onChange={(e) => setFormData({ ...formData, firstClassDate: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, firstClassDate: e.target.value })
+                }
                 className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
               />
               <p className="text-xs text-[#4c669a] mt-1">Classes begin</p>
@@ -303,7 +359,9 @@ export default function AdminSettingsPage() {
               <input
                 type="date"
                 value={formData.lastClassDate}
-                onChange={(e) => setFormData({ ...formData, lastClassDate: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, lastClassDate: e.target.value })
+                }
                 className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
               />
               <p className="text-xs text-[#4c669a] mt-1">Classes end</p>
@@ -315,13 +373,17 @@ export default function AdminSettingsPage() {
       {/* Seat Reservation & Payment Settings */}
       <div className="bg-white dark:bg-[#1a202c] rounded-xl border border-[#e7ebf3] dark:border-[#2d3748] shadow-sm p-6">
         <div className="flex items-center gap-3 mb-4">
-          <span className="material-symbols-outlined text-primary">event_seat</span>
+          <span className="material-symbols-outlined text-primary">
+            event_seat
+          </span>
           <h2 className="text-lg font-bold text-[#0d121b] dark:text-white">
             Seat Reservation & Fees
           </h2>
         </div>
         <p className="text-[#4c669a] text-sm mb-6">
-          Configure seat reservation fees, learning material fees, and intake labels. These values are used on the public reservation page and for automated billing.
+          Configure seat reservation fees, learning material fees, and intake
+          labels. These values are used on the public reservation page and for
+          automated billing.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -332,11 +394,15 @@ export default function AdminSettingsPage() {
             <input
               type="number"
               value={formData.seatReservationFee}
-              onChange={(e) => setFormData({ ...formData, seatReservationFee: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, seatReservationFee: e.target.value })
+              }
               placeholder="2500"
               className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
             />
-            <p className="text-xs text-[#4c669a] mt-1">Non-refundable fee to lock a seat. Deducted from total tuition.</p>
+            <p className="text-xs text-[#4c669a] mt-1">
+              Non-refundable fee to lock a seat. Deducted from total tuition.
+            </p>
           </div>
           <div>
             <label className="block text-sm font-medium text-[#4c669a] mb-2">
@@ -345,11 +411,16 @@ export default function AdminSettingsPage() {
             <input
               type="number"
               value={formData.materialFee}
-              onChange={(e) => setFormData({ ...formData, materialFee: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, materialFee: e.target.value })
+              }
               placeholder="7500"
               className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
             />
-            <p className="text-xs text-[#4c669a] mt-1">Fee for purchasing learning materials. Prompted 3 weeks before classes.</p>
+            <p className="text-xs text-[#4c669a] mt-1">
+              Fee for purchasing learning materials. Prompted 3 weeks before
+              classes.
+            </p>
           </div>
           <div>
             <label className="block text-sm font-medium text-[#4c669a] mb-2">
@@ -358,10 +429,17 @@ export default function AdminSettingsPage() {
             <input
               type="date"
               value={formData.materialFeeDeadline}
-              onChange={(e) => setFormData({ ...formData, materialFeeDeadline: e.target.value })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  materialFeeDeadline: e.target.value,
+                })
+              }
               className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
             />
-            <p className="text-xs text-[#4c669a] mt-1">Deadline for material fee payment (e.g. end of April)</p>
+            <p className="text-xs text-[#4c669a] mt-1">
+              Deadline for material fee payment (e.g. end of April)
+            </p>
           </div>
           <div>
             <label className="block text-sm font-medium text-[#4c669a] mb-2">
@@ -370,11 +448,16 @@ export default function AdminSettingsPage() {
             <input
               type="text"
               value={formData.intakeLabel}
-              onChange={(e) => setFormData({ ...formData, intakeLabel: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, intakeLabel: e.target.value })
+              }
               placeholder="May 2026"
               className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
             />
-            <p className="text-xs text-[#4c669a] mt-1">Label shown on the public reservation page (e.g. &quot;May 2026&quot;)</p>
+            <p className="text-xs text-[#4c669a] mt-1">
+              Label shown on the public reservation page (e.g. &quot;May
+              2026&quot;)
+            </p>
           </div>
           <div>
             <label className="block text-sm font-medium text-[#4c669a] mb-2">
@@ -383,11 +466,18 @@ export default function AdminSettingsPage() {
             <input
               type="number"
               value={formData.minInstallmentAmount}
-              onChange={(e) => setFormData({ ...formData, minInstallmentAmount: e.target.value })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  minInstallmentAmount: e.target.value,
+                })
+              }
               placeholder="9000"
               className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
             />
-            <p className="text-xs text-[#4c669a] mt-1">Minimum amount for flexible installment plans (default: $9,000)</p>
+            <p className="text-xs text-[#4c669a] mt-1">
+              Minimum amount for flexible installment plans (default: $9,000)
+            </p>
           </div>
         </div>
       </div>
@@ -395,7 +485,9 @@ export default function AdminSettingsPage() {
       {/* Marketer Commission Settings */}
       <div className="bg-white dark:bg-[#1a202c] rounded-xl border border-[#e7ebf3] dark:border-[#2d3748] shadow-sm p-6">
         <div className="flex items-center gap-3 mb-4">
-          <span className="material-symbols-outlined text-primary">handshake</span>
+          <span className="material-symbols-outlined text-primary">
+            handshake
+          </span>
           <h2 className="text-lg font-bold text-[#0d121b] dark:text-white">
             Marketer Commission Rates
           </h2>
@@ -412,11 +504,18 @@ export default function AdminSettingsPage() {
             <input
               type="number"
               value={formData.reservationCommission}
-              onChange={(e) => setFormData({ ...formData, reservationCommission: e.target.value })}
-              placeholder="500"
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  reservationCommission: e.target.value,
+                })
+              }
+              placeholder="5"
               className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
             />
-            <p className="text-xs text-[#4c669a] mt-1">Commission per confirmed seat reservation (default: $5)</p>
+            <p className="text-xs text-[#4c669a] mt-1">
+              Commission per confirmed seat reservation (default: $5)
+            </p>
           </div>
           <div>
             <label className="block text-sm font-medium text-[#4c669a] mb-2">
@@ -425,11 +524,18 @@ export default function AdminSettingsPage() {
             <input
               type="number"
               value={formData.fullPaymentCommission}
-              onChange={(e) => setFormData({ ...formData, fullPaymentCommission: e.target.value })}
-              placeholder="1500"
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  fullPaymentCommission: e.target.value,
+                })
+              }
+              placeholder="15"
               className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
             />
-            <p className="text-xs text-[#4c669a] mt-1">Commission per confirmed full fee payment (default: $15)</p>
+            <p className="text-xs text-[#4c669a] mt-1">
+              Commission per confirmed full fee payment (default: $15)
+            </p>
           </div>
         </div>
       </div>
@@ -452,10 +558,15 @@ export default function AdminSettingsPage() {
             <input
               type="checkbox"
               checked={formData.notifications.emailNotifications}
-              onChange={(e) => setFormData({ 
-                ...formData, 
-                notifications: { ...formData.notifications, emailNotifications: e.target.checked } 
-              })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  notifications: {
+                    ...formData.notifications,
+                    emailNotifications: e.target.checked,
+                  },
+                })
+              }
               className="size-5 rounded border-[#e7ebf3] dark:border-[#2d3748] text-primary focus:ring-primary"
             />
           </label>
@@ -471,10 +582,15 @@ export default function AdminSettingsPage() {
             <input
               type="checkbox"
               checked={formData.notifications.paymentReminders}
-              onChange={(e) => setFormData({ 
-                ...formData, 
-                notifications: { ...formData.notifications, paymentReminders: e.target.checked } 
-              })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  notifications: {
+                    ...formData.notifications,
+                    paymentReminders: e.target.checked,
+                  },
+                })
+              }
               className="size-5 rounded border-[#e7ebf3] dark:border-[#2d3748] text-primary focus:ring-primary"
             />
           </label>
@@ -490,10 +606,15 @@ export default function AdminSettingsPage() {
             <input
               type="checkbox"
               checked={formData.notifications.sessionReminders}
-              onChange={(e) => setFormData({ 
-                ...formData, 
-                notifications: { ...formData.notifications, sessionReminders: e.target.checked } 
-              })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  notifications: {
+                    ...formData.notifications,
+                    sessionReminders: e.target.checked,
+                  },
+                })
+              }
               className="size-5 rounded border-[#e7ebf3] dark:border-[#2d3748] text-primary focus:ring-primary"
             />
           </label>
@@ -513,10 +634,15 @@ export default function AdminSettingsPage() {
             <input
               type="text"
               value={formData.integrations.jitsiDomain}
-              onChange={(e) => setFormData({ 
-                ...formData, 
-                integrations: { ...formData.integrations, jitsiDomain: e.target.value } 
-              })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  integrations: {
+                    ...formData.integrations,
+                    jitsiDomain: e.target.value,
+                  },
+                })
+              }
               placeholder="meet.jit.si"
               className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
             />
@@ -531,10 +657,15 @@ export default function AdminSettingsPage() {
             <input
               type="password"
               value={formData.integrations.intasendPublicKey}
-              onChange={(e) => setFormData({ 
-                ...formData, 
-                integrations: { ...formData.integrations, intasendPublicKey: e.target.value } 
-              })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  integrations: {
+                    ...formData.integrations,
+                    intasendPublicKey: e.target.value,
+                  },
+                })
+              }
               placeholder="ISPubKey_***"
               className="w-full px-4 py-2.5 rounded-lg border border-[#e7ebf3] dark:border-[#2d3748] bg-white dark:bg-[#2d3748] dark:text-white text-sm"
             />
@@ -552,7 +683,9 @@ export default function AdminSettingsPage() {
         </h2>
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/10 rounded-lg">
-            <span className="material-symbols-outlined text-green-600">check_circle</span>
+            <span className="material-symbols-outlined text-green-600">
+              check_circle
+            </span>
             <div>
               <p className="text-sm font-medium text-[#0d121b] dark:text-white">
                 GDPR Compliance Enabled
@@ -563,7 +696,9 @@ export default function AdminSettingsPage() {
             </div>
           </div>
           <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/10 rounded-lg">
-            <span className="material-symbols-outlined text-primary">security</span>
+            <span className="material-symbols-outlined text-primary">
+              security
+            </span>
             <div>
               <p className="text-sm font-medium text-[#0d121b] dark:text-white">
                 Audit Logs Active
@@ -583,7 +718,7 @@ export default function AdminSettingsPage() {
           disabled={saveSettingsMutation.isPending}
           className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {saveSettingsMutation.isPending ? 'Saving...' : 'Save Settings'}
+          {saveSettingsMutation.isPending ? "Saving..." : "Save Settings"}
         </button>
       </div>
     </div>

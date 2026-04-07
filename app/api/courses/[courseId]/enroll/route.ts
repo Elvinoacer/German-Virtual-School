@@ -1,17 +1,18 @@
-import { NextRequest } from 'next/server';
-import { authenticate } from '@/lib/auth-middleware';
-import { prisma } from '@/lib/prisma';
-import { successResponse, errors } from '@/lib/api-response';
+import { NextRequest } from "next/server";
+import { authenticate } from "@/lib/auth-middleware";
+import { prisma } from "@/lib/prisma";
+import { successResponse, errors } from "@/lib/api-response";
+import { requirePaidSeatReservation } from "@/lib/seat-reservation-guard";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ courseId: string }> }
+  { params }: { params: Promise<{ courseId: string }> },
 ) {
   try {
     const payload = await authenticate(request);
 
-    if (payload.role !== 'STUDENT') {
-      return errors.forbidden('Only students can enroll in courses');
+    if (payload.role !== "STUDENT") {
+      return errors.forbidden("Only students can enroll in courses");
     }
 
     const { courseId } = await params;
@@ -19,7 +20,21 @@ export async function POST(
     const studentId = payload.id || (payload as any).userId;
 
     if (!studentId) {
-      return errors.unauthorized('User ID not found in session');
+      return errors.unauthorized("User ID not found in session");
+    }
+
+    try {
+      await requirePaidSeatReservation({ userId: studentId });
+    } catch (reservationError: unknown) {
+      if (
+        reservationError instanceof Error &&
+        reservationError.message === "PAID_SEAT_RESERVATION_REQUIRED"
+      ) {
+        return errors.forbidden(
+          "A paid seat reservation is required before course enrollment.",
+        );
+      }
+      throw reservationError;
     }
 
     // Check if course exists and is published
@@ -28,11 +43,11 @@ export async function POST(
     });
 
     if (!course) {
-      return errors.notFound('Course');
+      return errors.notFound("Course");
     }
 
-    if (course.status !== 'PUBLISHED') {
-      return errors.badRequest('Course is not available for enrollment');
+    if (course.status !== "PUBLISHED") {
+      return errors.badRequest("Course is not available for enrollment");
     }
 
     // Check if already enrolled
@@ -46,11 +61,13 @@ export async function POST(
     });
 
     if (existingEnrollment) {
-      return errors.conflict('Already enrolled in this course');
+      return errors.conflict("Already enrolled in this course");
     }
 
     // Fetch current term for registration
-    const currentTerm = await prisma.academicTerm.findFirst({ where: { isCurrent: true } });
+    const currentTerm = await prisma.academicTerm.findFirst({
+      where: { isCurrent: true },
+    });
 
     // Transaction to ensure atomicity of enrollment and term registration
     const result = await prisma.$transaction(async (tx) => {
@@ -59,8 +76,8 @@ export async function POST(
         data: {
           studentId,
           courseId,
-          billingCycle: 'ONE_TIME', // Billing is now handled at the term level
-          nextBillingDate: null
+          billingCycle: "ONE_TIME", // Billing is now handled at the term level
+          nextBillingDate: null,
         },
         include: {
           course: {
@@ -72,12 +89,12 @@ export async function POST(
       // 2. Register for current term if not already registered
       if (currentTerm) {
         const existingRegistration = await tx.termRegistration.findUnique({
-          where: { studentId_termId: { studentId, termId: currentTerm.id } }
+          where: { studentId_termId: { studentId, termId: currentTerm.id } },
         });
 
         if (!existingRegistration) {
           await tx.termRegistration.create({
-            data: { studentId, termId: currentTerm.id }
+            data: { studentId, termId: currentTerm.id },
           });
         }
       }
@@ -88,10 +105,9 @@ export async function POST(
       return enrollment;
     });
 
-    return successResponse(result, 'Successfully enrolled in course', 201);
+    return successResponse(result, "Successfully enrolled in course", 201);
   } catch (error) {
-    console.error('Enroll course error:', error);
-    return errors.internal('Failed to enroll in course');
+    console.error("Enroll course error:", error);
+    return errors.internal("Failed to enroll in course");
   }
 }
-
