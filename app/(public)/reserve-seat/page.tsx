@@ -150,7 +150,10 @@ function ReserveSeatContent() {
     };
 
     try {
-      const { data } = await axios.post("/api/seat-reservation", submissionData);
+      const { data } = await axios.post(
+        "/api/seat-reservation",
+        submissionData,
+      );
 
       if (data.success && data.data?.checkoutUrl) {
         // Save reservation details to localStorage for registration pre-fill
