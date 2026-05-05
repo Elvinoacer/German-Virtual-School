@@ -64,7 +64,7 @@ export function PublicFooter() {
                   "support@germanvirtualschool.com"}
               </a>
               <a
-                href="https://wa.me/254742318300"
+                href="https://wa.me/254116197770"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-green-400 transition-colors"

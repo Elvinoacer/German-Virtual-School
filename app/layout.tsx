@@ -18,7 +18,8 @@ const notoSans = Noto_Sans({
   display: "swap",
 });
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://germanvirtualschool.com";
+const baseUrl =
+  process.env.NEXT_PUBLIC_APP_URL || "https://germanvirtualschool.com";
 
 // JSON-LD Structured Data for SEO
 const jsonLd = {
@@ -37,9 +38,12 @@ const jsonLd = {
         height: 512,
       },
       image: `${baseUrl}/images/gvs-marketing-banner.webp`,
-      description: "The premier online platform for learning German with live classes, expert teachers, and comprehensive resources for A1-C2 proficiency levels.",
-      email: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@germanvirtualschool.com",
-      telephone: "+254742318300",
+      description:
+        "The premier online platform for learning German with live classes, expert teachers, and comprehensive resources for A1-C2 proficiency levels.",
+      email:
+        process.env.NEXT_PUBLIC_SUPPORT_EMAIL ||
+        "support@germanvirtualschool.com",
+      telephone: "+254116197770",
       sameAs: [
         "https://twitter.com/germanvirtualschool",
         "https://www.facebook.com/germanvirtualschool",
@@ -50,7 +54,8 @@ const jsonLd = {
       "@type": "EducationalOrganization",
       "@id": `${baseUrl}/#school`,
       name: "German Virtual School",
-      description: "Online German language school offering live classes for all proficiency levels from A1 to C2, including TestDaF and TestAS exam preparation.",
+      description:
+        "Online German language school offering live classes for all proficiency levels from A1 to C2, including TestDaF and TestAS exam preparation.",
       url: baseUrl,
       logo: `${baseUrl}/gvs-logo.png`,
       areaServed: {
@@ -64,13 +69,15 @@ const jsonLd = {
           {
             "@type": "Course",
             name: "German A1 - Beginner",
-            description: "Foundation course for absolute beginners in German language.",
+            description:
+              "Foundation course for absolute beginners in German language.",
             provider: { "@id": `${baseUrl}/#school` },
           },
           {
             "@type": "Course",
             name: "German A2 - Elementary",
-            description: "Build on basics and develop everyday German conversation skills.",
+            description:
+              "Build on basics and develop everyday German conversation skills.",
             provider: { "@id": `${baseUrl}/#school` },
           },
           {
@@ -82,19 +89,22 @@ const jsonLd = {
           {
             "@type": "Course",
             name: "German B2 - Upper Intermediate",
-            description: "Advanced communication skills for professional and academic settings.",
+            description:
+              "Advanced communication skills for professional and academic settings.",
             provider: { "@id": `${baseUrl}/#school` },
           },
           {
             "@type": "Course",
             name: "German C1 - Advanced",
-            description: "Near-native proficiency with complex text and speech comprehension.",
+            description:
+              "Near-native proficiency with complex text and speech comprehension.",
             provider: { "@id": `${baseUrl}/#school` },
           },
           {
             "@type": "Course",
             name: "TestDaF Preparation",
-            description: "Intensive preparation for the Test Deutsch als Fremdsprache examination.",
+            description:
+              "Intensive preparation for the Test Deutsch als Fremdsprache examination.",
             provider: { "@id": `${baseUrl}/#school` },
           },
         ],
@@ -105,7 +115,8 @@ const jsonLd = {
       "@id": `${baseUrl}/#website`,
       url: baseUrl,
       name: "German Virtual School",
-      description: "Master the German language with live classes and expert tutors",
+      description:
+        "Master the German language with live classes and expert tutors",
       publisher: { "@id": `${baseUrl}/#organization` },
       potentialAction: {
         "@type": "SearchAction",
@@ -125,14 +136,15 @@ export const metadata: Metadata = {
     default: "German Virtual School - Learn German Online with Live Classes",
     template: "%s | German Virtual School",
   },
-  description: "Master German online with live expert-led classes. From A1 to C2, TestDaF & TestAS prep, STEM courses, and intercultural training. Verified certificates included. Join German Virtual School today!",
+  description:
+    "Master German online with live expert-led classes. From A1 to C2, TestDaF & TestAS prep, STEM courses, and intercultural training. Verified certificates included. Join German Virtual School today!",
   keywords: [
     "German Virtual School",
     "Learn German Online",
     "German Language Course",
     "German Classes Online",
     "German A1 Course",
-    "German A2 Course", 
+    "German A2 Course",
     "German B1 Course",
     "German B2 Course",
     "German C1 Course",
@@ -165,7 +177,8 @@ export const metadata: Metadata = {
     alternateLocale: ["de_DE"],
     url: baseUrl,
     title: "German Virtual School - Master the German Language Online",
-    description: "Join expert-led live German classes. A1-C2 levels, TestDaF prep, STEM courses. Verified certificates. Start your German journey today!",
+    description:
+      "Join expert-led live German classes. A1-C2 levels, TestDaF prep, STEM courses. Verified certificates. Start your German journey today!",
     siteName: "German Virtual School",
     countryName: "Germany",
     images: [
@@ -181,7 +194,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "German Virtual School - Learn German Online",
-    description: "Master German with live classes from A1 to C2. TestDaF prep, STEM courses & verified certificates. Start today!",
+    description:
+      "Master German with live classes from A1 to C2. TestDaF prep, STEM courses & verified certificates. Start today!",
     images: ["/images/gvs-marketing-banner.webp"],
     creator: "@germanvirtualschool",
     site: "@germanvirtualschool",

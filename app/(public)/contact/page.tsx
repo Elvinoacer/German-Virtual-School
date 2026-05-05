@@ -5,20 +5,13 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { toast } from "sonner";
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: (i: number = 0) => ({
-    opacity: 1, y: 0,
-    transition: { duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] },
-  }),
-};
-const stagger = { visible: { transition: { staggerChildren: 0.08 } } };
-
 const contactMethods = [
   {
     icon: "mail",
     title: "Email Us",
-    value: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@germanvirtualschool.com",
+    value:
+      process.env.NEXT_PUBLIC_SUPPORT_EMAIL ||
+      "support@germanvirtualschool.com",
     href: `mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@germanvirtualschool.com"}`,
     desc: "For general inquiries, enrollment questions, and support",
     gradient: "from-blue-500 to-indigo-600",
@@ -26,8 +19,8 @@ const contactMethods = [
   {
     icon: "chat",
     title: "WhatsApp",
-    value: "+254 742 318 300",
-    href: "https://wa.me/254742318300",
+    value: "+254 116 197 770",
+    href: "https://wa.me/254116197770",
     desc: "Quick responses during business hours (Mon–Fri, 9AM–6PM EAT)",
     gradient: "from-green-500 to-emerald-600",
   },
@@ -42,12 +35,30 @@ const contactMethods = [
 ];
 
 const faqs = [
-  { q: "How do I enroll in a course?", a: "Visit our Reserve Your Seat page to secure your spot in the upcoming intake. You'll need to pay a one-time reservation fee which is deducted from your total tuition." },
-  { q: "What payment methods do you accept?", a: "We accept M-Pesa, bank transfer, credit/debit cards, and other mobile money options through our secure payment platform." },
-  { q: "Can I pay in installments?", a: "Yes! We offer flexible installment plans with no interest charged. Minimum installment amounts are displayed on our pricing page." },
-  { q: "How are classes conducted?", a: "All classes are live virtual sessions conducted through our secure video platform. You'll interact directly with qualified instructors in real-time." },
-  { q: "Do you provide certificates?", a: "Yes, we provide certificates of completion for each level. Our courses also prepare you for internationally recognized Goethe-Institut examinations." },
-  { q: "What level should I start at?", a: "If you're a complete beginner, start at A1. If you have some German background, contact us for a free placement assessment." },
+  {
+    q: "How do I enroll in a course?",
+    a: "Visit our Reserve Your Seat page to secure your spot in the upcoming intake. You'll need to pay a one-time reservation fee which is deducted from your total tuition.",
+  },
+  {
+    q: "What payment methods do you accept?",
+    a: "We accept M-Pesa, bank transfer, credit/debit cards, and other mobile money options through our secure payment platform.",
+  },
+  {
+    q: "Can I pay in installments?",
+    a: "Yes! We offer flexible installment plans with no interest charged. Minimum installment amounts are displayed on our pricing page.",
+  },
+  {
+    q: "How are classes conducted?",
+    a: "All classes are live virtual sessions conducted through our secure video platform. You'll interact directly with qualified instructors in real-time.",
+  },
+  {
+    q: "Do you provide certificates?",
+    a: "Yes, we provide certificates of completion for each level. Our courses also prepare you for internationally recognized Goethe-Institut examinations.",
+  },
+  {
+    q: "What level should I start at?",
+    a: "If you're a complete beginner, start at A1. If you have some German background, contact us for a free placement assessment.",
+  },
 ];
 
 export default function ContactPage() {
@@ -75,21 +86,39 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 overflow-x-hidden">
       {/* Hero */}
-      <section className="relative py-20 lg:py-28 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden">
+      <section className="relative py-20 lg:py-28 bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden">
         <div className="absolute inset-0 hero-grid opacity-30" />
-        <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-primary/10 blur-[120px]" />
+        <div className="absolute top-[-20%] right-[-10%] w-125 h-125 rounded-full bg-primary/10 blur-[120px]" />
 
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 relative z-10">
-          <motion.div initial="hidden" animate="visible" variants={stagger} className="text-center max-w-4xl mx-auto">
-            <motion.span variants={fadeUp} custom={0} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/10 text-sm font-semibold mb-6 font-display">
-              <span className="material-symbols-outlined text-lg">contact_support</span>
+          <motion.div className="text-center max-w-4xl mx-auto">
+            <motion.span
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0, ease: "easeOut" }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/10 text-sm font-semibold mb-6 font-display"
+            >
+              <span className="material-symbols-outlined text-lg">
+                contact_support
+              </span>
               Get In Touch
             </motion.span>
-            <motion.h1 variants={fadeUp} custom={1} className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 font-display">
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 font-display"
+            >
               Contact Us
             </motion.h1>
-            <motion.p variants={fadeUp} custom={2} className="text-lg lg:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
-              Have questions about enrollment, courses, or your journey to Germany? Our team is here to help you every step of the way.
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+              className="text-lg lg:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed"
+            >
+              Have questions about enrollment, courses, or your journey to
+              Germany? Our team is here to help you every step of the way.
             </motion.p>
           </motion.div>
         </div>
@@ -104,18 +133,32 @@ export default function ContactPage() {
                 key={method.title}
                 href={method.href}
                 target={method.href.startsWith("http") ? "_blank" : undefined}
-                rel={method.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                rel={
+                  method.href.startsWith("http")
+                    ? "noopener noreferrer"
+                    : undefined
+                }
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + i * 0.1 }}
                 className="group bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-100 dark:border-slate-700 hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 text-center"
               >
-                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${method.gradient} flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                  <span className="material-symbols-outlined text-white text-2xl">{method.icon}</span>
+                <div
+                  className={`w-14 h-14 rounded-2xl bg-linear-to-br ${method.gradient} flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300`}
+                >
+                  <span className="material-symbols-outlined text-white text-2xl">
+                    {method.icon}
+                  </span>
                 </div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1 font-display">{method.title}</h3>
-                <p className="text-sm font-semibold text-primary mb-2">{method.value}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{method.desc}</p>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1 font-display">
+                  {method.title}
+                </h3>
+                <p className="text-sm font-semibold text-primary mb-2">
+                  {method.value}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                  {method.desc}
+                </p>
               </motion.a>
             ))}
           </div>
@@ -136,20 +179,34 @@ export default function ContactPage() {
                 Send Us a Message
               </h2>
               <p className="text-slate-600 dark:text-slate-400 mb-8">
-                Fill out the form below and we'll get back to you within 24 hours.
+                Fill out the form below and we&apos;ll get back to you within 24
+                hours.
               </p>
 
               {submitted ? (
                 <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-8 text-center">
                   <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="material-symbols-outlined text-green-600 text-3xl">check_circle</span>
+                    <span className="material-symbols-outlined text-green-600 text-3xl">
+                      check_circle
+                    </span>
                   </div>
-                  <h3 className="text-xl font-bold text-green-800 dark:text-green-300 mb-2 font-display">Message Sent!</h3>
-                  <p className="text-green-700 dark:text-green-400 mb-6">Thank you for reaching out. We'll respond within 24 hours.</p>
+                  <h3 className="text-xl font-bold text-green-800 dark:text-green-300 mb-2 font-display">
+                    Message Sent!
+                  </h3>
+                  <p className="text-green-700 dark:text-green-400 mb-6">
+                    Thank you for reaching out. We&apos;ll respond within 24
+                    hours.
+                  </p>
                   <button
                     onClick={() => {
                       setSubmitted(false);
-                      setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
+                      setFormData({
+                        name: "",
+                        email: "",
+                        phone: "",
+                        subject: "",
+                        message: "",
+                      });
                     }}
                     className="px-6 py-2.5 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors font-display"
                   >
@@ -160,23 +217,31 @@ export default function ContactPage() {
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Full Name *</label>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Full Name *
+                      </label>
                       <input
                         type="text"
                         required
                         value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, name: e.target.value })
+                        }
                         className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none dark:text-white transition-colors"
                         placeholder="e.g. John Doe"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Email Address *</label>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Email Address *
+                      </label>
                       <input
                         type="email"
                         required
                         value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, email: e.target.value })
+                        }
                         className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none dark:text-white transition-colors"
                         placeholder="john@example.com"
                       />
@@ -184,21 +249,29 @@ export default function ContactPage() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Phone Number</label>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Phone Number
+                      </label>
                       <input
                         type="tel"
                         value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, phone: e.target.value })
+                        }
                         className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none dark:text-white transition-colors"
                         placeholder="+254 7XX XXX XXX"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Subject *</label>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Subject *
+                      </label>
                       <select
                         required
                         value={formData.subject}
-                        onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, subject: e.target.value })
+                        }
                         className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none dark:text-white transition-colors"
                       >
                         <option value="">Select a subject</option>
@@ -211,12 +284,16 @@ export default function ContactPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Message *</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                      Message *
+                    </label>
                     <textarea
                       required
                       rows={5}
                       value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, message: e.target.value })
+                      }
                       className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none dark:text-white resize-none transition-colors"
                       placeholder="How can we help you?"
                     />
@@ -230,7 +307,9 @@ export default function ContactPage() {
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     ) : (
                       <>
-                        <span className="material-symbols-outlined text-lg">send</span>
+                        <span className="material-symbols-outlined text-lg">
+                          send
+                        </span>
                         Send Message
                       </>
                     )}
@@ -259,10 +338,14 @@ export default function ContactPage() {
                     className="bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden transition-all"
                   >
                     <button
-                      onClick={() => setExpandedFaq(expandedFaq === i ? null : i)}
+                      onClick={() =>
+                        setExpandedFaq(expandedFaq === i ? null : i)
+                      }
                       className="w-full flex items-center justify-between p-5 text-left"
                     >
-                      <span className="text-sm font-semibold text-slate-900 dark:text-white pr-4">{faq.q}</span>
+                      <span className="text-sm font-semibold text-slate-900 dark:text-white pr-4">
+                        {faq.q}
+                      </span>
                       <span
                         className={`material-symbols-outlined text-slate-400 text-lg shrink-0 transition-transform duration-200 ${
                           expandedFaq === i ? "rotate-180" : ""
@@ -277,7 +360,9 @@ export default function ContactPage() {
                         animate={{ opacity: 1 }}
                         className="px-5 pb-5"
                       >
-                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{faq.a}</p>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                          {faq.a}
+                        </p>
                       </motion.div>
                     )}
                   </div>
@@ -289,14 +374,20 @@ export default function ContactPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 lg:py-20 bg-gradient-to-r from-primary via-indigo-600 to-violet-700 text-white relative overflow-hidden">
+      <section className="py-16 lg:py-20 bg-linear-to-r from-primary via-indigo-600 to-violet-700 text-white relative overflow-hidden">
         <div className="absolute inset-0 hero-grid opacity-15" />
         <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
-          <h2 className="text-3xl lg:text-4xl font-extrabold mb-4 font-display">Ready to Start Learning?</h2>
+          <h2 className="text-3xl lg:text-4xl font-extrabold mb-4 font-display">
+            Ready to Start Learning?
+          </h2>
           <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
-            Don't wait — reserve your seat in our upcoming intake and begin your German language journey today.
+            Don&apos;t wait — reserve your seat in our upcoming intake and begin
+            your German language journey today.
           </p>
-          <Link href="/reserve-seat" className="px-10 py-4 bg-white text-primary font-bold rounded-xl hover:bg-slate-100 hover:shadow-xl transition-all font-display inline-block">
+          <Link
+            href="/reserve-seat"
+            className="px-10 py-4 bg-white text-primary font-bold rounded-xl hover:bg-slate-100 hover:shadow-xl transition-all font-display inline-block"
+          >
             Reserve Your Seat
           </Link>
         </div>
