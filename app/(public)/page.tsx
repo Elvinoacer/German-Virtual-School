@@ -230,7 +230,6 @@ export default function Home() {
                       icon: "groups",
                       text: `${isLoadingStats ? "..." : (stats?.studentsCount?.toLocaleString() ?? "0")}+ Students`,
                     },
-                    { icon: "star", text: "4.9★ Rating" },
                   ].map((b, i) => (
                     <span key={i} className="flex items-center gap-1.5">
                       <span className="material-symbols-outlined text-primary text-[16px]">
@@ -260,41 +259,6 @@ export default function Home() {
                     />
                   </div>
                   <div className="absolute inset-0 bg-linear-to-t from-slate-900/40 via-transparent to-transparent" />
-                </div>
-                <div className="absolute -bottom-6 -left-6 glass rounded-2xl p-4 shadow-xl border border-white/30 dark:border-slate-700/50 animate-float hidden md:block">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-green-500 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-white text-xl">
-                        trending_up
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                        Success Rate
-                      </p>
-                      <p className="text-lg font-extrabold text-slate-900 dark:text-white font-display">
-                        {isLoadingStats
-                          ? "..."
-                          : `${stats?.successRate ?? 95}%`}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  className="absolute -top-4 -right-4 glass rounded-2xl px-4 py-3 shadow-xl border border-white/30 dark:border-slate-700/50 animate-float hidden md:block"
-                  style={{ animationDelay: "2s" }}
-                >
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="material-symbols-outlined text-amber-500"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      star
-                    </span>
-                    <span className="text-sm font-bold text-slate-900 dark:text-white font-display">
-                      4.9/5
-                    </span>
-                  </div>
                 </div>
               </motion.div>
             </div>
