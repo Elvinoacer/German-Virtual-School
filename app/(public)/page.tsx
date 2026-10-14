@@ -205,7 +205,7 @@ const JOURNEY_STEPS = [
   {
     icon: "how_to_reg",
     title: "Enroll & Get Placed",
-    desc: "Reserve your seat, take our placement assessment, and join the level that fits you — complete beginner or continuing learner.",
+    desc: "Take our placement assessment and join the level that fits you — complete beginner or continuing learner.",
   },
   {
     icon: "translate",
@@ -606,7 +606,6 @@ export default function Home() {
 
   const minInstallment = stats.fees?.minInstallmentAmount ?? 9000;
   const showSuccessRate = !isLoadingStats && (stats?.successRate ?? 0) >= 60;
-  const intakeLabel = stats.fees?.intakeLabel || "May";
 
   /* ---------- stats band items ---------- */
   const statItems = [
@@ -692,7 +691,7 @@ export default function Home() {
                     <span className="relative inline-flex w-2 h-2 rounded-full bg-green-500" />
                   </span>
                   <span className="text-xs font-semibold tracking-widest uppercase text-primary font-display">
-                    Enrollment Open · {intakeLabel} 2026 Intake
+                    Live Online German Classes
                   </span>
                 </motion.div>
 
@@ -756,7 +755,7 @@ export default function Home() {
                   className="flex flex-col sm:flex-row gap-3.5"
                 >
                   <Link
-                    href="/reserve-seat"
+                    href="/courses"
                     className="btn-shine group inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary text-white font-semibold rounded-2xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:-translate-y-0.5 transition-all duration-300 font-display"
                   >
                     Start Learning German
@@ -1778,10 +1777,10 @@ export default function Home() {
                       {/* actions */}
                       <div className="flex md:flex-col lg:flex-col gap-3 shrink-0 justify-center">
                         <Link
-                          href={`/reserve-seat?program=${LEVELS[activeLevel].level}`}
+                          href="/courses"
                           className="btn-shine inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-primary text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-300 font-display whitespace-nowrap"
                         >
-                          Enroll in {LEVELS[activeLevel].level}
+                          Explore {LEVELS[activeLevel].level} Courses
                           <span className="material-symbols-outlined text-[16px]">
                             arrow_forward
                           </span>
@@ -2301,10 +2300,10 @@ export default function Home() {
                           ${stats.fees.materialFee.toLocaleString()}
                         </p>
                         <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
-                          Covers all course materials, textbooks, and digital
-                          resources
+                          Pay for course materials, textbooks, and digital
+                          resources ahead of time
                           {stats.fees.materialFeeDeadline
-                            ? `. Due ahead of time by ${new Date(
+                            ? `. Due by ${new Date(
                                 stats.fees.materialFeeDeadline,
                               ).toLocaleDateString("en-GB", {
                                 day: "numeric",
@@ -2400,10 +2399,10 @@ export default function Home() {
                             )}
                             <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
                               <Link
-                                href={`/reserve-seat?program=${course.level}`}
+                                href={`/courses/${course.id}`}
                                 className="group/link inline-flex items-center gap-2 text-primary font-semibold text-sm hover:gap-3 transition-all duration-300 font-display"
                               >
-                                Enroll in this course
+                                View this course
                                 <span className="material-symbols-outlined text-[16px] group-hover/link:translate-x-1 transition-transform duration-300">
                                   arrow_forward
                                 </span>
@@ -2519,7 +2518,7 @@ export default function Home() {
                 className="inline-flex items-center gap-2.5 mb-7 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white/90 text-xs font-semibold font-display"
               >
                 <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                {intakeLabel} 2026 Intake · Enrollment Open
+                Start Learning German
               </motion.span>
               <motion.h2
                 variants={fadeUp}
@@ -2536,7 +2535,7 @@ export default function Home() {
                 custom={2}
                 className="text-lg mb-3 text-white/80 leading-relaxed max-w-2xl mx-auto"
               >
-                Enroll in our upcoming intake and start building the language
+                Explore our German courses and start building the language
                 skills needed for your future in Germany — structured courses,
                 live classes, and exam preparation designed for international
                 students and professionals.
@@ -2548,7 +2547,7 @@ export default function Home() {
               >
                 {[
                   { icon: "verified", text: "CEFR-Certified curriculum" },
-                  { icon: "schedule", text: `${intakeLabel} 2026 start` },
+                  { icon: "groups", text: "Live online classes" },
                   { icon: "payments", text: "Flexible payment plans" },
                 ].map((item, i) => (
                   <span key={i} className="flex items-center gap-1.5">
@@ -2565,19 +2564,19 @@ export default function Home() {
                 className="flex flex-col sm:flex-row gap-4 justify-center"
               >
                 <Link
-                  href="/reserve-seat"
+                  href="/courses"
                   className="btn-shine group inline-flex items-center justify-center gap-2 px-10 py-4 bg-white text-primary text-lg font-bold rounded-2xl hover:shadow-2xl hover:shadow-white/25 hover:-translate-y-0.5 transition-all duration-300 font-display"
                 >
-                  Enroll Now
+                  Explore Courses
                   <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform duration-300">
                     arrow_forward
                   </span>
                 </Link>
                 <Link
-                  href="/courses"
+                  href="/contact"
                   className="inline-flex items-center justify-center px-10 py-4 border-2 border-white/30 text-white text-lg font-semibold rounded-2xl hover:bg-white/10 hover:border-white/50 transition-all duration-300 font-display"
                 >
-                  View Course Schedule
+                  Contact Us
                 </Link>
               </motion.div>
               <motion.p

@@ -231,10 +231,10 @@ export function PublicHeader() {
                 <span className="hidden 2xl:inline">Portal</span>
               </Link>
               <Link
-                href="/reserve-seat"
+                href="/courses"
                 className="group relative px-3.5 md:px-4 lg:px-5 py-2 lg:py-2.5 bg-primary text-white text-[11px] md:text-xs lg:text-sm font-semibold rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5 font-display whitespace-nowrap"
               >
-                <span className="relative z-10">Enroll Now</span>
+                <span className="relative z-10">Explore Courses</span>
                 <div className="absolute inset-0 bg-linear-to-r from-primary via-indigo-500 to-primary bg-size-[200%_100%] animate-gradient-x opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </Link>
 
@@ -389,11 +389,11 @@ export function PublicHeader() {
                 {/* Mobile CTA */}
                 <div className="mt-8 space-y-3 pt-6 border-t border-slate-200 dark:border-slate-700">
                   <Link
-                    href="/reserve-seat"
+                    href="/courses"
                     onClick={() => setMobileOpen(false)}
                     className="block w-full text-center px-6 py-3.5 bg-primary text-white font-semibold rounded-xl hover:bg-primary-hover transition-colors font-display"
                   >
-                    Enroll Now
+                    Explore Courses
                   </Link>
                   <Link
                     href="/login"
