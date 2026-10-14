@@ -37,7 +37,6 @@ export default function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const program = searchParams.get('program');
-  const fromReservation = searchParams.get('from') === 'reservation';
 
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -180,12 +179,6 @@ export default function RegisterForm() {
         "Registration failed. Please try again.";
       
       toast.error(errorMessage);
-
-      if (errorData?.needsReservation) {
-        setTimeout(() => {
-          router.push("/reserve-seat");
-        }, 2000);
-      }
     } finally {
       setIsLoading(false);
     }
@@ -284,30 +277,6 @@ export default function RegisterForm() {
             </p>
             <p className="text-xs text-green-600 dark:text-green-400 mt-1">
               Your details have been pre-filled from your reservation. Just set a password to complete your account.
-            </p>
-          </div>
-        </motion.div>
-      )}
-
-      {!reservationData && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex items-start gap-3"
-        >
-          <span
-            className="material-symbols-outlined text-blue-600 dark:text-blue-400 text-xl mt-0.5"
-          >
-            info
-          </span>
-          <div>
-            <p className="font-semibold text-blue-800 dark:text-blue-200 text-sm mt-0.5">
-              Registration Requirements
-            </p>
-            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-              You must have a paid seat reservation to open an account. Please sign up using the exact email address you used to reserve your seat.
-              <br/>
-              Don't have a reservation yet? <Link href="/reserve-seat" className="underline font-medium mt-1 inline-block">Reserve your seat here</Link>
             </p>
           </div>
         </motion.div>

@@ -405,10 +405,10 @@ export default function BlogArticlePage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
-                href="/reserve-seat"
+                href="/register"
                 className="px-6 py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-hover transition-colors font-display"
               >
-                Reserve Your Seat
+                Enroll Now
               </Link>
               <Link
                 href="/blog"

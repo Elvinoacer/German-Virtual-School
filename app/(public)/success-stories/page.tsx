@@ -293,10 +293,10 @@ export default function SuccessStoriesPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/reserve-seat"
+              href="/register"
               className="px-8 py-4 bg-white text-rose-600 font-bold rounded-xl hover:bg-slate-100 hover:shadow-xl transition-all font-display"
             >
-              Reserve Your Seat
+              Enroll Now
             </Link>
             <Link
               href="/courses"

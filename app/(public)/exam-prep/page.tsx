@@ -181,7 +181,7 @@ export default function ExamPrepPage() {
               className="flex flex-col sm:flex-row gap-4 justify-center mt-8"
             >
               <Link
-                href="/reserve-seat"
+                href="/register"
                 className="px-8 py-4 bg-white text-primary font-bold rounded-xl hover:bg-slate-100 hover:shadow-xl transition-all hover:-translate-y-0.5 font-display"
               >
                 Start Exam Prep
@@ -407,7 +407,7 @@ export default function ExamPrepPage() {
               formats and requirements.
             </p>
             <Link
-              href="/reserve-seat"
+              href="/register"
               className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-hover transition-colors font-display"
             >
               <span className="material-symbols-outlined text-lg">school</span>
@@ -429,10 +429,10 @@ export default function ExamPrepPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/reserve-seat"
+              href="/register"
               className="px-8 py-4 bg-white text-primary font-bold rounded-xl hover:bg-slate-100 hover:shadow-xl transition-all font-display"
             >
-              Reserve Your Seat
+              Enroll Now
             </Link>
             <Link
               href="/courses"

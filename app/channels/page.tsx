@@ -164,11 +164,11 @@ export default function ChannelsPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/reserve-seat"
+              href="/register"
               className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-primary font-bold rounded-xl hover:bg-gray-100 transition-colors shadow-lg"
             >
-              <span className="material-symbols-outlined text-sm">event_seat</span>
-              Reserve Your Seat
+              <span className="material-symbols-outlined text-sm">how_to_reg</span>
+              Enroll Now
             </Link>
             <Link
               href="/courses"

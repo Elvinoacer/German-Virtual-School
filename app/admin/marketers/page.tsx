@@ -366,7 +366,7 @@ export default function AdminMarketersPage() {
                         </button>
                         <button
                           onClick={() => {
-                            const url = `${appUrl}/reserve-seat?ref=${m.referralCode}`;
+                            const url = `${appUrl}/register?ref=${m.referralCode}`;
                             navigator.clipboard.writeText(url);
                             toast.success("Referral link copied!");
                           }}

@@ -4,7 +4,6 @@ import { hashPassword } from "@/lib/auth";
 import { UserRole } from "@/generated/prisma/client";
 import { randomBytes } from "crypto";
 import { sendEmailNotification } from "@/lib/notifications/channels/email";
-import { hasPaidSeatReservation } from "@/lib/seat-reservation-guard";
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,7 +37,6 @@ export async function POST(request: NextRequest) {
         select: {
           enrollmentStartDate: true,
           enrollmentEndDate: true,
-          intakeLabel: true,
         },
       });
 
@@ -61,23 +59,6 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             {
               error: `Enrollment is closed. Registration ended on ${settings.enrollmentEndDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}. Please check back for the next enrollment period.`,
-            },
-            { status: 403 },
-          );
-        }
-
-        // New Logic: Mandatory Seat Reservation Check
-        const intakeLabel = settings.intakeLabel || "May 2026";
-        const paidReservation = await hasPaidSeatReservation({
-          email,
-          intakeLabel,
-        });
-
-        if (!paidReservation) {
-          return NextResponse.json(
-            {
-              error: `No paid seat reservation found for ${email} (${intakeLabel} intake). Please reserve your seat first.`,
-              needsReservation: true,
             },
             { status: 403 },
           );

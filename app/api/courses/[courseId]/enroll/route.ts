@@ -2,7 +2,6 @@ import { NextRequest } from "next/server";
 import { authenticate } from "@/lib/auth-middleware";
 import { prisma } from "@/lib/prisma";
 import { successResponse, errors } from "@/lib/api-response";
-import { requirePaidSeatReservation } from "@/lib/seat-reservation-guard";
 
 export async function POST(
   request: NextRequest,
@@ -21,20 +20,6 @@ export async function POST(
 
     if (!studentId) {
       return errors.unauthorized("User ID not found in session");
-    }
-
-    try {
-      await requirePaidSeatReservation({ userId: studentId });
-    } catch (reservationError: unknown) {
-      if (
-        reservationError instanceof Error &&
-        reservationError.message === "PAID_SEAT_RESERVATION_REQUIRED"
-      ) {
-        return errors.forbidden(
-          "A paid seat reservation is required before course enrollment.",
-        );
-      }
-      throw reservationError;
     }
 
     // Check if course exists and is published

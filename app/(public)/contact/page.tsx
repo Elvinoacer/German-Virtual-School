@@ -37,7 +37,7 @@ const contactMethods = [
 const faqs = [
   {
     q: "How do I enroll in a course?",
-    a: "Visit our Reserve Your Seat page to secure your spot in the upcoming intake. You'll need to pay a one-time reservation fee which is deducted from your total tuition.",
+    a: "Click Enroll Now to create your account, verify your email, and complete your student profile. You can then enroll in a course. Please pay for textbooks and learning materials ahead of time.",
   },
   {
     q: "What payment methods do you accept?",
@@ -381,14 +381,14 @@ export default function ContactPage() {
             Ready to Start Learning?
           </h2>
           <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
-            Don&apos;t wait — reserve your seat in our upcoming intake and begin
+            Create your account and begin
             your German language journey today.
           </p>
           <Link
-            href="/reserve-seat"
+            href="/register"
             className="px-10 py-4 bg-white text-primary font-bold rounded-xl hover:bg-slate-100 hover:shadow-xl transition-all font-display inline-block"
           >
-            Reserve Your Seat
+            Enroll Now
           </Link>
         </div>
       </section>

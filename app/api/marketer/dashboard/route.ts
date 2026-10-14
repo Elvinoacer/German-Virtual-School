@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
     // Get referral URL
     const appUrl =
       process.env.NEXT_PUBLIC_APP_URL || "https://germanvirtualschool.com";
-    const referralUrl = `${appUrl}/reserve-seat?ref=${marketer.referralCode}`;
+    const referralUrl = `${appUrl}/register?ref=${marketer.referralCode}`;
 
     return NextResponse.json({
       success: true,

@@ -31,7 +31,7 @@ export default function GermanForITPage() {
               Germany's booming tech industry needs skilled IT professionals. Learn German to maximize your career opportunities in Europe's largest tech market.
             </motion.p>
             <motion.div variants={fadeUp} custom={3} className="flex flex-wrap gap-3 mt-8">
-              <Link href="/reserve-seat" className="px-6 py-3 bg-white text-blue-600 font-bold rounded-xl hover:bg-slate-100 transition-all hover:-translate-y-0.5 font-display">Start Learning German</Link>
+              <Link href="/register" className="px-6 py-3 bg-white text-blue-600 font-bold rounded-xl hover:bg-slate-100 transition-all hover:-translate-y-0.5 font-display">Start Learning German</Link>
               <Link href="/opportunities/work" className="px-6 py-3 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all font-display">Work in Germany</Link>
             </motion.div>
           </motion.div>
@@ -102,7 +102,7 @@ export default function GermanForITPage() {
           <h2 className="text-3xl lg:text-4xl font-extrabold mb-4 font-display">Launch Your IT Career in Germany</h2>
           <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">German language skills give you a massive competitive advantage in Europe's largest tech market.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/reserve-seat" className="px-8 py-4 bg-white text-blue-600 font-bold rounded-xl hover:bg-slate-100 hover:shadow-xl transition-all font-display">Reserve Your Seat</Link>
+            <Link href="/register" className="px-8 py-4 bg-white text-blue-600 font-bold rounded-xl hover:bg-slate-100 hover:shadow-xl transition-all font-display">Enroll Now</Link>
             <Link href="/courses" className="px-8 py-4 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all font-display">Browse Courses</Link>
           </div>
         </div>

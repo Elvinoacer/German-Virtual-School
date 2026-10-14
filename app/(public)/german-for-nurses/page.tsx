@@ -31,7 +31,7 @@ export default function GermanForNursesPage() {
               Germany has a critical shortage of nursing professionals. Learn the German language skills required to start your nursing career in one of Europe's best healthcare systems.
             </motion.p>
             <motion.div variants={fadeUp} custom={3} className="flex flex-wrap gap-3 mt-8">
-              <Link href="/reserve-seat" className="px-6 py-3 bg-white text-rose-600 font-bold rounded-xl hover:bg-slate-100 transition-all hover:-translate-y-0.5 font-display">
+              <Link href="/register" className="px-6 py-3 bg-white text-rose-600 font-bold rounded-xl hover:bg-slate-100 transition-all hover:-translate-y-0.5 font-display">
                 Start Learning German
               </Link>
               <Link href="/opportunities/work" className="px-6 py-3 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all font-display">
@@ -109,7 +109,7 @@ export default function GermanForNursesPage() {
           <h2 className="text-3xl lg:text-4xl font-extrabold mb-4 font-display">Start Your Nursing Career in Germany</h2>
           <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">German language proficiency is the first requirement. Start your preparation today.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/reserve-seat" className="px-8 py-4 bg-white text-rose-600 font-bold rounded-xl hover:bg-slate-100 hover:shadow-xl transition-all font-display">Reserve Your Seat</Link>
+            <Link href="/register" className="px-8 py-4 bg-white text-rose-600 font-bold rounded-xl hover:bg-slate-100 hover:shadow-xl transition-all font-display">Enroll Now</Link>
             <Link href="/courses" className="px-8 py-4 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all font-display">Browse Courses</Link>
           </div>
         </div>

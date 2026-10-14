@@ -9,7 +9,7 @@ const footerLinks = {
     { label: "Student Resources", href: "/resources" },
   ],
   quickLinks: [
-    { label: "Explore Courses", href: "/courses" },
+    { label: "Enroll Now", href: "/register" },
     { label: "Success Stories", href: "/success-stories" },
     { label: "Blog", href: "/blog" },
     { label: "About Us", href: "/about" },

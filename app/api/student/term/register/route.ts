@@ -2,7 +2,6 @@ import { NextRequest } from "next/server";
 import { authenticate } from "@/lib/auth-middleware";
 import { prisma } from "@/lib/prisma";
 import { successResponse, errors } from "@/lib/api-response";
-import { requirePaidSeatReservation } from "@/lib/seat-reservation-guard";
 
 /**
  * Explicitly register for a semester without enrolling in a specific course.
@@ -18,18 +17,8 @@ export async function POST(request: NextRequest) {
 
     const studentId = payload.id || (payload as any).userId;
 
-    try {
-      await requirePaidSeatReservation({ userId: studentId });
-    } catch (reservationError: unknown) {
-      if (
-        reservationError instanceof Error &&
-        reservationError.message === "PAID_SEAT_RESERVATION_REQUIRED"
-      ) {
-        return errors.forbidden(
-          "A paid seat reservation is required before semester registration.",
-        );
-      }
-      throw reservationError;
+    if (!studentId) {
+      return errors.unauthorized("User ID not found in session");
     }
 
     // Check enrollment period before allowing registration

@@ -217,7 +217,7 @@ export default function AusbildungPage() {
               className="flex flex-wrap gap-3 mt-8"
             >
               <Link
-                href="/reserve-seat"
+                href="/register"
                 className="px-6 py-3 bg-white text-orange-600 font-bold rounded-xl hover:bg-slate-100 transition-all hover:-translate-y-0.5 font-display"
               >
                 Start Learning German
@@ -371,10 +371,10 @@ export default function AusbildungPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/reserve-seat"
+              href="/register"
               className="px-8 py-4 bg-white text-orange-600 font-bold rounded-xl hover:bg-slate-100 hover:shadow-xl transition-all font-display"
             >
-              Reserve Your Seat
+              Enroll Now
             </Link>
             <Link
               href="/opportunities"

@@ -149,7 +149,7 @@ export default function GermanVisaRequirementsPage() {
           <h2 className="text-3xl lg:text-4xl font-extrabold mb-4 font-display">Get the Certificate You Need</h2>
           <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">German Virtual School prepares you for every level — from A1 to C2. Start your preparation today.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/reserve-seat" className="px-8 py-4 bg-white text-primary font-bold rounded-xl hover:bg-slate-100 hover:shadow-xl transition-all font-display">Reserve Your Seat</Link>
+            <Link href="/register" className="px-8 py-4 bg-white text-primary font-bold rounded-xl hover:bg-slate-100 hover:shadow-xl transition-all font-display">Enroll Now</Link>
             <Link href="/exam-prep" className="px-8 py-4 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all font-display">Exam Preparation</Link>
           </div>
         </div>

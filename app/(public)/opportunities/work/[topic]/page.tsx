@@ -208,7 +208,7 @@ export default function WorkTopicPage() {
 
           <div className="mt-10 flex flex-col sm:flex-row gap-4">
             <Link
-              href="/reserve-seat"
+              href="/register"
               className="px-8 py-3.5 bg-primary text-white rounded-xl font-semibold text-center font-display"
             >
               Start Learning German

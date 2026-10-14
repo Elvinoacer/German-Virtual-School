@@ -4,7 +4,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth";
 import { UserRole } from "@/generated/prisma/client";
-import { hasPaidSeatReservation } from "@/lib/seat-reservation-guard";
 
 declare module "next-auth" {
   interface Session {
@@ -137,36 +136,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
-      if (account?.provider === "google" && user?.email) {
-        try {
-          const normalizedEmail = user.email.toLowerCase().trim();
-          const existingUser = await prisma.user.findUnique({
-            where: { email: normalizedEmail },
-            select: { id: true, role: true },
-          });
-
-          const shouldEnforceReservation =
-            !existingUser || existingUser.role === "STUDENT";
-
-          if (shouldEnforceReservation) {
-            const hasReservation = await hasPaidSeatReservation({
-              email: normalizedEmail,
-              userId: existingUser?.id,
-            });
-
-            if (!hasReservation) {
-              return "/reserve-seat?reservationRequired=1";
-            }
-          }
-        } catch (reservationCheckError) {
-          console.error(
-            "Failed to validate paid seat reservation during Google sign-in:",
-            reservationCheckError,
-          );
-          return false;
-        }
-      }
-
       // For OAuth providers, ensure custom fields are populated
       if (account?.provider && account.provider !== "credentials" && user?.id) {
         try {

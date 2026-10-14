@@ -755,7 +755,7 @@ export default function Home() {
                   className="flex flex-col sm:flex-row gap-3.5"
                 >
                   <Link
-                    href="/courses"
+                    href="/register"
                     className="btn-shine group inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary text-white font-semibold rounded-2xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:-translate-y-0.5 transition-all duration-300 font-display"
                   >
                     Start Learning German
@@ -1777,10 +1777,10 @@ export default function Home() {
                       {/* actions */}
                       <div className="flex md:flex-col lg:flex-col gap-3 shrink-0 justify-center">
                         <Link
-                          href="/courses"
+                          href={`/register?program=${LEVELS[activeLevel].level}`}
                           className="btn-shine inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-primary text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-300 font-display whitespace-nowrap"
                         >
-                          Explore {LEVELS[activeLevel].level} Courses
+                          Enroll in {LEVELS[activeLevel].level}
                           <span className="material-symbols-outlined text-[16px]">
                             arrow_forward
                           </span>
@@ -2399,10 +2399,10 @@ export default function Home() {
                             )}
                             <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
                               <Link
-                                href={`/courses/${course.id}`}
+                                href={`/register?program=${course.level}`}
                                 className="group/link inline-flex items-center gap-2 text-primary font-semibold text-sm hover:gap-3 transition-all duration-300 font-display"
                               >
-                                View this course
+                                Enroll in this course
                                 <span className="material-symbols-outlined text-[16px] group-hover/link:translate-x-1 transition-transform duration-300">
                                   arrow_forward
                                 </span>
@@ -2564,10 +2564,10 @@ export default function Home() {
                 className="flex flex-col sm:flex-row gap-4 justify-center"
               >
                 <Link
-                  href="/courses"
+                  href="/register"
                   className="btn-shine group inline-flex items-center justify-center gap-2 px-10 py-4 bg-white text-primary text-lg font-bold rounded-2xl hover:shadow-2xl hover:shadow-white/25 hover:-translate-y-0.5 transition-all duration-300 font-display"
                 >
-                  Explore Courses
+                  Enroll Now
                   <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform duration-300">
                     arrow_forward
                   </span>
