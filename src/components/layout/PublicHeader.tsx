@@ -121,14 +121,17 @@ export function PublicHeader() {
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 lg:h-18">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2.5 shrink-0">
+            <Link
+              href="/"
+              className="flex items-center gap-2 md:gap-2.5 shrink-0 min-w-0"
+            >
               <img
                 src="/gvs-logo.png"
                 alt="GVS Logo"
-                className="h-9 w-auto dark:brightness-0 dark:invert"
+                className="h-8 md:h-9 w-auto dark:brightness-0 dark:invert"
               />
-              <div className="flex flex-col">
-                <span className="text-[15px] xl:text-base 2xl:text-lg font-bold tracking-tight text-slate-900 dark:text-white font-display leading-tight whitespace-nowrap">
+              <div className="flex flex-col min-w-0">
+                <span className="text-[13px] md:text-[15px] xl:text-base 2xl:text-lg font-bold tracking-tight text-slate-900 dark:text-white font-display leading-tight whitespace-nowrap">
                   German Virtual School
                 </span>
                 <span className="hidden 2xl:block text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] font-medium whitespace-nowrap">
@@ -217,7 +220,7 @@ export function PublicHeader() {
             </nav>
 
             {/* Right actions */}
-            <div className="flex items-center gap-2 lg:gap-3">
+            <div className="flex items-center gap-1.5 md:gap-2 lg:gap-3 shrink-0">
               <Link
                 href="/login"
                 className="hidden sm:flex items-center gap-1.5 text-xs lg:text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary transition-colors px-2.5 py-2 rounded-lg hover:bg-primary/5"
@@ -229,7 +232,7 @@ export function PublicHeader() {
               </Link>
               <Link
                 href="/reserve-seat"
-                className="group relative px-4 lg:px-5 py-2 lg:py-2.5 bg-primary text-white text-xs lg:text-sm font-semibold rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5 font-display whitespace-nowrap"
+                className="group relative px-3.5 md:px-4 lg:px-5 py-2 lg:py-2.5 bg-primary text-white text-[11px] md:text-xs lg:text-sm font-semibold rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5 font-display whitespace-nowrap"
               >
                 <span className="relative z-10">Enroll Now</span>
                 <div className="absolute inset-0 bg-linear-to-r from-primary via-indigo-500 to-primary bg-size-[200%_100%] animate-gradient-x opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -238,7 +241,7 @@ export function PublicHeader() {
               {/* Mobile menu button */}
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="xl:hidden w-10 h-10 flex items-center justify-center rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="xl:hidden w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 aria-label="Toggle menu"
               >
                 <span className="material-symbols-outlined text-2xl">
