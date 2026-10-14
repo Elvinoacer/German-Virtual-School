@@ -1055,7 +1055,7 @@ export default function Home() {
                 </p>
                 <div className="space-y-3 mb-8">
                   {[
-                    "Earn $5 instantly on seat reservation",
+                    "Earn commissions on every student enrollment",
                     "Earn an additional $15 on full tuition payment",
                     "Transparent dashboard & direct bank/card payouts",
                     "Receive a unique referral code instantly",
@@ -1242,7 +1242,6 @@ export default function Home() {
         {/* PRICING */}
         {stats.fees &&
           (stats.fees.courses.length > 0 ||
-            stats.fees.seatReservationFee ||
             stats.fees.materialFee) && (
             <section
               id="pricing"
@@ -1282,82 +1281,43 @@ export default function Home() {
                     installment plans available.
                   </motion.p>
                 </motion.div>
-                {(stats.fees.seatReservationFee || stats.fees.materialFee) && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12 max-w-3xl mx-auto">
-                    {stats.fees.seatReservationFee && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="relative bg-linear-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/10 rounded-2xl p-6 border border-blue-100 dark:border-blue-800/30 overflow-hidden group hover:shadow-lg transition-all duration-300"
-                      >
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200/30 dark:bg-blue-500/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-700" />
-                        <div className="relative">
-                          <div className="flex items-center gap-3 mb-3">
-                            <div className="w-10 h-10 rounded-xl bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
-                              <span className="material-symbols-outlined text-white text-xl">
-                                confirmation_number
-                              </span>
-                            </div>
-                            <div>
-                              <h3 className="font-bold text-slate-900 dark:text-white font-display">
-                                Seat Reservation
-                              </h3>
-                              <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                                One-time, non-refundable
-                              </p>
-                            </div>
+                {stats.fees.materialFee && (
+                  <div className="max-w-md mx-auto mb-12">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      className="relative bg-linear-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/10 rounded-2xl p-6 border border-amber-100 dark:border-amber-800/30 overflow-hidden group hover:shadow-lg transition-all duration-300"
+                    >
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-amber-200/30 dark:bg-amber-500/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-700" />
+                      <div className="relative">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="w-10 h-10 rounded-xl bg-linear-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg">
+                            <span className="material-symbols-outlined text-white text-xl">
+                              menu_book
+                            </span>
                           </div>
-                          <p className="text-3xl font-extrabold text-blue-600 dark:text-blue-400 font-display">
-                            ${stats.fees.seatReservationFee.toLocaleString()}
-                          </p>
-                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
-                            Deducted from your total tuition fee
-                            {stats.fees.intakeLabel
-                              ? `. Secures spot for ${stats.fees.intakeLabel} intake.`
-                              : "."}
-                          </p>
-                        </div>
-                      </motion.div>
-                    )}
-                    {stats.fees.materialFee && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.1 }}
-                        className="relative bg-linear-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/10 rounded-2xl p-6 border border-amber-100 dark:border-amber-800/30 overflow-hidden group hover:shadow-lg transition-all duration-300"
-                      >
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-amber-200/30 dark:bg-amber-500/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-700" />
-                        <div className="relative">
-                          <div className="flex items-center gap-3 mb-3">
-                            <div className="w-10 h-10 rounded-xl bg-linear-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg">
-                              <span className="material-symbols-outlined text-white text-xl">
-                                menu_book
-                              </span>
-                            </div>
-                            <div>
-                              <h3 className="font-bold text-slate-900 dark:text-white font-display">
-                                Learning Materials
-                              </h3>
-                              <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                                One-time fee
-                              </p>
-                            </div>
+                          <div>
+                            <h3 className="font-bold text-slate-900 dark:text-white font-display">
+                              Learning Materials &amp; Textbooks
+                            </h3>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                              Advance one-time fee
+                            </p>
                           </div>
-                          <p className="text-3xl font-extrabold text-amber-600 dark:text-amber-400 font-display">
-                            ${stats.fees.materialFee.toLocaleString()}
-                          </p>
-                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
-                            Covers all course materials and digital resources
-                            {stats.fees.materialFeeDeadline
-                              ? `. Due by ${new Date(stats.fees.materialFeeDeadline).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`
-                              : ""}
-                            .
-                          </p>
                         </div>
-                      </motion.div>
-                    )}
+                        <p className="text-3xl font-extrabold text-amber-600 dark:text-amber-400 font-display">
+                          ${stats.fees.materialFee.toLocaleString()}
+                        </p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+                          Covers all course materials, textbooks, and digital resources
+                          {stats.fees.materialFeeDeadline
+                            ? `. Due ahead of time by ${new Date(stats.fees.materialFeeDeadline).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`
+                            : ""}
+                          .
+                        </p>
+                      </div>
+                    </motion.div>
                   </div>
                 )}
                 {stats.fees.courses.length > 0 && (
@@ -1529,8 +1489,8 @@ export default function Home() {
                 custom={3}
                 className="text-lg mb-8 text-white/80"
               >
-                Reserve your seat in our upcoming intake and start building the
-                language skills needed for your future in Germany.
+                Enroll in our upcoming intake and start building the language
+                skills needed for your future in Germany.
               </motion.p>
               <motion.div
                 variants={fadeUp}
@@ -1538,8 +1498,7 @@ export default function Home() {
                 className="flex flex-wrap items-center justify-center gap-4 mb-10 text-sm text-white/70"
               >
                 {[
-                  { icon: "lock", text: "Locks your seat" },
-                  { icon: "receipt_long", text: "Deducted from total fee" },
+                  { icon: "verified", text: "CEFR-Certified curriculum" },
                   {
                     icon: "schedule",
                     text: `${stats.fees?.intakeLabel || "May"} 2026 start`,
@@ -1563,10 +1522,7 @@ export default function Home() {
                   href="/reserve-seat"
                   className="group relative px-10 py-4 bg-white text-primary text-lg font-bold rounded-xl overflow-hidden hover:shadow-2xl hover:shadow-white/20 hover:-translate-y-0.5 transition-all duration-300 font-display"
                 >
-                  Reserve Your Seat
-                  {stats.fees?.seatReservationFee
-                    ? ` — $${stats.fees.seatReservationFee.toLocaleString()}`
-                    : ""}
+                  Enroll Now
                 </Link>
                 <Link
                   href="/courses"
